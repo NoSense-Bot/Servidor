@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de API do Servidor (Server.py)</title>
+    <!-- Carrega Tailwind CSS para estilização rápida -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1f2937; /* Cinza escuro de fundo */
+            color: #e5e7eb; /* Cor do texto claro */
+        }
+        .container-card {
+            background-color: #374151; /* Card mais claro */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .status-dot {
+            height: 12px;
+            width: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        /* Definição de cores para o status */
+        .bg-green-online { background-color: #10b981; } /* Emerald-500 */
+        .bg-red-offline { background-color: #ef4444; } /* Red-500 */
+    </style>
+</head>
+<body class="p-4 md:p-8 flex justify-center items-center min-h-screen">
+
+    <div class="container-card w-full max-w-4xl p-6 md:p-10 rounded-xl">
+        <h1 class="text-3xl font-bold mb-6 text-center text-white">
+            Teste de Comunicação com Server API (ngrok)
+        </h1>
+
+        <!-- Seção de Status do Servidor -->
+        <div class="mb-8 border-b border-gray-600 pb-4">
+            <h2 class="text-xl font-semibold mb-3">Status Atual</h2>
+            <div class="flex items-center space-x-4">
+                <span id="server-dot" class="status-dot bg-red-offline"></span>
+                <p id="server-status" class="font-medium text-gray-300">Carregando...</p>
+                <p id="server-version" class="text-sm text-gray-400">Versão: -</p>
+            </div>
+            <p id="offline-message" class="text-red-400 mt-2 font-medium hidden">
+                ⚠️ O Servidor Flask local (via ngrok) está inativo ou inacessível. Inicie o Server.py.
+            </p>
+        </div>
+
+        <!-- Seção de Envio de Comandos -->
+        <div id="command-form-container" class="hidden">
+            <h2 class="text-xl font-semibold mb-3">Enviar Comando JSON (para /api/cmd)</h2>
+            
+            <p class="text-sm text-gray-400 mb-2">
+                Insira o JSON para comandos como <code class="bg-gray-700 p-1 rounded">{"comando": "/status"}</code>, <code class="bg-gray-700 p-1 rounded">{"comando": "/login", "email": "...", "senha": "..."}</code>, etc.
+            </p>
+
+            <textarea id="json-input" rows="8" class="w-full p-3 rounded-lg bg-gray-700 text-sm text-white resize-none border border-gray-600 focus:ring-blue-500 focus:border-blue-500" 
+                placeholder='{"comando": "/status"}'></textarea>
+            
+            <button id="send-button" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl mt-4 transition duration-200" disabled>
+                Enviar Comando
+            </button>
+        </div>
+
+        <!-- Seção de Resposta -->
+        <div class="mt-8">
+            <h2 class="text-xl font-semibold mb-3 border-b border-gray-600 pb-2">Resposta da API</h2>
+            <pre id="response-content" class="bg-gray-800 p-4 rounded-lg overflow-x-auto text-sm"></pre>
+        </div>
+
+    </div>
+
+    <script>
+        // Elementos da UI
+        const serverDot = document.getElementById('server-dot');
+        const serverStatus = document.getElementById('server-status');
+        const serverVersion = document.getElementById('server-version');
+        const jsonInput = document.getElementById('json-input');
+        const sendButton = document.getElementById('send-button');
+        const responseContent = document.getElementById('response-content');
+        const offlineMessage = document.getElementById('offline-message');
+        const commandFormContainer = document.getElementById('command-form-container');
+
+        // O caminho para o JSON de status no GitHub Pages
+        const STATUS_JSON_URL = "server_status.json"; 
+
+        // Variável que armazenará a URL pública atual do ngrok
+        let NGROK_API_URL = null;
+
+        // Função para formatar a resposta JSON
+        function formatResponse(data, isError = false) {
+            if (isError) {
+                responseContent.className = 'text-red-400 whitespace-pre-wrap';
+                responseContent.textContent = data;
+            } else {
+                responseContent.className = 'text-green-400 whitespace-pre-wrap';
+                responseContent.textContent = JSON.stringify(data, null, 2);
+            }
+        }
+
+        // ----------------------------------------------------
+        // LÓGICA DE VERIFICAÇÃO DE STATUS
+        // ----------------------------------------------------
+
+        async function loadServerInfo() {
+            console.log("Iniciando verificação de status do servidor...");
+            try {
+                // 1. Obtém o JSON de status (criado pelo Server.py e enviado ao GitHub)
+                const statusResponse = await fetch(STATUS_JSON_URL, { cache: 'no-store' });
+                if (!statusResponse.ok) {
+                    throw new Error(`Arquivo server_status.json não encontrado ou erro HTTP: ${statusResponse.status}`);
+                }
+                const statusData = await statusResponse.json();
+
+                // --- ALTERAÇÃO AQUI: LENDO NOVOS CAMPOS JSON ---
+                NGROK_API_URL = statusData.url_api_base; // Novo campo
+                const serverHealthStatus = statusData.status_servidor; // Novo campo
+                // Versão é opcional, se estiver no JSON, será exibida
+                const gameVersion = statusData.GAME?.current_version || 'N/A';
+                
+                serverVersion.textContent = `Jogo Remoto: v${gameVersion}`;
+                // ----------------------------------------------
+                
+                if (serverHealthStatus === "Online" && NGROK_API_URL) {
+                    // 2. Tenta fazer um GET na rota simples para checar conectividade real
+                    try {
+                        const apiCheck = await fetch(`${NGROK_API_URL}/api/status`, {
+                            method: 'GET',
+                            headers: { 'Accept': 'application/json' },
+                            mode: 'cors',
+                            signal: AbortSignal.timeout(5000) // Timeout de 5s
+                        });
+
+                        if (apiCheck.ok && apiCheck.status === 200) {
+                            // SUCESSO: Servidor Flask está ativo por trás do ngrok
+                            serverDot.className = 'status-dot bg-green-online';
+                            serverStatus.textContent = "Servidor Online (Conectado)";
+                            sendButton.disabled = false;
+                            offlineMessage.classList.add('hidden');
+                            commandFormContainer.classList.remove('hidden');
+                            return; // Sai da função com status OK
+                        } else {
+                            throw new Error(`Resposta HTTP inesperada: ${apiCheck.status}`);
+                        }
+                    } catch (apiError) {
+                        // Erro ao conectar à API ngrok
+                        // Continua para o estado de erro abaixo
+                    }
+                }
+                
+            } catch (error) {
+                // Erro ao carregar informações do servidor ou arquivo de status
+                // console.error("Erro ao carregar informações do servidor:", error);
+            }
+
+            // Se o código chegou aqui, é porque falhou em algum momento
+            serverDot.className = 'status-dot bg-red-offline';
+            serverStatus.textContent = "Servidor Offline (Erro de Conexão)";
+            sendButton.disabled = true;
+            offlineMessage.classList.remove('hidden');
+            commandFormContainer.classList.add('hidden');
+            formatResponse("Não foi possível conectar ao servidor via ngrok ou o arquivo de status está desatualizado.", true);
+        }
+
+
+        // ----------------------------------------------------
+        // LÓGICA DE ENVIO DE COMANDOS
+        // ----------------------------------------------------
+
+        async function sendJson() {
+            // 1. Validação de pré-requisitos
+            if (sendButton.disabled || !NGROK_API_URL) {
+                formatResponse("Servidor offline ou URL ngrok indisponível.", true);
+                return;
+            }
+
+            let data;
+            try {
+                // 2. Tenta parsear o JSON de entrada
+                data = JSON.parse(jsonInput.value);
+            } catch (e) {
+                formatResponse("Erro de sintaxe no JSON. Verifique se o formato está correto.", true);
+                return;
+            }
+            
+            // 3. Desabilita o botão e limpa a resposta
+            sendButton.disabled = true;
+            sendButton.textContent = "Enviando...";
+            formatResponse("Aguardando resposta do servidor...", false); 
+
+            try {
+                // 4. Envia o JSON para a rota /api/cmd do Flask via ngrok
+                const response = await fetch(`${NGROK_API_URL}/api/cmd`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(data),
+                    mode: 'cors',
+                    signal: AbortSignal.timeout(10000) // Timeout de 10s para o comando
+                });
+
+                // 5. Verifica o status HTTP e trata a resposta
+                if (!response.ok) {
+                     const errorBody = await response.json().catch(() => ({ message: response.statusText }));
+                     throw new Error(`HTTP Error ${response.status}: ${JSON.stringify(errorBody, null, 2)}`);
+                }
+                
+                const responseData = await response.json();
+                
+                // 6. Exibe a resposta formatada
+                formatResponse(responseData, responseData.error ? true : false);
+
+            } catch (e) {
+                // 7. Trata erros de rede, timeout, ou erros HTTP
+                formatResponse(`Erro ao enviar comando: ${e.message || e}`, true);
+                console.error("Erro no envio:", e);
+            } finally {
+                // 8. Reabilita o botão
+                sendButton.disabled = false;
+                sendButton.textContent = "Enviar Comando";
+            }
+        }
+
+        // ----------------------------------------------------
+        // INICIALIZAÇÃO E LISTENERS
+        // ----------------------------------------------------
+
+        // Listener do botão Enviar
+        sendButton.addEventListener('click', sendJson);
+
+        // Inicia a verificação de status imediatamente
+        loadServerInfo();
+
+        // Atualiza o status a cada 10 segundos
+        setInterval(loadServerInfo, 10000);
+    </script>
+</body>
+</html>
