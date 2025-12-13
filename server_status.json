@@ -1,5 +1,5 @@
 {
-    "url_api_base": "http://127.0.0.1:5000",
+    "url_api_base": "https://hope-artists-planner-faq.trycloudflare.com",
     "porta": 5000,
     "status_servidor": "Online",
     "version_api": "0.0.0.1",
