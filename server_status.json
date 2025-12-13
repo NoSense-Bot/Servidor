@@ -1,9 +1,9 @@
 {
-    "url_api_base": "http://127.0.0.1:5000",
+    "url_api_base": "http://0.0.0.0:5000",
     "porta": 5000,
     "status_servidor": "Online",
     "version_api": "0.0.0.1",
-    "LAUCHER": {
+    "LAUNCHER": {
         "current_version": "0.0.2",
         "update_zip_name": "OBEARCO-Launcher.zip"
     },
