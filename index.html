@@ -1,243 +1,733 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teste de API do Servidor (Server.py)</title>
-    <!-- Carrega Tailwind CSS para estilização rápida -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #1f2937; /* Cinza escuro de fundo */
-            color: #e5e7eb; /* Cor do texto claro */
-        }
-        .container-card {
-            background-color: #374151; /* Card mais claro */
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
-        .status-dot {
-            height: 12px;
-            width: 12px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 8px;
-        }
-        /* Definição de cores para o status */
-        .bg-green-online { background-color: #10b981; } /* Emerald-500 */
-        .bg-red-offline { background-color: #ef4444; } /* Red-500 */
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NoSense • Social</title>
+
+  <!-- (Opcional mas recomendado) Socket.IO client p/ chat -->
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+  <style>
+    :root{
+      --bg:#0b0e14; --panel:#111827; --panel2:#0f172a;
+      --text:#e5e7eb; --muted:#9ca3af; --line:#1f2937;
+      --ok:#22c55e; --bad:#ef4444; --brand:#7c3aed;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --r: 16px;
+      --pad: 14px;
+      --gap: 14px;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+    }
+    *{ box-sizing:border-box; }
+    body{ margin:0; background:radial-gradient(1200px 800px at 10% 0%, #1b1238 0%, transparent 50%), var(--bg); color:var(--text); }
+    a{ color:inherit; text-decoration:none; }
+    button, input{ font:inherit; }
+
+    .topbar{
+      position:sticky; top:0; z-index:10;
+      display:flex; gap:10px; align-items:center; justify-content:space-between;
+      padding:10px 14px; border-bottom:1px solid var(--line);
+      background:rgba(11,14,20,.75); backdrop-filter: blur(10px);
+    }
+    .brand{ display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:.2px; }
+    .dot{ width:10px; height:10px; border-radius:999px; background:var(--bad); box-shadow:0 0 0 4px rgba(239,68,68,.15); }
+    .dot.ok{ background:var(--ok); box-shadow:0 0 0 4px rgba(34,197,94,.15); }
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 10px; border:1px solid var(--line);
+      background:rgba(17,24,39,.6); border-radius:999px;
+      color:var(--muted); font-size:13px;
+    }
+    .btn{
+      border:1px solid var(--line);
+      background:rgba(17,24,39,.9);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:12px;
+      cursor:pointer;
+      transition:.15s transform ease, .15s opacity ease;
+    }
+    .btn:hover{ transform: translateY(-1px); }
+    .btn.primary{ border-color:rgba(124,58,237,.55); background:rgba(124,58,237,.18); }
+    .btn.danger{ border-color:rgba(239,68,68,.5); background:rgba(239,68,68,.14); }
+
+    .wrap{ max-width:1200px; margin:0 auto; padding:14px; }
+    .grid{
+      display:grid; gap:var(--gap);
+      grid-template-columns: 320px 1fr 340px;
+      align-items:start;
+    }
+    @media (max-width: 980px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+
+    .card{
+      border:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(17,24,39,.9), rgba(15,23,42,.75));
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card .hd{
+      padding: var(--pad);
+      border-bottom:1px solid var(--line);
+      display:flex; align-items:center; justify-content:space-between;
+      gap:10px;
+    }
+    .card .bd{ padding: var(--pad); }
+    .title{ font-weight:800; }
+    .muted{ color:var(--muted); font-size:13px; }
+    .sep{ height:1px; background:var(--line); margin:10px 0; }
+
+    /* Auth */
+    .auth{
+      max-width:460px; margin:40px auto; padding:0 14px;
+    }
+    .auth .card{ border-radius:20px; }
+    .row{ display:grid; gap:10px; }
+    .field{ display:grid; gap:6px; margin:10px 0; }
+    input{
+      width:100%;
+      padding:12px 12px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:rgba(2,6,23,.45);
+      color:var(--text);
+      outline:none;
+    }
+    input:focus{ border-color:rgba(124,58,237,.6); box-shadow:0 0 0 4px rgba(124,58,237,.15); }
+
+    /* Feed */
+    .feedGrid{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap:12px;
+    }
+    @media (max-width: 1100px){ .feedGrid{ grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 520px){ .feedGrid{ grid-template-columns: 1fr; } }
+
+    .userCard{
+      border:1px solid var(--line);
+      background:rgba(2,6,23,.35);
+      border-radius:14px;
+      padding:12px;
+      cursor:pointer;
+      transition:.15s transform ease, .15s border-color ease;
+    }
+    .userCard:hover{ transform: translateY(-2px); border-color:rgba(124,58,237,.55); }
+    .avatar{
+      width:42px; height:42px; border-radius:14px;
+      display:grid; place-items:center;
+      background:rgba(124,58,237,.18);
+      border:1px solid rgba(124,58,237,.35);
+      font-weight:900;
+    }
+    .userTop{ display:flex; gap:10px; align-items:center; }
+    .chips{ display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+    .chip{
+      font-size:12px; color:var(--muted);
+      border:1px solid var(--line);
+      background:rgba(17,24,39,.6);
+      padding:6px 8px; border-radius:999px;
+      max-width:100%;
+      overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    }
+
+    /* Chat */
+    .chatBox{ display:flex; flex-direction:column; gap:10px; height:560px; }
+    .chatMsgs{
+      flex:1; overflow:auto;
+      padding:10px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:rgba(2,6,23,.28);
+    }
+    .msg{ display:flex; margin:8px 0; }
+    .msg.me{ justify-content:flex-end; }
+    .bubble{
+      max-width:80%;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:rgba(17,24,39,.75);
+      color:var(--text);
+      font-size:14px;
+      line-height:1.25;
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+    .msg.me .bubble{
+      border-color:rgba(124,58,237,.45);
+      background:rgba(124,58,237,.14);
+    }
+    .chatSend{ display:flex; gap:10px; }
+    .toast{
+      margin-top:10px;
+      font-size:13px;
+      color:var(--muted);
+    }
+  </style>
 </head>
-<body class="p-4 md:p-8 flex justify-center items-center min-h-screen">
 
-    <div class="container-card w-full max-w-4xl p-6 md:p-10 rounded-xl">
-        <h1 class="text-3xl font-bold mb-6 text-center text-white">
-            Teste de Comunicação com Server API (ngrok)
-        </h1>
-
-        <!-- Seção de Status do Servidor -->
-        <div class="mb-8 border-b border-gray-600 pb-4">
-            <h2 class="text-xl font-semibold mb-3">Status Atual</h2>
-            <div class="flex items-center space-x-4">
-                <span id="server-dot" class="status-dot bg-red-offline"></span>
-                <p id="server-status" class="font-medium text-gray-300">Carregando...</p>
-                <p id="server-version" class="text-sm text-gray-400">Versão: -</p>
-            </div>
-            <p id="offline-message" class="text-red-400 mt-2 font-medium hidden">
-                ⚠️ O Servidor Flask local (via ngrok) está inativo ou inacessível. Inicie o Server.py.
-            </p>
-        </div>
-
-        <!-- Seção de Envio de Comandos -->
-        <div id="command-form-container" class="hidden">
-            <h2 class="text-xl font-semibold mb-3">Enviar Comando JSON (para /api/cmd)</h2>
-            
-            <p class="text-sm text-gray-400 mb-2">
-                Insira o JSON para comandos como <code class="bg-gray-700 p-1 rounded">{"comando": "/status"}</code>, <code class="bg-gray-700 p-1 rounded">{"comando": "/login", "email": "...", "senha": "..."}</code>, etc.
-            </p>
-
-            <textarea id="json-input" rows="8" class="w-full p-3 rounded-lg bg-gray-700 text-sm text-white resize-none border border-gray-600 focus:ring-blue-500 focus:border-blue-500" 
-                placeholder='{"comando": "/status"}'></textarea>
-            
-            <button id="send-button" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl mt-4 transition duration-200" disabled>
-                Enviar Comando
-            </button>
-        </div>
-
-        <!-- Seção de Resposta -->
-        <div class="mt-8">
-            <h2 class="text-xl font-semibold mb-3 border-b border-gray-600 pb-2">Resposta da API</h2>
-            <pre id="response-content" class="bg-gray-800 p-4 rounded-lg overflow-x-auto text-sm"></pre>
-        </div>
-
+<body>
+  <div class="topbar">
+    <div class="brand">
+      <div class="dot" id="serverDot"></div>
+      <div>NoSense • Social</div>
+      <div class="pill" id="apiPill">API: carregando…</div>
     </div>
 
-    <script>
-        // Elementos da UI
-        const serverDot = document.getElementById('server-dot');
-        const serverStatus = document.getElementById('server-status');
-        const serverVersion = document.getElementById('server-version');
-        const jsonInput = document.getElementById('json-input');
-        const sendButton = document.getElementById('send-button');
-        const responseContent = document.getElementById('response-content');
-        const offlineMessage = document.getElementById('offline-message');
-        const commandFormContainer = document.getElementById('command-form-container');
+    <div style="display:flex; gap:10px; align-items:center;">
+      <button class="btn" id="btnReload">Recarregar</button>
+      <button class="btn danger" id="btnLogout" style="display:none;">Sair</button>
+    </div>
+  </div>
 
-        // O caminho para o JSON de status no GitHub Pages
-        const STATUS_JSON_URL = "server_status.json"; 
+  <!-- AUTH -->
+  <section class="auth" id="authView">
+    <div class="card">
+      <div class="hd">
+        <div>
+          <div class="title" id="authTitle">Entrar</div>
+          <div class="muted" id="authSub">Use sua conta 😄</div>
+        </div>
+        <button class="btn" id="btnToggleAuth">Registrar</button>
+      </div>
 
-        // Variável que armazenará a URL pública atual do ngrok
-        let NGROK_API_URL = null;
+      <div class="bd">
+        <div class="field" id="nickField" style="display:none;">
+          <div class="muted">Nick</div>
+          <input id="inpNick" placeholder="ex: Guh" />
+        </div>
 
-        // Função para formatar a resposta JSON
-        function formatResponse(data, isError = false) {
-            if (isError) {
-                responseContent.className = 'text-red-400 whitespace-pre-wrap';
-                responseContent.textContent = data;
-            } else {
-                responseContent.className = 'text-green-400 whitespace-pre-wrap';
-                responseContent.textContent = JSON.stringify(data, null, 2);
-            }
-        }
+        <div class="field">
+          <div class="muted">Email</div>
+          <input id="inpEmail" placeholder="seu@email.com" />
+        </div>
 
-        // ----------------------------------------------------
-        // LÓGICA DE VERIFICAÇÃO DE STATUS
-        // ----------------------------------------------------
+        <div class="field">
+          <div class="muted">Senha</div>
+          <input id="inpPass" type="password" placeholder="••••••••" />
+        </div>
 
-        async function loadServerInfo() {
-            console.log("Iniciando verificação de status do servidor...");
-            try {
-                // 1. Obtém o JSON de status (criado pelo Server.py e enviado ao GitHub)
-                const statusResponse = await fetch(STATUS_JSON_URL, { cache: 'no-store' });
-                if (!statusResponse.ok) {
-                    throw new Error(`Arquivo server_status.json não encontrado ou erro HTTP: ${statusResponse.status}`);
-                }
-                const statusData = await statusResponse.json();
+        <div class="row">
+          <button class="btn primary" id="btnAuthGo">Entrar</button>
+          <div class="toast" id="authToast"></div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-                // --- ALTERAÇÃO AQUI: LENDO NOVOS CAMPOS JSON ---
-                NGROK_API_URL = statusData.url_api_base; // Novo campo
-                const serverHealthStatus = statusData.status_servidor; // Novo campo
-                // Versão é opcional, se estiver no JSON, será exibida
-                const gameVersion = statusData.GAME?.current_version || 'N/A';
-                
-                serverVersion.textContent = `Jogo Remoto: v${gameVersion}`;
-                // ----------------------------------------------
-                
-                if (serverHealthStatus === "Online" && NGROK_API_URL) {
-                    // 2. Tenta fazer um GET na rota simples para checar conectividade real
-                    try {
-                        const apiCheck = await fetch(`${NGROK_API_URL}/api/status`, {
-                            method: 'GET',
-                            headers: { 'Accept': 'application/json' },
-                            mode: 'cors',
-                            signal: AbortSignal.timeout(5000) // Timeout de 5s
-                        });
+  <!-- APP -->
+  <section class="wrap" id="appView" style="display:none;">
+    <div class="grid">
+      <!-- Left -->
+      <div class="card">
+        <div class="hd">
+          <div>
+            <div class="title">Meu perfil</div>
+            <div class="muted" id="meMini">—</div>
+          </div>
+        </div>
+        <div class="bd">
+          <div class="muted">Token</div>
+          <div class="pill" id="tokenPill" style="max-width:100%; overflow:hidden; text-overflow:ellipsis;">—</div>
+          <div class="sep"></div>
+          <div class="muted">Dica</div>
+          <div style="margin-top:6px; font-size:14px;">
+            Clique em alguém no feed pra abrir o chat 💬
+          </div>
+        </div>
+      </div>
 
-                        if (apiCheck.ok && apiCheck.status === 200) {
-                            // SUCESSO: Servidor Flask está ativo por trás do ngrok
-                            serverDot.className = 'status-dot bg-green-online';
-                            serverStatus.textContent = "Servidor Online (Conectado)";
-                            sendButton.disabled = false;
-                            offlineMessage.classList.add('hidden');
-                            commandFormContainer.classList.remove('hidden');
-                            return; // Sai da função com status OK
-                        } else {
-                            throw new Error(`Resposta HTTP inesperada: ${apiCheck.status}`);
-                        }
-                    } catch (apiError) {
-                        // Erro ao conectar à API ngrok
-                        // Continua para o estado de erro abaixo
-                    }
-                }
-                
-            } catch (error) {
-                // Erro ao carregar informações do servidor ou arquivo de status
-                // console.error("Erro ao carregar informações do servidor:", error);
-            }
+      <!-- Center -->
+      <div class="card">
+        <div class="hd">
+          <div>
+            <div class="title">Feed</div>
+            <div class="muted" id="feedInfo">Carregando usuários…</div>
+          </div>
+          <button class="btn" id="btnRefreshFeed">Atualizar</button>
+        </div>
+        <div class="bd">
+          <div class="feedGrid" id="feedGrid"></div>
+        </div>
+      </div>
 
-            // Se o código chegou aqui, é porque falhou em algum momento
-            serverDot.className = 'status-dot bg-red-offline';
-            serverStatus.textContent = "Servidor Offline (Erro de Conexão)";
-            sendButton.disabled = true;
-            offlineMessage.classList.remove('hidden');
-            commandFormContainer.classList.add('hidden');
-            formatResponse("Não foi possível conectar ao servidor via ngrok ou o arquivo de status está desatualizado.", true);
-        }
+      <!-- Right -->
+      <div class="card">
+        <div class="hd">
+          <div>
+            <div class="title">Chat</div>
+            <div class="muted" id="chatWith">Selecione alguém 👀</div>
+          </div>
+          <span class="pill" id="chatStatus">offline</span>
+        </div>
 
+        <div class="bd">
+          <div class="chatBox">
+            <div class="chatMsgs" id="chatMsgs"></div>
+            <div class="chatSend">
+              <input id="chatInput" placeholder="Digite sua msg…" disabled />
+              <button class="btn primary" id="chatSendBtn" disabled>Enviar</button>
+            </div>
+            <div class="toast" id="chatToast">
+              ⚠️ Chat é temporário (não salva no banco).
+            </div>
+          </div>
+        </div>
+      </div>
 
-        // ----------------------------------------------------
-        // LÓGICA DE ENVIO DE COMANDOS
-        // ----------------------------------------------------
+    </div>
+  </section>
 
-        async function sendJson() {
-            // 1. Validação de pré-requisitos
-            if (sendButton.disabled || !NGROK_API_URL) {
-                formatResponse("Servidor offline ou URL ngrok indisponível.", true);
-                return;
-            }
+<script>
+/* =========================
+   CONFIG: GitHub -> API base
+========================= */
 
-            let data;
-            try {
-                // 2. Tenta parsear o JSON de entrada
-                data = JSON.parse(jsonInput.value);
-            } catch (e) {
-                formatResponse("Erro de sintaxe no JSON. Verifique se o formato está correto.", true);
-                return;
-            }
-            
-            // 3. Desabilita o botão e limpa a resposta
-            sendButton.disabled = true;
-            sendButton.textContent = "Enviando...";
-            formatResponse("Aguardando resposta do servidor...", false); 
+const GITHUB_CONTENTS_URL =
+  "https://api.github.com/repos/NoSense-Bot/Servidor/contents/server_status.json?ref=main";
 
-            try {
-                // 4. Envia o JSON para a rota /api/cmd do Flask via ngrok
-                const response = await fetch(`${NGROK_API_URL}/api/cmd`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify(data),
-                    mode: 'cors',
-                    signal: AbortSignal.timeout(10000) // Timeout de 10s para o comando
-                });
+let API = null;
+let TOKEN = localStorage.getItem("ns_token") || "";
+let ME = null;
+let MODE = "login"; // login | register
 
-                // 5. Verifica o status HTTP e trata a resposta
-                if (!response.ok) {
-                     const errorBody = await response.json().catch(() => ({ message: response.statusText }));
-                     throw new Error(`HTTP Error ${response.status}: ${JSON.stringify(errorBody, null, 2)}`);
-                }
-                
-                const responseData = await response.json();
-                
-                // 6. Exibe a resposta formatada
-                formatResponse(responseData, responseData.error ? true : false);
+const el = (id) => document.getElementById(id);
+const setToast = (target, msg) => el(target).textContent = msg || "";
 
-            } catch (e) {
-                // 7. Trata erros de rede, timeout, ou erros HTTP
-                formatResponse(`Erro ao enviar comando: ${e.message || e}`, true);
-                console.error("Erro no envio:", e);
-            } finally {
-                // 8. Reabilita o botão
-                sendButton.disabled = false;
-                sendButton.textContent = "Enviar Comando";
-            }
-        }
+function pickApiBase(cfg){
+  const keys = [
+    "url_api_base","api_base_url","apiBaseUrl","api_base","api","base_url","url_api","apiUrl","api_url"
+  ];
+  for (const k of keys){
+    if (cfg && typeof cfg[k] === "string" && /^https?:\/\//i.test(cfg[k])) return cfg[k];
+  }
 
-        // ----------------------------------------------------
-        // INICIALIZAÇÃO E LISTENERS
-        // ----------------------------------------------------
+  // Deep scan: pega a primeira string que parece URL
+  let found = null;
+  const scan = (obj) => {
+    if (!obj || found) return;
+    if (typeof obj === "string" && /^https?:\/\//i.test(obj)) { found = obj; return; }
+    if (Array.isArray(obj)) return obj.forEach(scan);
+    if (typeof obj === "object") Object.values(obj).forEach(scan);
+  };
+  scan(cfg);
+  return found;
+}
 
-        // Listener do botão Enviar
-        sendButton.addEventListener('click', sendJson);
+async function loadConfig(){
+  // 1) GitHub Contents API (Base64)
+  const r = await fetch(GITHUB_CONTENTS_URL, {
+    cache: "no-store",
+    headers: { "Accept": "application/vnd.github+json" }
+  });
+  if (!r.ok) throw new Error("Falha ao ler server_status.json (GitHub): HTTP " + r.status);
 
-        // Inicia a verificação de status imediatamente
-        loadServerInfo();
+  const data = await r.json();
+  const b64 = (data.content || "").replace(/\n/g, "");
+  const txt = atob(b64);
+  const cfg = JSON.parse(txt);
 
-        // Atualiza o status a cada 10 segundos
-        setInterval(loadServerInfo, 10000);
-    </script>
+  const api = pickApiBase(cfg);
+  if (!api) throw new Error("Não achei a URL da API no JSON 😵‍💫 (tenta usar a chave url_api_base)");
+
+  return { api, cfg };
+}
+
+async function ping(){
+  if (!API) return false;
+  const candidates = ["/api/status", "/status", "/health", "/api/health"];
+  for (const p of candidates){
+    try{
+      const r = await fetch(API + p, { cache: "no-store" });
+      if (r.ok) return true;
+    }catch(e){}
+  }
+  return false;
+}
+
+/* =========================
+   API helper
+========================= */
+
+async function apiFetch(path, opts = {}){
+  if (!API) throw new Error("API não carregada");
+
+  const headers = Object.assign(
+    { "Content-Type": "application/json" },
+    opts.headers || {}
+  );
+  if (TOKEN) headers["Authorization"] = "Bearer " + TOKEN;
+
+  const r = await fetch(API + path, Object.assign({}, opts, { headers }));
+  const ct = r.headers.get("content-type") || "";
+  const body = ct.includes("application/json") ? await r.json().catch(()=>null) : await r.text().catch(()=>null);
+  if (!r.ok){
+    const msg = (body && body.error) ? body.error : ("HTTP " + r.status);
+    throw new Error(msg);
+  }
+  return body;
+}
+
+async function tryAuth(kind, payload){
+  const endpoints = (kind === "login")
+    ? ["/api/login","/login","/api/auth/login"]
+    : ["/api/register","/register","/api/auth/register"];
+
+  let lastErr = null;
+
+  for (const ep of endpoints){
+    try{
+      const res = await apiFetch(ep, { method:"POST", body: JSON.stringify(payload) });
+      // esperado: { token, user: { id, nick, email } }
+      if (res && res.token) return res;
+      // algumas APIs retornam {access_token: "..."}
+      if (res && res.access_token) return { token: res.access_token, user: res.user || null };
+      return res;
+    }catch(e){ lastErr = e; }
+  }
+  throw lastErr || new Error("Auth falhou");
+}
+
+async function getMe(){
+  const endpoints = ["/api/profile/me","/api/me","/me","/api/user/me"];
+  let lastErr = null;
+  for (const ep of endpoints){
+    try{ return await apiFetch(ep); }catch(e){ lastErr = e; }
+  }
+  throw lastErr || new Error("Não consegui pegar /me");
+}
+
+async function ensureProfile(){
+  // Se sua API já cria perfil no register, isso aqui só confirma.
+  // Se não existir, tenta criar.
+  try{
+    return await getMe();
+  }catch(e){
+    const endpoints = ["/api/profile/create","/api/profile","/profile/create"];
+    for (const ep of endpoints){
+      try{
+        return await apiFetch(ep, { method:"POST", body: JSON.stringify({ nick: ME?.nick || "User" }) });
+      }catch(_){}
+    }
+    throw e;
+  }
+}
+
+async function getUsersFeed(){
+  const endpoints = ["/api/users","/api/accounts","/api/social/users","/api/feed/users","/api/social/feed"];
+  let lastErr = null;
+  for (const ep of endpoints){
+    try{
+      const res = await apiFetch(ep);
+      // Aceita array direto OU {users:[...]}
+      if (Array.isArray(res)) return res;
+      if (res && Array.isArray(res.users)) return res.users;
+      if (res && Array.isArray(res.accounts)) return res.accounts;
+      return res;
+    }catch(e){ lastErr = e; }
+  }
+  throw lastErr || new Error("Não consegui carregar feed");
+}
+
+/* =========================
+   UI state
+========================= */
+
+function showAuth(){
+  el("authView").style.display = "";
+  el("appView").style.display = "none";
+  el("btnLogout").style.display = "none";
+}
+function showApp(){
+  el("authView").style.display = "none";
+  el("appView").style.display = "";
+  el("btnLogout").style.display = "";
+}
+
+function setAuthMode(mode){
+  MODE = mode;
+  const isReg = MODE === "register";
+  el("authTitle").textContent = isReg ? "Registrar" : "Entrar";
+  el("authSub").textContent   = isReg ? "Crie sua conta rapidinho 🚀" : "Use sua conta 😄";
+  el("btnToggleAuth").textContent = isReg ? "Entrar" : "Registrar";
+  el("btnAuthGo").textContent = isReg ? "Registrar" : "Entrar";
+  el("nickField").style.display = isReg ? "" : "none";
+  setToast("authToast","");
+}
+
+function renderMe(){
+  el("meMini").textContent = ME?.nick ? `@${ME.nick}` : "—";
+  el("tokenPill").textContent = TOKEN ? TOKEN : "—";
+}
+
+/* =========================
+   Feed render
+========================= */
+
+let FEED = [];
+let CHAT_TARGET = null;
+
+function initials(name){
+  const n = (name || "?").trim();
+  return (n[0] || "?").toUpperCase();
+}
+
+function normalizeUser(u){
+  // tenta padronizar: id, nick, characters
+  const id = u.id || u._id || u.user_id || u.uid || u.email || ("u_" + Math.random());
+  const nick = u.nick || u.nickname || u.username || u.name || (u.email ? u.email.split("@")[0] : "User");
+  const chars = u.characters || u.personagens || u.chars || [];
+  const charCount = u.character_count ?? u.characters_count ?? (Array.isArray(chars) ? chars.length : 0);
+
+  let charNames = [];
+  if (Array.isArray(chars)){
+    charNames = chars.map(c => c.nick || c.name || c.nome || "Personagem");
+  }
+
+  return { id, nick, charNames, charCount, raw: u };
+}
+
+function renderFeed(users){
+  const grid = el("feedGrid");
+  grid.innerHTML = "";
+
+  const norm = users.map(normalizeUser);
+
+  el("feedInfo").textContent = `${norm.length} contas encontradas 👥`;
+
+  norm.forEach(u => {
+    const div = document.createElement("div");
+    div.className = "userCard";
+    div.innerHTML = `
+      <div class="userTop">
+        <div class="avatar">${initials(u.nick)}</div>
+        <div style="min-width:0;">
+          <div style="font-weight:800; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(u.nick)}</div>
+          <div class="muted">${u.charCount} personagem(ns)</div>
+        </div>
+      </div>
+      <div class="chips">
+        ${(u.charNames.slice(0,4)).map(n => `<span class="chip">${escapeHtml(n)}</span>`).join("")}
+        ${u.charNames.length > 4 ? `<span class="chip">+${u.charNames.length-4}</span>` : ""}
+      </div>
+    `;
+    div.onclick = () => openChat(u);
+    grid.appendChild(div);
+  });
+}
+
+function escapeHtml(s){
+  return String(s ?? "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+/* =========================
+   Chat (Socket.IO)
+   - temporário: sem salvar
+========================= */
+
+let socket = null;
+
+function setChatStatus(ok, msg){
+  el("chatStatus").textContent = ok ? "online" : "offline";
+  el("chatStatus").style.borderColor = ok ? "rgba(34,197,94,.4)" : "rgba(239,68,68,.4)";
+  el("chatStatus").style.background  = ok ? "rgba(34,197,94,.12)" : "rgba(239,68,68,.12)";
+  if (msg) el("chatToast").textContent = msg;
+}
+
+function connectSocket(){
+  if (!window.io){
+    setChatStatus(false, "⚠️ Socket.IO client não carregou. (Sem chat real)");
+    return;
+  }
+  if (!API) return;
+
+  // ajusta se sua API usa outro path
+  socket = io(API, {
+    transports: ["websocket","polling"],
+    auth: { token: TOKEN }
+  });
+
+  socket.on("connect", () => setChatStatus(true, "💬 Chat temporário conectado!"));
+  socket.on("disconnect", () => setChatStatus(false, "⚠️ Chat caiu."));
+
+  // receber DM
+  socket.on("dm", (payload) => {
+    // esperado: {from, to, text, ts}
+    if (!CHAT_TARGET) return;
+    const from = payload.from;
+    if (String(from) === String(CHAT_TARGET.id)) addMsg(payload.text, false);
+  });
+}
+
+function openChat(user){
+  CHAT_TARGET = user;
+  el("chatWith").textContent = `Com @${user.nick}`;
+  el("chatMsgs").innerHTML = "";
+  el("chatInput").disabled = false;
+  el("chatSendBtn").disabled = false;
+  el("chatInput").focus();
+}
+
+function addMsg(text, isMe){
+  const wrap = document.createElement("div");
+  wrap.className = "msg" + (isMe ? " me" : "");
+  const bub = document.createElement("div");
+  bub.className = "bubble";
+  bub.textContent = text;
+  wrap.appendChild(bub);
+  el("chatMsgs").appendChild(wrap);
+  el("chatMsgs").scrollTop = el("chatMsgs").scrollHeight;
+}
+
+function sendChat(){
+  const text = (el("chatInput").value || "").trim();
+  if (!text || !CHAT_TARGET) return;
+  el("chatInput").value = "";
+  addMsg(text, true);
+
+  if (socket && socket.connected){
+    socket.emit("dm", { to: CHAT_TARGET.id, text });
+  }else{
+    // fallback: só local
+    setToast("chatToast", "⚠️ Sem socket conectado; isso ficou só no seu lado (local).");
+  }
+}
+
+/* =========================
+   Boot
+========================= */
+
+async function boot(){
+  setToast("authToast","");
+  el("apiPill").textContent = "API: carregando…";
+  el("serverDot").classList.remove("ok");
+
+  try{
+    const cfg = await loadConfig();
+    API = cfg.api.replace(/\/+$/,"");
+    el("apiPill").textContent = "API: " + API;
+
+    const ok = await ping();
+    el("serverDot").classList.toggle("ok", ok);
+
+    if (TOKEN){
+      // tenta subir direto
+      try{
+        const me = await getMe();
+        ME = me.user || me.me || me; // aceita variações
+        ME.nick = ME.nick || ME.nickname || ME.username || ME.name || ME.email?.split("@")[0];
+        await ensureProfile();
+        showApp();
+        renderMe();
+        connectSocket();
+        await refreshFeed();
+        return;
+      }catch(e){
+        TOKEN = "";
+        localStorage.removeItem("ns_token");
+      }
+    }
+
+    // sem token -> auth
+    showAuth();
+
+  }catch(e){
+    showAuth();
+    setToast("authToast", "❌ " + e.message);
+  }
+}
+
+async function refreshFeed(){
+  el("feedInfo").textContent = "Carregando usuários…";
+  try{
+    const users = await getUsersFeed();
+    FEED = users;
+    renderFeed(users);
+  }catch(e){
+    el("feedInfo").textContent = "❌ Erro ao carregar feed: " + e.message;
+    el("feedGrid").innerHTML = "";
+  }
+}
+
+/* =========================
+   Events
+========================= */
+
+el("btnToggleAuth").onclick = () => setAuthMode(MODE === "login" ? "register" : "login");
+
+el("btnAuthGo").onclick = async () => {
+  const email = (el("inpEmail").value || "").trim();
+  const pass  = (el("inpPass").value || "").trim();
+  const nick  = (el("inpNick").value || "").trim();
+
+  if (!email || !pass){
+    setToast("authToast", "⚠️ Preenche email e senha aí 🙏");
+    return;
+  }
+  if (MODE === "register" && !nick){
+    setToast("authToast", "⚠️ Escolhe um nick 😄");
+    return;
+  }
+
+  try{
+    setToast("authToast","⏳ enviando…");
+    const payload = (MODE === "register")
+      ? { email, senha: pass, password: pass, nick }
+      : { email, senha: pass, password: pass };
+
+    const res = await tryAuth(MODE, payload);
+
+    TOKEN = res.token || res.access_token || "";
+    if (!TOKEN) throw new Error("API não retornou token 😵‍💫");
+
+    localStorage.setItem("ns_token", TOKEN);
+
+    // pega perfil/me
+    const me = await getMe().catch(()=>null);
+    ME = (me && (me.user || me.me || me)) || (res.user || { nick });
+    ME.nick = ME.nick || nick || ME.email?.split("@")[0] || "User";
+
+    await ensureProfile().catch(()=>null);
+
+    showApp();
+    renderMe();
+    connectSocket();
+    await refreshFeed();
+
+  }catch(e){
+    setToast("authToast", "❌ " + e.message);
+  }
+};
+
+el("btnLogout").onclick = () => {
+  TOKEN = "";
+  ME = null;
+  CHAT_TARGET = null;
+  localStorage.removeItem("ns_token");
+  if (socket) { try{ socket.disconnect(); }catch(e){} }
+  socket = null;
+  showAuth();
+  setAuthMode("login");
+};
+
+el("btnReload").onclick = () => boot();
+el("btnRefreshFeed").onclick = () => refreshFeed();
+el("chatSendBtn").onclick = () => sendChat();
+el("chatInput").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") sendChat();
+});
+
+setAuthMode("login");
+boot();
+</script>
 </body>
 </html>
