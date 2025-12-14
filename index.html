@@ -5,7 +5,10 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>NoSense • Social</title>
 
-  <!-- (Opcional mas recomendado) Socket.IO client p/ chat -->
+  <!-- evita spam de favicon 404 -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs/%3E%3Crect width='64' height='64' rx='14' fill='%23111827'/%3E%3Cpath d='M18 38c6 10 22 10 28 0' fill='none' stroke='%237c3aed' stroke-width='6' stroke-linecap='round'/%3E%3Ccircle cx='24' cy='26' r='4' fill='%23e5e7eb'/%3E%3Ccircle cx='40' cy='26' r='4' fill='%23e5e7eb'/%3E%3C/svg%3E" />
+
+  <!-- Socket.IO client (pro chat real) -->
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 
   <style>
@@ -38,6 +41,7 @@
       padding:8px 10px; border:1px solid var(--line);
       background:rgba(17,24,39,.6); border-radius:999px;
       color:var(--muted); font-size:13px;
+      max-width: 520px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
     }
     .btn{
       border:1px solid var(--line);
@@ -80,7 +84,6 @@
     .muted{ color:var(--muted); font-size:13px; }
     .sep{ height:1px; background:var(--line); margin:10px 0; }
 
-    /* Auth */
     .auth{
       max-width:460px; margin:40px auto; padding:0 14px;
     }
@@ -98,7 +101,6 @@
     }
     input:focus{ border-color:rgba(124,58,237,.6); box-shadow:0 0 0 4px rgba(124,58,237,.15); }
 
-    /* Feed */
     .feedGrid{
       display:grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -134,7 +136,6 @@
       overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
     }
 
-    /* Chat */
     .chatBox{ display:flex; flex-direction:column; gap:10px; height:560px; }
     .chatMsgs{
       flex:1; overflow:auto;
@@ -197,7 +198,7 @@
 
       <div class="bd">
         <div class="field" id="nickField" style="display:none;">
-          <div class="muted">Nick</div>
+          <div class="muted">Usuário</div>
           <input id="inpNick" placeholder="ex: Guh" />
         </div>
 
@@ -222,7 +223,7 @@
   <!-- APP -->
   <section class="wrap" id="appView" style="display:none;">
     <div class="grid">
-      <!-- Left -->
+
       <div class="card">
         <div class="hd">
           <div>
@@ -231,8 +232,8 @@
           </div>
         </div>
         <div class="bd">
-          <div class="muted">Token</div>
-          <div class="pill" id="tokenPill" style="max-width:100%; overflow:hidden; text-overflow:ellipsis;">—</div>
+          <div class="muted">session_token</div>
+          <div class="pill" id="tokenPill" title="session_token">—</div>
           <div class="sep"></div>
           <div class="muted">Dica</div>
           <div style="margin-top:6px; font-size:14px;">
@@ -241,7 +242,6 @@
         </div>
       </div>
 
-      <!-- Center -->
       <div class="card">
         <div class="hd">
           <div>
@@ -255,7 +255,6 @@
         </div>
       </div>
 
-      <!-- Right -->
       <div class="card">
         <div class="hd">
           <div>
@@ -272,9 +271,7 @@
               <input id="chatInput" placeholder="Digite sua msg…" disabled />
               <button class="btn primary" id="chatSendBtn" disabled>Enviar</button>
             </div>
-            <div class="toast" id="chatToast">
-              ⚠️ Chat é temporário (não salva no banco).
-            </div>
+            <div class="toast" id="chatToast">⚠️ Chat é temporário (não salva no banco).</div>
           </div>
         </div>
       </div>
@@ -287,59 +284,68 @@
    CONFIG: GitHub -> API base
 ========================= */
 
+const RAW_STATUS_URL =
+  "https://raw.githubusercontent.com/NoSense-Bot/Servidor/main/server_status.json";
+
 const GITHUB_CONTENTS_URL =
   "https://api.github.com/repos/NoSense-Bot/Servidor/contents/server_status.json?ref=main";
 
 let API = null;
-let TOKEN = localStorage.getItem("ns_token") || "";
+let TOKEN = localStorage.getItem("ns_session_token") || "";
 let ME = null;
-let MODE = "login"; // login | register
+let MODE = "login";
 
 const el = (id) => document.getElementById(id);
 const setToast = (target, msg) => el(target).textContent = msg || "";
 
+class ApiError extends Error {
+  constructor(message, status, body) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+    this.body = body;
+  }
+}
+
 function pickApiBase(cfg){
-  const keys = [
-    "url_api_base","api_base_url","apiBaseUrl","api_base","api","base_url","url_api","apiUrl","api_url"
-  ];
+  const keys = ["url_api_base","api_base_url","apiBaseUrl","api_base","api","base_url","url_api","apiUrl","api_url"];
   for (const k of keys){
     if (cfg && typeof cfg[k] === "string" && /^https?:\/\//i.test(cfg[k])) return cfg[k];
   }
-
-  // Deep scan: pega a primeira string que parece URL
-  let found = null;
-  const scan = (obj) => {
-    if (!obj || found) return;
-    if (typeof obj === "string" && /^https?:\/\//i.test(obj)) { found = obj; return; }
-    if (Array.isArray(obj)) return obj.forEach(scan);
-    if (typeof obj === "object") Object.values(obj).forEach(scan);
-  };
-  scan(cfg);
-  return found;
+  return null;
 }
 
 async function loadConfig(){
-  // 1) GitHub Contents API (Base64)
-  const r = await fetch(GITHUB_CONTENTS_URL, {
+  // 1) tenta RAW (bem mais leve que API do GitHub)
+  try{
+    const r = await fetch(RAW_STATUS_URL, { cache: "no-store" });
+    if (r.ok) {
+      const cfg = await r.json();
+      const api = pickApiBase(cfg);
+      if (api) return { api, cfg };
+    }
+  }catch(_){}
+
+  // 2) fallback: GitHub Contents API (base64)
+  const r2 = await fetch(GITHUB_CONTENTS_URL, {
     cache: "no-store",
     headers: { "Accept": "application/vnd.github+json" }
   });
-  if (!r.ok) throw new Error("Falha ao ler server_status.json (GitHub): HTTP " + r.status);
+  if (!r2.ok) throw new Error("Falha ao ler server_status.json (GitHub): HTTP " + r2.status);
 
-  const data = await r.json();
+  const data = await r2.json();
   const b64 = (data.content || "").replace(/\n/g, "");
   const txt = atob(b64);
   const cfg = JSON.parse(txt);
 
   const api = pickApiBase(cfg);
-  if (!api) throw new Error("Não achei a URL da API no JSON 😵‍💫 (tenta usar a chave url_api_base)");
-
+  if (!api) throw new Error("Não achei url_api_base no JSON 😵‍💫");
   return { api, cfg };
 }
 
 async function ping(){
   if (!API) return false;
-  const candidates = ["/api/status", "/status", "/health", "/api/health"];
+  const candidates = ["/api/status","/status","/health","/api/health"];
   for (const p of candidates){
     try{
       const r = await fetch(API + p, { cache: "no-store" });
@@ -350,93 +356,99 @@ async function ping(){
 }
 
 /* =========================
-   API helper
+   API helper (compat)
 ========================= */
-
 async function apiFetch(path, opts = {}){
   if (!API) throw new Error("API não carregada");
+  const headers = Object.assign({ "Content-Type": "application/json" }, opts.headers || {});
 
-  const headers = Object.assign(
-    { "Content-Type": "application/json" },
-    opts.headers || {}
-  );
+  // seu backend parece não precisar Bearer pra /login e /register,
+  // mas deixo aqui pra endpoints futuros
   if (TOKEN) headers["Authorization"] = "Bearer " + TOKEN;
 
   const r = await fetch(API + path, Object.assign({}, opts, { headers }));
   const ct = r.headers.get("content-type") || "";
-  const body = ct.includes("application/json") ? await r.json().catch(()=>null) : await r.text().catch(()=>null);
+  const body = ct.includes("application/json")
+    ? await r.json().catch(()=>null)
+    : await r.text().catch(()=>null);
+
   if (!r.ok){
     const msg = (body && body.error) ? body.error : ("HTTP " + r.status);
-    throw new Error(msg);
+    throw new ApiError(msg, r.status, body);
   }
   return body;
 }
 
+/* =========================
+   AUTH (bate com seu servidor)
+   - POST /register: {email, senha, usuario}
+   - POST /login:    {email, senha}
+   - resposta: { ok, usuario, email, session_token }
+========================= */
+
+function extractToken(res){
+  return res?.session_token || res?.token || res?.access_token || "";
+}
+
 async function tryAuth(kind, payload){
   const endpoints = (kind === "login")
-    ? ["/api/login","/login","/api/auth/login"]
-    : ["/api/register","/register","/api/auth/register"];
+    ? ["/login", "/api/login", "/api/auth/login"]
+    : ["/register", "/api/register", "/api/auth/register"];
 
   let lastErr = null;
 
   for (const ep of endpoints){
     try{
       const res = await apiFetch(ep, { method:"POST", body: JSON.stringify(payload) });
-      // esperado: { token, user: { id, nick, email } }
-      if (res && res.token) return res;
-      // algumas APIs retornam {access_token: "..."}
-      if (res && res.access_token) return { token: res.access_token, user: res.user || null };
       return res;
-    }catch(e){ lastErr = e; }
+    }catch(e){
+      lastErr = e;
+
+      // se endpoint NÃO existe -> tenta o próximo
+      if (e instanceof ApiError && e.status === 404) continue;
+
+      // se é erro de validação/credencial -> para aqui (não spamma outras rotas)
+      if (e instanceof ApiError && (e.status === 400 || e.status === 401)) throw e;
+
+      // outros erros -> tenta próximo (ou cai no lastErr)
+    }
   }
   throw lastErr || new Error("Auth falhou");
 }
 
-async function getMe(){
-  const endpoints = ["/api/profile/me","/api/me","/me","/api/user/me"];
-  let lastErr = null;
-  for (const ep of endpoints){
-    try{ return await apiFetch(ep); }catch(e){ lastErr = e; }
-  }
-  throw lastErr || new Error("Não consegui pegar /me");
-}
-
-async function ensureProfile(){
-  // Se sua API já cria perfil no register, isso aqui só confirma.
-  // Se não existir, tenta criar.
-  try{
-    return await getMe();
-  }catch(e){
-    const endpoints = ["/api/profile/create","/api/profile","/profile/create"];
-    for (const ep of endpoints){
-      try{
-        return await apiFetch(ep, { method:"POST", body: JSON.stringify({ nick: ME?.nick || "User" }) });
-      }catch(_){}
-    }
-    throw e;
-  }
-}
-
+/* =========================
+   FEED
+========================= */
 async function getUsersFeed(){
-  const endpoints = ["/api/users","/api/accounts","/api/social/users","/api/feed/users","/api/social/feed"];
+  const endpoints = [
+    "/api/users", "/api/usuarios", "/api/contas",
+    "/users", "/usuarios", "/contas",
+    "/api/feed", "/feed"
+  ];
+
   let lastErr = null;
   for (const ep of endpoints){
     try{
       const res = await apiFetch(ep);
-      // Aceita array direto OU {users:[...]}
       if (Array.isArray(res)) return res;
       if (res && Array.isArray(res.users)) return res.users;
+      if (res && Array.isArray(res.contas)) return res.contas;
       if (res && Array.isArray(res.accounts)) return res.accounts;
-      return res;
-    }catch(e){ lastErr = e; }
+      return Array.isArray(res) ? res : [];
+    }catch(e){
+      lastErr = e;
+      if (e instanceof ApiError && e.status === 404) continue;
+      throw e;
+    }
   }
-  throw lastErr || new Error("Não consegui carregar feed");
+
+  // se não existir endpoint, só informa bonito
+  throw lastErr || new Error("Sem endpoint de feed (crie /api/users no servidor)");
 }
 
 /* =========================
    UI state
 ========================= */
-
 function showAuth(){
   el("authView").style.display = "";
   el("appView").style.display = "none";
@@ -447,7 +459,6 @@ function showApp(){
   el("appView").style.display = "";
   el("btnLogout").style.display = "";
 }
-
 function setAuthMode(mode){
   MODE = mode;
   const isReg = MODE === "register";
@@ -458,16 +469,14 @@ function setAuthMode(mode){
   el("nickField").style.display = isReg ? "" : "none";
   setToast("authToast","");
 }
-
 function renderMe(){
-  el("meMini").textContent = ME?.nick ? `@${ME.nick}` : "—";
+  el("meMini").textContent = ME?.usuario ? `@${ME.usuario}` : "—";
   el("tokenPill").textContent = TOKEN ? TOKEN : "—";
 }
 
 /* =========================
    Feed render
 ========================= */
-
 let FEED = [];
 let CHAT_TARGET = null;
 
@@ -475,28 +484,32 @@ function initials(name){
   const n = (name || "?").trim();
   return (n[0] || "?").toUpperCase();
 }
-
+function escapeHtml(s){
+  return String(s ?? "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
 function normalizeUser(u){
-  // tenta padronizar: id, nick, characters
-  const id = u.id || u._id || u.user_id || u.uid || u.email || ("u_" + Math.random());
-  const nick = u.nick || u.nickname || u.username || u.name || (u.email ? u.email.split("@")[0] : "User");
-  const chars = u.characters || u.personagens || u.chars || [];
-  const charCount = u.character_count ?? u.characters_count ?? (Array.isArray(chars) ? chars.length : 0);
+  const usuario = u.usuario || u.nick || u.nickname || u.username || u.name || (u.email ? u.email.split("@")[0] : "User");
+  const id = u.id || u._id || u.user_id || u.uid || usuario;
 
+  const chars = u.personagens || u.characters || u.chars || [];
   let charNames = [];
   if (Array.isArray(chars)){
     charNames = chars.map(c => c.nick || c.name || c.nome || "Personagem");
   }
+  const charCount = u.character_count ?? u.characters_count ?? (Array.isArray(chars) ? chars.length : 0);
 
-  return { id, nick, charNames, charCount, raw: u };
+  return { id, nick: usuario, charNames, charCount, raw: u };
 }
-
 function renderFeed(users){
   const grid = el("feedGrid");
   grid.innerHTML = "";
 
   const norm = users.map(normalizeUser);
-
   el("feedInfo").textContent = `${norm.length} contas encontradas 👥`;
 
   norm.forEach(u => {
@@ -520,20 +533,9 @@ function renderFeed(users){
   });
 }
 
-function escapeHtml(s){
-  return String(s ?? "")
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
-}
-
 /* =========================
-   Chat (Socket.IO)
-   - temporário: sem salvar
+   Chat (Socket.IO) no MESMO servidor
 ========================= */
-
 let socket = null;
 
 function setChatStatus(ok, msg){
@@ -542,32 +544,29 @@ function setChatStatus(ok, msg){
   el("chatStatus").style.background  = ok ? "rgba(34,197,94,.12)" : "rgba(239,68,68,.12)";
   if (msg) el("chatToast").textContent = msg;
 }
-
 function connectSocket(){
   if (!window.io){
-    setChatStatus(false, "⚠️ Socket.IO client não carregou. (Sem chat real)");
+    setChatStatus(false, "⚠️ Socket.IO client não carregou.");
     return;
   }
-  if (!API) return;
+  if (!API || !TOKEN){
+    setChatStatus(false, "⚠️ Sem API/token.");
+    return;
+  }
 
-  // ajusta se sua API usa outro path
   socket = io(API, {
     transports: ["websocket","polling"],
-    auth: { token: TOKEN }
+    auth: { session_token: TOKEN } // <<<<<<<<<< usa o mesmo session_token do seu servidor
   });
 
-  socket.on("connect", () => setChatStatus(true, "💬 Chat temporário conectado!"));
+  socket.on("connect", () => setChatStatus(true, "💬 Chat conectado!"));
   socket.on("disconnect", () => setChatStatus(false, "⚠️ Chat caiu."));
 
-  // receber DM
   socket.on("dm", (payload) => {
-    // esperado: {from, to, text, ts}
     if (!CHAT_TARGET) return;
-    const from = payload.from;
-    if (String(from) === String(CHAT_TARGET.id)) addMsg(payload.text, false);
+    if (String(payload?.from) === String(CHAT_TARGET.id)) addMsg(payload.text, false);
   });
 }
-
 function openChat(user){
   CHAT_TARGET = user;
   el("chatWith").textContent = `Com @${user.nick}`;
@@ -576,7 +575,6 @@ function openChat(user){
   el("chatSendBtn").disabled = false;
   el("chatInput").focus();
 }
-
 function addMsg(text, isMe){
   const wrap = document.createElement("div");
   wrap.className = "msg" + (isMe ? " me" : "");
@@ -587,7 +585,6 @@ function addMsg(text, isMe){
   el("chatMsgs").appendChild(wrap);
   el("chatMsgs").scrollTop = el("chatMsgs").scrollHeight;
 }
-
 function sendChat(){
   const text = (el("chatInput").value || "").trim();
   if (!text || !CHAT_TARGET) return;
@@ -595,16 +592,26 @@ function sendChat(){
   addMsg(text, true);
 
   if (socket && socket.connected){
-    socket.emit("dm", { to: CHAT_TARGET.id, text });
+    socket.emit("dm", { to: CHAT_TARGET.id, text }); // backend entrega pro room do usuario
   }else{
-    // fallback: só local
-    setToast("chatToast", "⚠️ Sem socket conectado; isso ficou só no seu lado (local).");
+    setToast("chatToast", "⚠️ Sem socket conectado; ficou só local.");
   }
 }
 
 /* =========================
    Boot
 ========================= */
+async function refreshFeed(){
+  el("feedInfo").textContent = "Carregando usuários…";
+  try{
+    const users = await getUsersFeed();
+    FEED = users;
+    renderFeed(users);
+  }catch(e){
+    el("feedInfo").textContent = "❌ " + (e.message || "Erro no feed");
+    el("feedGrid").innerHTML = "";
+  }
+}
 
 async function boot(){
   setToast("authToast","");
@@ -620,83 +627,68 @@ async function boot(){
     el("serverDot").classList.toggle("ok", ok);
 
     if (TOKEN){
-      // tenta subir direto
-      try{
-        const me = await getMe();
-        ME = me.user || me.me || me; // aceita variações
-        ME.nick = ME.nick || ME.nickname || ME.username || ME.name || ME.email?.split("@")[0];
-        await ensureProfile();
-        showApp();
-        renderMe();
-        connectSocket();
-        await refreshFeed();
-        return;
-      }catch(e){
-        TOKEN = "";
-        localStorage.removeItem("ns_token");
-      }
+      // sem endpoint /me no seu servidor? tranquilo: a gente só entra no app e carrega feed
+      ME = { usuario: "logado" };
+      showApp();
+      renderMe();
+      connectSocket();
+      await refreshFeed();
+      return;
     }
 
-    // sem token -> auth
     showAuth();
-
   }catch(e){
     showAuth();
     setToast("authToast", "❌ " + e.message);
   }
 }
 
-async function refreshFeed(){
-  el("feedInfo").textContent = "Carregando usuários…";
-  try{
-    const users = await getUsersFeed();
-    FEED = users;
-    renderFeed(users);
-  }catch(e){
-    el("feedInfo").textContent = "❌ Erro ao carregar feed: " + e.message;
-    el("feedGrid").innerHTML = "";
-  }
-}
-
 /* =========================
    Events
 ========================= */
-
 el("btnToggleAuth").onclick = () => setAuthMode(MODE === "login" ? "register" : "login");
 
 el("btnAuthGo").onclick = async () => {
   const email = (el("inpEmail").value || "").trim();
-  const pass  = (el("inpPass").value || "").trim();
-  const nick  = (el("inpNick").value || "").trim();
+  const senha  = (el("inpPass").value || "").trim();
+  const usuario  = (el("inpNick").value || "").trim();
 
-  if (!email || !pass){
-    setToast("authToast", "⚠️ Preenche email e senha aí 🙏");
+  if (!email || !senha){
+    setToast("authToast", "⚠️ Preenche email e senha 🙏");
     return;
   }
-  if (MODE === "register" && !nick){
-    setToast("authToast", "⚠️ Escolhe um nick 😄");
+  if (MODE === "register" && !usuario){
+    setToast("authToast", "⚠️ Escolhe um usuário 😄");
     return;
   }
 
   try{
     setToast("authToast","⏳ enviando…");
-    const payload = (MODE === "register")
-      ? { email, senha: pass, password: pass, nick }
-      : { email, senha: pass, password: pass };
 
-    const res = await tryAuth(MODE, payload);
+    if (MODE === "register"){
+      // 1) registra
+      const reg = await tryAuth("register", { email, senha, usuario });
 
-    TOKEN = res.token || res.access_token || "";
-    if (!TOKEN) throw new Error("API não retornou token 😵‍💫");
+      // 2) se o register não der token (seu caso), faz login automático
+      const regTok = extractToken(reg);
+      if (!regTok){
+        const log = await tryAuth("login", { email, senha });
+        TOKEN = extractToken(log);
+        if (!TOKEN) throw new Error("Login não retornou session_token 😵‍💫");
+        ME = { usuario: log.usuario || usuario, email: log.email || email };
+      } else {
+        TOKEN = regTok;
+        ME = { usuario: reg.usuario || usuario, email: reg.email || email };
+      }
+    } else {
+      // login
+      const log = await tryAuth("login", { email, senha });
+      TOKEN = extractToken(log);
+      if (!TOKEN) throw new Error("Login não retornou session_token 😵‍💫");
+      ME = { usuario: log.usuario || usuario || "user", email: log.email || email };
+    }
 
-    localStorage.setItem("ns_token", TOKEN);
-
-    // pega perfil/me
-    const me = await getMe().catch(()=>null);
-    ME = (me && (me.user || me.me || me)) || (res.user || { nick });
-    ME.nick = ME.nick || nick || ME.email?.split("@")[0] || "User";
-
-    await ensureProfile().catch(()=>null);
+    localStorage.setItem("ns_session_token", TOKEN);
 
     showApp();
     renderMe();
@@ -704,7 +696,8 @@ el("btnAuthGo").onclick = async () => {
     await refreshFeed();
 
   }catch(e){
-    setToast("authToast", "❌ " + e.message);
+    const msg = e?.message || "Erro";
+    setToast("authToast", "❌ " + msg);
   }
 };
 
@@ -712,7 +705,7 @@ el("btnLogout").onclick = () => {
   TOKEN = "";
   ME = null;
   CHAT_TARGET = null;
-  localStorage.removeItem("ns_token");
+  localStorage.removeItem("ns_session_token");
   if (socket) { try{ socket.disconnect(); }catch(e){} }
   socket = null;
   showAuth();
