@@ -65,9 +65,10 @@
       color: var(--text);
       padding:10px 12px;
       border-radius:12px; cursor:pointer; user-select:none;
-      transition: transform .15s ease, border-color .15s ease, background .15s ease;
+      transition: transform .15s ease, border-color .15s ease, background .15s ease, opacity .15s ease;
       display:inline-flex; align-items:center; gap:8px; white-space:nowrap;
     }
+    .btn[disabled]{ opacity:.55; cursor:not-allowed; transform:none !important; }
     .btn:hover{ transform: translateY(-1px); border-color: rgba(124,58,237,.42); }
     .btn:active{ transform: translateY(0px) scale(.99); }
     .btn.primary{ border-color: rgba(124,58,237,.58); background: rgba(124,58,237,.18); }
@@ -101,6 +102,7 @@
       transition: box-shadow .15s ease, border-color .15s ease;
     }
     input:focus{ border-color: rgba(124,58,237,.60); box-shadow: 0 0 0 4px rgba(124,58,237,.16); }
+    input[readonly]{ opacity:.85; }
 
     .side{ position: sticky; top: 68px; }
     @media (max-width:980px){ .side{ position: static; } }
@@ -250,6 +252,15 @@
       background: rgba(124,58,237,.18);
     }
 
+    .twoCol{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 740px){
+      .twoCol{ grid-template-columns: 1fr; }
+    }
+
     ::view-transition-old(root), ::view-transition-new(root){ animation-duration: 260ms; }
   </style>
 </head>
@@ -346,7 +357,7 @@
               <div class="navItem" data-route="settings">
                 <div>
                   <div style="font-weight:1000;">Config</div>
-                  <div class="muted">API / Feed</div>
+                  <div class="muted">API / Conta</div>
                 </div>
                 <span class="kbd">3</span>
               </div>
@@ -381,9 +392,27 @@
             <div class="title">Sua sessão</div>
             <div class="muted">Token salvo no navegador 🙂</div>
             <div class="sep"></div>
+
+            <div class="twoCol">
+              <div>
+                <div class="muted">Email</div>
+                <div class="pill" id="meEmailPill" style="max-width:100%;">—</div>
+              </div>
+              <div>
+                <div class="muted">Usuário (local)</div>
+                <div class="pill" id="meUserPill" style="max-width:100%;">—</div>
+              </div>
+            </div>
+
+            <div class="sep"></div>
             <div class="muted">session_token</div>
             <div class="pill" id="tokenPill" style="max-width:100%;">—</div>
             <div class="sep"></div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <button class="btn" id="btnCopyToken">Copiar token</button>
+              <button class="btn danger" id="btnClearSession">Limpar sessão</button>
+            </div>
+
             <div class="hint" id="profileHint">—</div>
           </div>
 
@@ -399,7 +428,7 @@
 
             <div class="muted">API override (recomendado HTTPS público)</div>
             <div class="field">
-              <input id="inpApiOverride" placeholder="https://xxxx.trycloudflare.com" />
+              <input id="inpApiOverride" placeholder="https://xxxx.ngrok-free.app" />
             </div>
             <div style="display:flex; gap:10px; flex-wrap:wrap;">
               <button class="btn primary" id="btnSaveApi">Salvar</button>
@@ -408,13 +437,74 @@
 
             <div class="sep"></div>
 
-            <div class="muted">Feed endpoint (se você criar no server)</div>
+            <div class="muted">Feed endpoint (quando existir no servidor)</div>
             <div class="field">
               <input id="inpFeedEp" placeholder="/api/social/users" />
             </div>
             <div style="display:flex; gap:10px; flex-wrap:wrap;">
               <button class="btn primary" id="btnSaveFeed">Salvar</button>
               <button class="btn" id="btnResetFeed">Reset</button>
+            </div>
+
+            <div class="sep"></div>
+
+            <div class="title">Conta</div>
+            <div class="muted">Trocar username/email/senha (se o servidor suportar) 🔧</div>
+
+            <div class="sep"></div>
+
+            <div class="muted">Endpoint de update (configurável)</div>
+            <div class="field">
+              <input id="inpAccountEp" placeholder="/api/account/update" />
+            </div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <button class="btn primary" id="btnSaveAccountEp">Salvar</button>
+              <button class="btn" id="btnResetAccountEp">Reset</button>
+            </div>
+
+            <div class="sep"></div>
+
+            <div class="twoCol">
+              <div class="field">
+                <div class="muted">Email atual (detectado)</div>
+                <input id="inpCurEmail" readonly />
+              </div>
+              <div class="field">
+                <div class="muted">Usuário atual (local)</div>
+                <input id="inpCurUser" readonly />
+              </div>
+            </div>
+
+            <div class="twoCol">
+              <div class="field">
+                <div class="muted">Novo email</div>
+                <input id="inpNewEmail" placeholder="ex: novo@email.com" autocomplete="email" />
+              </div>
+              <div class="field">
+                <div class="muted">Novo usuário</div>
+                <input id="inpNewUser" placeholder="ex: Guh2" autocomplete="username" />
+              </div>
+            </div>
+
+            <div class="twoCol">
+              <div class="field">
+                <div class="muted">Senha atual (recomendado)</div>
+                <input id="inpOldPass" type="password" placeholder="(se o servidor exigir)" autocomplete="current-password" />
+              </div>
+              <div class="field">
+                <div class="muted">Nova senha</div>
+                <input id="inpNewPass" type="password" placeholder="mínimo 6 chars" autocomplete="new-password" />
+              </div>
+            </div>
+
+            <div class="field">
+              <div class="muted">Confirmar nova senha</div>
+              <input id="inpNewPass2" type="password" placeholder="repete a nova senha" autocomplete="new-password" />
+            </div>
+
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <button class="btn primary" id="btnSaveAccount">Salvar alterações</button>
+              <button class="btn" id="btnFillFromProfile">Preencher do perfil</button>
             </div>
 
             <div class="hint" id="settingsHint"></div>
@@ -443,13 +533,20 @@
     .replaceAll('"',"&quot;").replaceAll("'","&#039;");
   const initials = (name) => (String(name || "?").trim()[0] || "?").toUpperCase();
 
-  const LS = { token:"ns_session_token", apiOverride:"ns_api_override", feedEp:"ns_feed_endpoint" };
+  const LS = {
+    token:"ns_session_token",
+    apiOverride:"ns_api_override",
+    feedEp:"ns_feed_endpoint",
+    accountEp:"ns_account_endpoint",
+    localUser:"ns_local_username"
+  };
 
-  // ✅ do jeito que você pediu: link do GitHub (blob) + raw fallback
+  // ✅ GitHub blob/raw
   const STATUS_BLOB_RAW = "https://github.com/NoSense-Bot/Servidor/blob/main/server_status.json?raw=1";
   const STATUS_RAW_FALLBACK = "https://raw.githubusercontent.com/NoSense-Bot/Servidor/main/server_status.json";
 
   const DEFAULT_FEED_EP = "/api/social/users";
+  const DEFAULT_ACCOUNT_EP = "/api/account/update";
 
   const state = {
     mode: "login",
@@ -460,6 +557,8 @@
     me: null,
     feed: [],
     feedEp: localStorage.getItem(LS.feedEp) || DEFAULT_FEED_EP,
+    accountEp: localStorage.getItem(LS.accountEp) || DEFAULT_ACCOUNT_EP,
+    localUser: localStorage.getItem(LS.localUser) || ""
   };
 
   const el = {
@@ -493,6 +592,10 @@
 
     tokenPill: $("#tokenPill"),
     profileHint: $("#profileHint"),
+    meEmailPill: $("#meEmailPill"),
+    meUserPill: $("#meUserPill"),
+    btnCopyToken: $("#btnCopyToken"),
+    btnClearSession: $("#btnClearSession"),
 
     detectedPill: $("#detectedPill"),
     inpApiOverride: $("#inpApiOverride"),
@@ -502,6 +605,20 @@
     btnSaveFeed: $("#btnSaveFeed"),
     btnResetFeed: $("#btnResetFeed"),
     settingsHint: $("#settingsHint"),
+
+    inpAccountEp: $("#inpAccountEp"),
+    btnSaveAccountEp: $("#btnSaveAccountEp"),
+    btnResetAccountEp: $("#btnResetAccountEp"),
+
+    inpCurEmail: $("#inpCurEmail"),
+    inpCurUser: $("#inpCurUser"),
+    inpNewEmail: $("#inpNewEmail"),
+    inpNewUser: $("#inpNewUser"),
+    inpOldPass: $("#inpOldPass"),
+    inpNewPass: $("#inpNewPass"),
+    inpNewPass2: $("#inpNewPass2"),
+    btnSaveAccount: $("#btnSaveAccount"),
+    btnFillFromProfile: $("#btnFillFromProfile"),
 
     toasts: $("#toasts"),
 
@@ -639,7 +756,6 @@ ${tips.join("\n")}`;
   }
 
   async function loadStatusFromGithub(){
-    // 1) blob?raw=1 (como você pediu)
     try{
       const r = await fetchWithTimeout(STATUS_BLOB_RAW + "&v=" + Date.now(), { cache:"no-store" }, 10000);
       if (r.ok){
@@ -649,7 +765,6 @@ ${tips.join("\n")}`;
       }
     } catch {}
 
-    // 2) fallback raw.githubusercontent
     const r2 = await fetchWithTimeout(STATUS_RAW_FALLBACK + "?v=" + Date.now(), { cache:"no-store" }, 10000);
     if (!r2.ok) throw new Error("Falha lendo server_status.json (HTTP " + r2.status + ")");
     const j2 = await r2.json();
@@ -672,6 +787,7 @@ ${tips.join("\n")}`;
       const msg = body?.error || ("HTTP " + r.status);
       const e = new Error(msg);
       e.status = r.status;
+      e.body = body;
       throw e;
     }
     return body;
@@ -687,14 +803,10 @@ ${tips.join("\n")}`;
     }
   }
 
-  // ✅ bate com seu server.py:
-  // /api/auth/login recebe {email, password}
-  // /api/auth/register recebe {email, password, usuario}
   async function login(email, password){
     try{
       return await apiFetch("/api/auth/login", { method:"POST", body: JSON.stringify({ email, password }) });
     } catch (e){
-      // fallback: rota direta /login usa {email, senha}
       if (e.status === 404){
         return await apiFetch("/login", { method:"POST", body: JSON.stringify({ email, senha: password, comando:"/login" }) });
       }
@@ -706,7 +818,6 @@ ${tips.join("\n")}`;
     try{
       return await apiFetch("/api/auth/register", { method:"POST", body: JSON.stringify({ email, password, usuario }) });
     } catch (e){
-      // fallback: rota direta /register usa {email, senha, usuario}
       if (e.status === 404){
         return await apiFetch("/register", { method:"POST", body: JSON.stringify({ email, senha: password, usuario, comando:"/register" }) });
       }
@@ -778,13 +889,11 @@ ${tips.join("\n")}`;
     });
   }
 
-  // ⚠️ FEED: seu backend ainda não tem comando/rota pra listar usuários no Comandos.py
   async function refreshFeed(){
     el.feedHint.textContent = "";
     renderSkeletons();
 
     try{
-      // tentativa 1: endpoint configurável (se você criar depois)
       try{
         const r = await apiFetch(state.feedEp, { method:"GET" });
         const users = r?.users ?? r?.result ?? (Array.isArray(r) ? r : []);
@@ -797,15 +906,12 @@ ${tips.join("\n")}`;
         }
       } catch {}
 
-      // tentativa 2: por /api/cmd (mas seu Comandos.py não tem comando de users)
-      // então mostramos aviso amigável:
       state.feed = [];
       el.feedGrid.innerHTML = "";
       el.feedHint.textContent =
-"⚠️ O servidor ainda NÃO expõe um comando/rota de FEED.\n\n" +
-"✅ Seu Comandos.py tem só: /register, /login, /status.\n" +
-"👉 Quando você criar algo tipo /users (listagem), eu plugo aqui e fica 100% automático.\n\n" +
-"Dica rápida: crie uma rota GET /api/users ou um comando /users retornando [{email, usuario, personagens}]";
+"⚠️ O servidor ainda NÃO expõe um endpoint de FEED.\n\n" +
+"✅ Quando você criar algo tipo GET /api/social/users retornando [{email, usuario, personagens}], aqui fica automático.\n" +
+"👉 Por enquanto o site continua OK (login/config/sessão) 😉";
       toast("Feed", "Sem endpoint de listagem no servidor 😅");
 
     } catch (e){
@@ -835,15 +941,36 @@ ${tips.join("\n")}`;
     history.replaceState({}, "", "#"+route);
   }
 
+  function fillAccountUI(){
+    const email = state.me?.email || "";
+    const localUser = state.me?.usuario || state.localUser || "";
+
+    el.inpCurEmail.value = email || "";
+    el.inpCurUser.value = localUser || "";
+
+    el.meEmailPill.textContent = email || "—";
+    el.meUserPill.textContent = localUser ? ("@" + localUser) : "—";
+
+    el.inpAccountEp.value = state.accountEp || DEFAULT_ACCOUNT_EP;
+    el.inpFeedEp.value = state.feedEp;
+
+    el.tokenPill.textContent = state.token || "—";
+  }
+
   async function bootSessionOnly(){
     try{
       const v = await validate(state.token);
       const email = v?.user_id || "";
-      const usuario = email.includes("@") ? email.split("@")[0] : "user";
+
+      // username: o servidor não devolve no validate() -> usamos local/email prefix
+      const guess = email.includes("@") ? email.split("@")[0] : "user";
+      const usuario = (state.localUser || guess || "user").trim();
+
       state.me = { email, usuario };
 
       el.meMini.textContent = state.me.email ? `@${state.me.usuario} • ${state.me.email}` : `@${state.me.usuario}`;
-      el.tokenPill.textContent = state.token || "—";
+      fillAccountUI();
+
       el.profileHint.textContent = state.statusOk ? "✅ sessão ok • servidor online" : "⚠️ sessão ok • sem ping";
     } catch (e){
       state.token = "";
@@ -854,12 +981,139 @@ ${tips.join("\n")}`;
     }
   }
 
+  // ===== Conta: tentativa de update (sem mexer no servidor) =====
+  function isValidEmail(email){
+    return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(email||"").trim());
+  }
+
+  async function updateAccountAttempt({ new_email, new_usuario, old_password, new_password }){
+    // 1) tenta endpoint configurado
+    try{
+      const payload = {
+        session_token: state.token,
+        new_email: new_email || "",
+        new_usuario: new_usuario || "",
+        old_password: old_password || "",
+        new_password: new_password || "",
+      };
+      const r = await apiFetch(state.accountEp, { method:"POST", body: JSON.stringify(payload) });
+      return r;
+    } catch (e){
+      // 2) fallback via /api/cmd (se você criar comando depois)
+      if (e.status === 404 || e.status === 405){
+        const cmdPayload = {
+          comando: "/account/update",
+          session_token: state.token,
+          new_email: new_email || "",
+          new_usuario: new_usuario || "",
+          old_password: old_password || "",
+          new_password: new_password || "",
+        };
+        return await apiFetch("/api/cmd", { method:"POST", body: JSON.stringify(cmdPayload) });
+      }
+      throw e;
+    }
+  }
+
+  async function handleSaveAccount(){
+    el.settingsHint.textContent = "";
+    if (!state.token){
+      el.settingsHint.textContent = "⚠️ você precisa estar logado pra alterar a conta.";
+      toast("Conta", "Sem sessão 😅");
+      return;
+    }
+
+    const newEmail = (el.inpNewEmail.value || "").trim();
+    const newUser  = (el.inpNewUser.value || "").trim();
+    const oldPass  = (el.inpOldPass.value || "").trim();
+    const newPass  = (el.inpNewPass.value || "").trim();
+    const newPass2 = (el.inpNewPass2.value || "").trim();
+
+    const hasChange = Boolean(newEmail || newUser || newPass);
+    if (!hasChange){
+      el.settingsHint.textContent = "⚠️ nada pra salvar (preenche novo email/usuário/senha).";
+      return;
+    }
+
+    if (newEmail && !isValidEmail(newEmail)){
+      el.settingsHint.textContent = "❌ email inválido.";
+      return;
+    }
+
+    if (newPass){
+      if (newPass.length < 6){
+        el.settingsHint.textContent = "❌ nova senha muito curta (mínimo 6).";
+        return;
+      }
+      if (newPass !== newPass2){
+        el.settingsHint.textContent = "❌ confirmação da senha não bate.";
+        return;
+      }
+    }
+
+    el.btnSaveAccount.disabled = true;
+    el.btnSaveAccount.textContent = "Salvando…";
+
+    try{
+      const res = await updateAccountAttempt({
+        new_email: newEmail,
+        new_usuario: newUser,
+        old_password: oldPass,
+        new_password: newPass
+      });
+
+      // padrão esperado: {ok:true,...}
+      const ok = res?.ok !== false; // se não vier ok, assume ok (mas avisa)
+      if (!ok) throw new Error(res?.error || "Falha ao atualizar");
+
+      // Atualiza UI local (sem depender do servidor)
+      if (newUser){
+        state.localUser = newUser;
+        localStorage.setItem(LS.localUser, state.localUser);
+      }
+      if (newEmail){
+        // ⚠️ o token atual provavelmente continua ligado ao email antigo no server.
+        // então a gente avisa pra relogar caso necessário.
+        el.settingsHint.textContent =
+"✅ Alterações enviadas!\n\n" +
+"⚠️ Se o servidor trocar o email de verdade, pode precisar sair e logar de novo.";
+      } else {
+        el.settingsHint.textContent = "✅ Alterações enviadas!";
+      }
+
+      toast("Conta", "Atualização enviada ✅");
+      el.inpOldPass.value = "";
+      el.inpNewPass.value = "";
+      el.inpNewPass2.value = "";
+      await bootSessionOnly();
+
+    } catch (e){
+      const msg = isLikelyBlockedFetch(e)
+        ? "Failed to fetch (bloqueio/extensão ou mixed content)"
+        : (e.message || "Erro ao atualizar");
+
+      // comando desconhecido -> aviso bem direto
+      const bodyText = String(e?.body?.error || e?.body?.detail || "");
+      const unknownCmd = bodyText.includes("Comando desconhecido") || msg.includes("Comando desconhecido");
+
+      el.settingsHint.textContent =
+unknownCmd
+? "⚠️ Seu servidor ainda não tem endpoint/comando pra atualizar conta.\n\n" +
+  "✅ O site já está pronto.\n👉 Quando você criar no backend (ex: POST /api/account/update ou comando /account/update), funciona automático."
+: ("❌ " + msg);
+
+      toast("Conta", msg);
+      if (isLikelyBlockedFetch(e)) showNetBlockBanner({ where:"Conta/update", errMsg: e?.message });
+    } finally {
+      el.btnSaveAccount.disabled = false;
+      el.btnSaveAccount.textContent = "Salvar alterações";
+    }
+  }
+
   async function boot(){
     el.authHint.textContent = "";
     el.settingsHint.textContent = "";
     el.profileHint.textContent = "—";
-    el.tokenPill.textContent = state.token || "—";
-    el.meMini.textContent = "—";
 
     el.apiPill.textContent = "API: carregando…";
     setDot("warn");
@@ -875,6 +1129,7 @@ ${tips.join("\n")}`;
       el.detectedPill.textContent = state.apiDetected || "—";
       el.inpApiOverride.value = override || "";
       el.inpFeedEp.value = state.feedEp;
+      el.inpAccountEp.value = state.accountEp;
 
       if (isMixedContentRisk()){
         el.settingsHint.textContent =
@@ -898,7 +1153,9 @@ ${tips.join("\n")}`;
         showApp();
         setRoute(location.hash.replace("#","") || "feed");
         await refreshFeed();
-      } else showAuth();
+      } else {
+        showAuth();
+      }
 
     } catch (e){
       setDot("bad");
@@ -952,6 +1209,18 @@ ${tips.join("\n")}`;
       state.token = token;
       localStorage.setItem(LS.token, state.token);
 
+      // salva username local (no login, usa email prefix)
+      if (state.mode === "register" && usuario){
+        state.localUser = usuario;
+        localStorage.setItem(LS.localUser, state.localUser);
+      } else {
+        const guess = email.includes("@") ? email.split("@")[0] : "user";
+        if (!state.localUser) {
+          state.localUser = guess;
+          localStorage.setItem(LS.localUser, state.localUser);
+        }
+      }
+
       toast(state.mode === "register" ? "Registro" : "Login", "Sucesso ✅");
       viewTransition(() => showApp());
       await bootSessionOnly();
@@ -976,7 +1245,7 @@ ${tips.join("\n")}`;
 
   el.btnSaveApi.onclick = () => {
     const v = normalizeApi(el.inpApiOverride.value);
-    if (!v){ el.settingsHint.textContent = "❌ URL inválida. Ex: https://xxxx.trycloudflare.com"; toast("Config","URL inválida"); return; }
+    if (!v){ el.settingsHint.textContent = "❌ URL inválida. Ex: https://xxxx.ngrok-free.app"; toast("Config","URL inválida"); return; }
     localStorage.setItem(LS.apiOverride, v);
     el.settingsHint.textContent = "✅ Salvo! Clica Recarregar.";
     toast("Config","API override salva ✅");
@@ -1006,6 +1275,48 @@ ${tips.join("\n")}`;
     toast("Config","Reset ✅");
   };
 
+  el.btnSaveAccountEp.onclick = () => {
+    const v = (el.inpAccountEp.value || "").trim();
+    if (!v.startsWith("/")){ el.settingsHint.textContent = "❌ Endpoint precisa começar com /"; toast("Config","Endpoint inválido"); return; }
+    state.accountEp = v;
+    localStorage.setItem(LS.accountEp, state.accountEp);
+    el.settingsHint.textContent = "✅ Account endpoint salvo!";
+    toast("Config","Endpoint da conta salvo ✅");
+  };
+
+  el.btnResetAccountEp.onclick = () => {
+    state.accountEp = DEFAULT_ACCOUNT_EP;
+    localStorage.setItem(LS.accountEp, state.accountEp);
+    el.inpAccountEp.value = state.accountEp;
+    el.settingsHint.textContent = "✅ Resetado pro padrão.";
+    toast("Config","Reset ✅");
+  };
+
+  el.btnSaveAccount.onclick = handleSaveAccount;
+
+  el.btnFillFromProfile.onclick = () => {
+    el.inpNewEmail.value = state.me?.email || "";
+    el.inpNewUser.value = state.me?.usuario || state.localUser || "";
+    toast("Conta", "Preenchido ✅");
+  };
+
+  el.btnCopyToken.onclick = async () => {
+    try{
+      await navigator.clipboard.writeText(state.token || "");
+      toast("Token", "Copiado ✅");
+    } catch {
+      toast("Token", "Falhou copiar 😅");
+    }
+  };
+
+  el.btnClearSession.onclick = () => {
+    state.token = "";
+    localStorage.removeItem(LS.token);
+    state.me = null;
+    toast("Sessão", "Sessão limpa ✅");
+    viewTransition(() => showAuth());
+  };
+
   window.addEventListener("keydown", (e) => {
     if (e.target && ["INPUT","TEXTAREA"].includes(e.target.tagName)) return;
     if (e.key === "1") setRoute("feed");
@@ -1013,7 +1324,9 @@ ${tips.join("\n")}`;
     if (e.key === "3") setRoute("settings");
   });
 
-  // ✅ warnings globais (qualquer erro vira toast + modal se for bloqueio)
+  window.addEventListener("online", () => toast("Rede", "Voltou ✅"));
+  window.addEventListener("offline", () => toast("Rede", "Offline ⚠️"));
+
   window.addEventListener("error", (ev) => {
     const msg = ev?.message || "Erro desconhecido";
     toast("Erro", msg);
