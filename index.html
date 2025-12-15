@@ -2,163 +2,401 @@
 <html lang="pt-br">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>NoSense • Social</title>
+
+  <meta name="color-scheme" content="dark light" />
+  <meta name="theme-color" content="#0b0e14" />
 
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23111827'/%3E%3Cpath d='M18 38c6 10 22 10 28 0' fill='none' stroke='%237c3aed' stroke-width='6' stroke-linecap='round'/%3E%3Ccircle cx='24' cy='26' r='4' fill='%23e5e7eb'/%3E%3Ccircle cx='40' cy='26' r='4' fill='%23e5e7eb'/%3E%3C/svg%3E" />
 
   <style>
+    /* ====== Design Tokens ====== */
     :root{
-      --bg:#0b0e14; --panel:#111827; --panel2:#0f172a;
-      --text:#e5e7eb; --muted:#9ca3af; --line:#1f2937;
-      --ok:#22c55e; --bad:#ef4444; --brand:#7c3aed;
-      --shadow: 0 10px 30px rgba(0,0,0,.35);
-      --r: 16px; --pad: 14px; --gap: 14px;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      --bg: #0b0e14;
+      --bg2:#070a10;
+      --panel: rgba(17,24,39,.86);
+      --panel2: rgba(15,23,42,.72);
+      --stroke: rgba(148,163,184,.14);
+      --text: #e5e7eb;
+      --muted:#94a3b8;
+      --brand:#7c3aed;
+      --ok:#22c55e;
+      --bad:#ef4444;
+      --warn:#f59e0b;
+      --shadow: 0 18px 55px rgba(0,0,0,.45);
+      --r: 18px;
+      --r2: 26px;
+      --pad: 14px;
+      --gap: 14px;
+      --max: 1180px;
+      --blur: 14px;
+      --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
     }
-    *{ box-sizing:border-box; }
-    body{ margin:0; background:radial-gradient(1200px 800px at 10% 0%, #1b1238 0%, transparent 50%), var(--bg); color:var(--text); }
-    button, input{ font:inherit; }
 
-    .topbar{
-      position:sticky; top:0; z-index:10;
-      display:flex; gap:10px; align-items:center; justify-content:space-between;
-      padding:10px 14px; border-bottom:1px solid var(--line);
-      background:rgba(11,14,20,.75); backdrop-filter: blur(10px);
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: var(--font);
+      color: var(--text);
+      background:
+        radial-gradient(1000px 700px at 10% 0%, rgba(124,58,237,.30) 0%, rgba(124,58,237,0) 55%),
+        radial-gradient(900px 700px at 100% 20%, rgba(34,197,94,.12) 0%, rgba(34,197,94,0) 60%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+      overflow-x:hidden;
     }
-    .brand{ display:flex; align-items:center; gap:10px; font-weight:900; }
-    .dot{ width:10px; height:10px; border-radius:999px; background:var(--bad); box-shadow:0 0 0 4px rgba(239,68,68,.15); }
-    .dot.ok{ background:var(--ok); box-shadow:0 0 0 4px rgba(34,197,94,.15); }
+    a{ color: inherit; text-decoration:none; }
+    button, input{ font:inherit; }
+    ::selection{ background: rgba(124,58,237,.28); }
+
+    /* Accessibility */
+    @media (prefers-reduced-motion: reduce){
+      *{ animation: none !important; transition: none !important; scroll-behavior:auto !important; }
+    }
+
+    /* ====== Layout ====== */
+    .topbar{
+      position:sticky; top:0; z-index:50;
+      backdrop-filter: blur(var(--blur));
+      background: rgba(11,14,20,.62);
+      border-bottom: 1px solid var(--stroke);
+    }
+    .topbarInner{
+      max-width: var(--max);
+      margin:0 auto;
+      padding: 12px 14px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      font-weight: 900;
+      letter-spacing:.2px;
+      min-width: 0;
+    }
+    .dot{
+      width:10px; height:10px; border-radius:999px;
+      background: var(--bad);
+      box-shadow: 0 0 0 4px rgba(239,68,68,.15);
+      flex:0 0 auto;
+    }
+    .dot.ok{ background: var(--ok); box-shadow: 0 0 0 4px rgba(34,197,94,.16); }
+    .dot.warn{ background: var(--warn); box-shadow: 0 0 0 4px rgba(245,158,11,.16); }
+
     .pill{
       display:inline-flex; align-items:center; gap:8px;
-      padding:8px 10px; border:1px solid var(--line);
-      background:rgba(17,24,39,.6); border-radius:999px;
-      color:var(--muted); font-size:13px;
-      max-width:520px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+      padding: 8px 10px;
+      border: 1px solid var(--stroke);
+      background: rgba(17,24,39,.52);
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 12.5px;
+      max-width: 52ch;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
     }
-    .btn{
-      border:1px solid var(--line);
-      background:rgba(17,24,39,.9);
-      color:var(--text);
-      padding:10px 12px;
-      border-radius:12px;
-      cursor:pointer;
-      transition:.15s transform ease;
-    }
-    .btn:hover{ transform: translateY(-1px); }
-    .btn.primary{ border-color:rgba(124,58,237,.55); background:rgba(124,58,237,.18); }
-    .btn.danger{ border-color:rgba(239,68,68,.5); background:rgba(239,68,68,.14); }
 
-    .wrap{ max-width:1120px; margin:0 auto; padding:14px; }
-    .grid{ display:grid; gap:var(--gap); grid-template-columns: 360px 1fr; align-items:start; }
-    @media (max-width: 980px){ .grid{ grid-template-columns: 1fr; } }
+    .wrap{
+      max-width: var(--max);
+      margin:0 auto;
+      padding: 14px;
+    }
+    .shell{
+      display:grid;
+      grid-template-columns: 280px 1fr;
+      gap: var(--gap);
+      align-items:start;
+      padding-top: 6px;
+    }
+    @media (max-width: 980px){
+      .shell{ grid-template-columns: 1fr; }
+    }
 
     .card{
-      border:1px solid var(--line);
-      background:linear-gradient(180deg, rgba(17,24,39,.9), rgba(15,23,42,.75));
+      border: 1px solid var(--stroke);
+      background: linear-gradient(180deg, var(--panel), var(--panel2));
       border-radius: var(--r);
       box-shadow: var(--shadow);
       overflow:hidden;
     }
-    .card .hd{
+    .hd{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
       padding: var(--pad);
-      border-bottom:1px solid var(--line);
+      border-bottom: 1px solid var(--stroke);
+    }
+    .bd{ padding: var(--pad); }
+    .title{ font-weight: 900; }
+    .muted{ color: var(--muted); font-size: 13px; }
+    .sep{ height:1px; background: var(--stroke); margin: 12px 0; }
+
+    /* ====== Buttons / Inputs ====== */
+    .btn{
+      border: 1px solid var(--stroke);
+      background: rgba(17,24,39,.80);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 12px;
+      cursor:pointer;
+      transition: transform .15s ease, border-color .15s ease, background .15s ease;
+      user-select:none;
+      display:inline-flex; align-items:center; gap:8px;
+      white-space:nowrap;
+    }
+    .btn:hover{ transform: translateY(-1px); border-color: rgba(124,58,237,.42); }
+    .btn:active{ transform: translateY(0px) scale(.99); }
+    .btn.primary{
+      border-color: rgba(124,58,237,.58);
+      background: rgba(124,58,237,.18);
+    }
+    .btn.ghost{ background: rgba(17,24,39,.35); }
+    .btn.danger{
+      border-color: rgba(239,68,68,.55);
+      background: rgba(239,68,68,.12);
+    }
+
+    .field{ display:grid; gap:6px; margin: 10px 0; }
+    input{
+      width:100%;
+      padding: 12px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--stroke);
+      background: rgba(2,6,23,.35);
+      color: var(--text);
+      outline:none;
+      transition: box-shadow .15s ease, border-color .15s ease;
+    }
+    input:focus{
+      border-color: rgba(124,58,237,.60);
+      box-shadow: 0 0 0 4px rgba(124,58,237,.16);
+    }
+
+    /* ====== Sidebar ====== */
+    .side{
+      position: sticky;
+      top: 68px;
+    }
+    @media (max-width:980px){
+      .side{ position: static; }
+    }
+    .nav{
+      display:grid; gap:10px;
+    }
+    .navItem{
+      padding: 12px 12px;
+      border-radius: 14px;
+      border: 1px solid var(--stroke);
+      background: rgba(2,6,23,.25);
+      cursor:pointer;
+      transition: transform .15s ease, border-color .15s ease;
       display:flex; align-items:center; justify-content:space-between; gap:10px;
     }
-    .card .bd{ padding: var(--pad); }
-    .title{ font-weight:900; }
-    .muted{ color:var(--muted); font-size:13px; }
-    .sep{ height:1px; background:var(--line); margin:10px 0; }
-    .toast{ margin-top:10px; font-size:13px; color:var(--muted); white-space:pre-wrap; }
-
-    .auth{ max-width:460px; margin:40px auto; padding:0 14px; }
-    .auth .card{ border-radius:20px; }
-    .field{ display:grid; gap:6px; margin:10px 0; }
-    input{
-      width:100%; padding:12px 12px; border-radius:12px;
-      border:1px solid var(--line); background:rgba(2,6,23,.45);
-      color:var(--text); outline:none;
+    .navItem:hover{ transform: translateY(-2px); border-color: rgba(124,58,237,.42); }
+    .navItem.active{
+      border-color: rgba(124,58,237,.60);
+      background: rgba(124,58,237,.14);
     }
-    input:focus{ border-color:rgba(124,58,237,.6); box-shadow:0 0 0 4px rgba(124,58,237,.15); }
+    .kbd{
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--stroke);
+      color: var(--muted);
+      background: rgba(17,24,39,.5);
+    }
 
-    .feedTop{ display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
-    .search{ flex:1; min-width:200px; }
+    /* ====== Views ====== */
+    .view{ display:none; }
+    .view.active{ display:block; }
 
-    .feedGrid{ display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap:12px; }
-    @media (max-width: 980px){ .feedGrid{ grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    @media (max-width: 520px){ .feedGrid{ grid-template-columns: 1fr; } }
+    /* ====== Auth (centered) ====== */
+    .authWrap{
+      max-width: 480px;
+      margin: 40px auto;
+      padding: 0 14px;
+    }
+    .authWrap .card{ border-radius: var(--r2); }
+    .hint{
+      white-space: pre-wrap;
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+
+    /* ====== Feed ====== */
+    .feedTop{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:10px; flex-wrap:wrap;
+    }
+    .search{
+      flex: 1;
+      min-width: 200px;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 12px;
+    }
+    @media (max-width:980px){ .grid{ grid-template-columns: repeat(2, minmax(0,1fr)); } }
+    @media (max-width:560px){ .grid{ grid-template-columns: 1fr; } }
 
     .userCard{
-      border:1px solid var(--line); background:rgba(2,6,23,.35);
-      border-radius:14px; padding:12px;
-      transition:.15s transform ease, .15s border-color ease;
+      border: 1px solid var(--stroke);
+      background: rgba(2,6,23,.28);
+      border-radius: 16px;
+      padding: 12px;
+      transition: transform .15s ease, border-color .15s ease;
+      will-change: transform;
     }
-    .userCard:hover{ transform: translateY(-2px); border-color:rgba(124,58,237,.55); }
-    .userTop{ display:flex; gap:10px; align-items:center; }
+    .userCard:hover{ transform: translateY(-3px); border-color: rgba(124,58,237,.55); }
+    .userTop{ display:flex; align-items:center; gap:10px; min-width:0; }
     .avatar{
-      width:42px; height:42px; border-radius:14px;
+      width: 44px; height: 44px;
+      border-radius: 16px;
       display:grid; place-items:center;
-      background:rgba(124,58,237,.18);
-      border:1px solid rgba(124,58,237,.35);
-      font-weight:900;
+      background: rgba(124,58,237,.16);
+      border: 1px solid rgba(124,58,237,.35);
+      font-weight: 900;
+      flex:0 0 auto;
     }
     .chips{ display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
     .chip{
-      font-size:12px; color:var(--muted);
-      border:1px solid var(--line);
-      background:rgba(17,24,39,.6);
-      padding:6px 8px; border-radius:999px;
-      max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+      font-size: 12px;
+      color: var(--muted);
+      border: 1px solid var(--stroke);
+      background: rgba(17,24,39,.55);
+      padding: 6px 8px;
+      border-radius: 999px;
+      max-width: 100%;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
     }
 
-    /* modal settings */
-    .backdrop{
-      position:fixed; inset:0; background:rgba(0,0,0,.55);
-      display:none; align-items:center; justify-content:center; padding:14px;
-      z-index:50;
-    }
-    .modal{
-      width:min(720px, 100%);
-      border:1px solid var(--line);
-      background:linear-gradient(180deg, rgba(17,24,39,.98), rgba(15,23,42,.95));
-      border-radius:18px; box-shadow: var(--shadow);
+    /* ====== Skeleton ====== */
+    .skeleton{
+      position: relative;
       overflow:hidden;
+      border-radius: 16px;
+      border:1px solid var(--stroke);
+      background: rgba(2,6,23,.26);
+      height: 118px;
     }
-    .grid2{ display:grid; gap:12px; grid-template-columns: 1fr 1fr; }
-    @media (max-width: 700px){ .grid2{ grid-template-columns:1fr; } }
-    code{ color:#c7d2fe; }
+    .skeleton::after{
+      content:"";
+      position:absolute; inset:-40%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.08), transparent);
+      transform: translateX(-40%);
+      animation: shimmer 1.2s infinite;
+    }
+    @keyframes shimmer{
+      to{ transform: translateX(40%); }
+    }
+    @media (prefers-reduced-motion: reduce){
+      .skeleton::after{ animation:none; }
+    }
+
+    /* ====== Toast ====== */
+    .toasts{
+      position: fixed;
+      inset: auto 14px 14px auto;
+      display:grid;
+      gap:10px;
+      z-index:100;
+    }
+    .toast{
+      width: min(360px, calc(100vw - 28px));
+      border: 1px solid var(--stroke);
+      background: rgba(17,24,39,.92);
+      backdrop-filter: blur(var(--blur));
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 12px;
+      transform-origin: 100% 100%;
+    }
+    .toast b{ display:block; margin-bottom: 2px; }
+    .toast .small{ color: var(--muted); font-size: 12.5px; white-space: pre-wrap; }
+
+    /* ====== Bottom nav mobile ====== */
+    .bottomNav{
+      position: fixed;
+      left: 14px; right: 14px; bottom: 14px;
+      border: 1px solid var(--stroke);
+      background: rgba(17,24,39,.72);
+      backdrop-filter: blur(var(--blur));
+      border-radius: 18px;
+      padding: 8px;
+      display:none;
+      z-index: 60;
+      box-shadow: var(--shadow);
+    }
+    .bottomNavInner{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:8px;
+    }
+    .bItem{
+      padding: 10px 10px;
+      border-radius: 14px;
+      border: 1px solid transparent;
+      background: rgba(2,6,23,.20);
+      cursor:pointer;
+      text-align:center;
+      color: var(--muted);
+      font-weight: 700;
+      transition: transform .15s ease, background .15s ease, color .15s ease, border-color .15s ease;
+    }
+    .bItem.active{
+      color: var(--text);
+      border-color: rgba(124,58,237,.55);
+      background: rgba(124,58,237,.14);
+    }
+    .bItem:hover{ transform: translateY(-1px); }
+    @media (max-width:980px){
+      .bottomNav{ display:block; }
+      .wrap{ padding-bottom: 92px; }
+    }
+
+    /* View Transitions (progressivo) */
+    ::view-transition-old(root), ::view-transition-new(root){ animation-duration: 260ms; }
   </style>
 </head>
 
 <body>
-  <div class="topbar">
-    <div class="brand">
-      <div class="dot" id="serverDot"></div>
-      <div>NoSense • Social</div>
-      <div class="pill" id="apiPill">API: carregando…</div>
+  <header class="topbar">
+    <div class="topbarInner">
+      <div class="brand" style="min-width:0;">
+        <div id="dot" class="dot"></div>
+        <div>NoSense • Social</div>
+        <div id="apiPill" class="pill" title="API Base">API: carregando…</div>
+      </div>
+
+      <div style="display:flex; gap:10px; align-items:center;">
+        <button class="btn ghost" id="btnRefresh">Recarregar</button>
+        <button class="btn" id="btnOpenSettings">Config</button>
+        <button class="btn danger" id="btnLogout" style="display:none;">Sair</button>
+      </div>
     </div>
-    <div style="display:flex; gap:10px; align-items:center;">
-      <button class="btn" id="btnSettings">Config</button>
-      <button class="btn" id="btnReload">Recarregar</button>
-      <button class="btn danger" id="btnLogout" style="display:none;">Sair</button>
-    </div>
-  </div>
+  </header>
 
   <!-- AUTH -->
-  <section class="auth" id="authView">
+  <section id="auth" class="authWrap">
     <div class="card">
       <div class="hd">
         <div>
           <div class="title" id="authTitle">Entrar</div>
-          <div class="muted" id="authSub">GitHub Pages ready ✅</div>
+          <div class="muted" id="authSub">Login/Registro com fallback automático ✅</div>
         </div>
         <button class="btn" id="btnToggleAuth">Registrar</button>
       </div>
 
       <div class="bd">
-        <div class="field" id="userField" style="display:none;">
+        <div class="field" id="fieldUsuario" style="display:none;">
           <div class="muted">Usuário</div>
-          <input id="inpUser" placeholder="ex: Guh" autocomplete="username" />
+          <input id="inpUsuario" placeholder="ex: Guh" autocomplete="username" />
         </div>
 
         <div class="field">
@@ -168,256 +406,255 @@
 
         <div class="field">
           <div class="muted">Senha</div>
-          <input id="inpPass" type="password" placeholder="••••••••" autocomplete="current-password" />
+          <input id="inpSenha" type="password" placeholder="••••••••" autocomplete="current-password" />
         </div>
 
         <button class="btn primary" id="btnAuthGo" style="width:100%;">Entrar</button>
-        <div class="toast" id="authToast"></div>
+        <div class="hint" id="authHint"></div>
       </div>
     </div>
   </section>
 
   <!-- APP -->
-  <section class="wrap" id="appView" style="display:none;">
-    <div class="grid">
+  <main id="app" class="wrap" style="display:none;">
+    <div class="shell">
 
-      <div class="card">
-        <div class="hd">
-          <div>
-            <div class="title">Meu perfil</div>
-            <div class="muted" id="meMini">—</div>
-          </div>
-        </div>
-        <div class="bd">
-          <div class="muted">session_token</div>
-          <div class="pill" id="tokenPill" title="session_token">—</div>
-          <div class="sep"></div>
-          <div class="muted">Avisos</div>
-          <div class="toast" id="meToast">—</div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="hd">
-          <div class="feedTop" style="width:100%;">
+      <aside class="side">
+        <div class="card">
+          <div class="hd">
             <div>
-              <div class="title">Feed</div>
-              <div class="muted" id="feedInfo">Carregando…</div>
+              <div class="title">Menu</div>
+              <div class="muted" id="meMini">—</div>
             </div>
-            <input class="search" id="search" placeholder="Buscar usuário/email…" />
-            <button class="btn" id="btnRefreshFeed">Atualizar</button>
+          </div>
+          <div class="bd">
+            <nav class="nav">
+              <div class="navItem active" data-route="feed">
+                <div>
+                  <div style="font-weight:900;">Feed</div>
+                  <div class="muted">Todas as contas</div>
+                </div>
+                <span class="kbd">1</span>
+              </div>
+
+              <div class="navItem" data-route="profile">
+                <div>
+                  <div style="font-weight:900;">Perfil</div>
+                  <div class="muted">Sua sessão</div>
+                </div>
+                <span class="kbd">2</span>
+              </div>
+
+              <div class="navItem" data-route="settings">
+                <div>
+                  <div style="font-weight:900;">Config</div>
+                  <div class="muted">API / Feed</div>
+                </div>
+                <span class="kbd">3</span>
+              </div>
+            </nav>
           </div>
         </div>
+      </aside>
+
+      <section class="card">
+        <div class="hd" id="viewHeader">
+          <div>
+            <div class="title" id="viewTitle">Feed</div>
+            <div class="muted" id="viewSub">Carregando…</div>
+          </div>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <button class="btn" id="btnReloadView">Atualizar</button>
+          </div>
+        </div>
+
         <div class="bd">
-          <div class="feedGrid" id="feedGrid"></div>
-          <div class="toast" id="feedToast"></div>
-        </div>
-      </div>
+          <!-- FEED -->
+          <div class="view active" id="view_feed">
+            <div class="feedTop">
+              <input class="search" id="search" placeholder="Buscar usuário/email…" />
+              <button class="btn" id="btnFeedRefresh">Atualizar feed</button>
+            </div>
+            <div class="sep"></div>
 
+            <div id="feedGrid" class="grid"></div>
+            <div class="hint" id="feedHint"></div>
+          </div>
+
+          <!-- PROFILE -->
+          <div class="view" id="view_profile">
+            <div class="title">Sua sessão</div>
+            <div class="muted">Token fica salvo no navegador (localStorage) 🙂</div>
+
+            <div class="sep"></div>
+
+            <div class="muted">session_token</div>
+            <div class="pill" id="tokenPill" style="max-width:100%;">—</div>
+
+            <div class="sep"></div>
+            <div class="hint" id="profileHint">—</div>
+          </div>
+
+          <!-- SETTINGS -->
+          <div class="view" id="view_settings">
+            <div class="title">Configurações</div>
+            <div class="muted">Pra GitHub Pages funcionar suave 😄</div>
+
+            <div class="sep"></div>
+
+            <div class="muted">API detectada (GitHub server_status.json)</div>
+            <div class="pill" id="detectedPill" style="max-width:100%;">—</div>
+
+            <div class="sep"></div>
+
+            <div class="muted">API override (se o JSON vier localhost/http)</div>
+            <div class="field">
+              <input id="inpApiOverride" placeholder="https://xxxx.trycloudflare.com" />
+            </div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <button class="btn primary" id="btnSaveApi">Salvar</button>
+              <button class="btn" id="btnClearApi">Limpar</button>
+            </div>
+
+            <div class="sep"></div>
+
+            <div class="muted">Feed endpoint (opcional)</div>
+            <div class="field">
+              <input id="inpFeedEp" placeholder="/api/social/users" />
+            </div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <button class="btn primary" id="btnSaveFeed">Salvar</button>
+              <button class="btn" id="btnResetFeed">Reset</button>
+            </div>
+
+            <div class="hint" id="settingsHint"></div>
+          </div>
+        </div>
+      </section>
     </div>
-  </section>
+  </main>
 
-  <!-- SETTINGS -->
-  <div class="backdrop" id="backdrop">
-    <div class="modal">
-      <div class="hd" style="padding:14px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center;">
-        <div>
-          <div class="title">Configurações</div>
-          <div class="muted">Pra GitHub Pages funcionar sem dor 😄</div>
-        </div>
-        <button class="btn" id="btnCloseSettings">Fechar</button>
-      </div>
-      <div class="bd" style="padding:14px;">
-        <div class="grid2">
-          <div class="card" style="box-shadow:none;">
-            <div class="hd"><div class="title">API Base</div><div class="muted">override</div></div>
-            <div class="bd">
-              <div class="muted">Detectado do <code>server_status.json</code>:</div>
-              <div class="pill" id="detectedApi">—</div>
-
-              <div class="sep"></div>
-
-              <div class="muted">Usar manual (ex: <code>https://xxxx.trycloudflare.com</code>):</div>
-              <div class="field">
-                <input id="manualApi" placeholder="https://..." />
-              </div>
-
-              <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                <button class="btn primary" id="btnSaveApi">Salvar</button>
-                <button class="btn" id="btnClearApi">Limpar</button>
-              </div>
-
-              <div class="toast" id="apiHint"></div>
-            </div>
-          </div>
-
-          <div class="card" style="box-shadow:none;">
-            <div class="hd"><div class="title">Feed</div><div class="muted">endpoint</div></div>
-            <div class="bd">
-              <div class="muted">Endpoint padrão:</div>
-              <div class="pill">GET <span id="defaultFeedEp">/api/social/users</span></div>
-
-              <div class="sep"></div>
-
-              <div class="muted">Se seu servidor não tiver isso, troque aqui:</div>
-              <div class="field">
-                <input id="feedEndpoint" placeholder="/api/social/users" />
-              </div>
-
-              <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                <button class="btn primary" id="btnSaveFeedEp">Salvar</button>
-                <button class="btn" id="btnResetFeedEp">Reset</button>
-              </div>
-
-              <div class="toast">
-                Dica: se não existir endpoint, o front tenta fallback:
-                <code>POST /api/cmd</code> com <code>{comando:"/social/users"}</code> 😉
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="sep"></div>
-        <div class="toast" id="netWarn"></div>
-      </div>
+  <!-- Bottom nav (mobile) -->
+  <div class="bottomNav" aria-hidden="true">
+    <div class="bottomNavInner">
+      <button class="bItem active" data-route="feed">Feed</button>
+      <button class="bItem" data-route="profile">Perfil</button>
+      <button class="bItem" data-route="settings">Config</button>
     </div>
   </div>
 
+  <div class="toasts" id="toasts"></div>
+
 <script>
 (() => {
-  const el = (id) => document.getElementById(id);
-  const setText = (id, t) => { el(id).textContent = t ?? ""; };
+  // ===== Utils =====
+  const $ = (q, el=document) => el.querySelector(q);
+  const $$ = (q, el=document) => Array.from(el.querySelectorAll(q));
 
   const LS = {
     token: "ns_session_token",
     apiOverride: "ns_api_override",
-    feedEndpoint: "ns_feed_endpoint"
+    feedEp: "ns_feed_endpoint"
   };
 
-  let MODE = "login";
-  let TOKEN = localStorage.getItem(LS.token) || "";
-  let ME = null;
-
-  let API_DETECTED = null;
-  let API = null;
+  const GITHUB_OWNER = "NoSense-Bot";
+  const GITHUB_REPO  = "Servidor";
+  const STATUS_PATH  = "server_status.json";
+  const RAW_URL = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/main/${STATUS_PATH}`;
+  const CONTENTS_URL = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${STATUS_PATH}`;
 
   const DEFAULT_FEED_EP = "/api/social/users";
-  let FEED_EP = localStorage.getItem(LS.feedEndpoint) || DEFAULT_FEED_EP;
 
-  let FEED = [];
+  const state = {
+    mode: "login",
+    apiDetected: null,
+    apiBase: null,
+    statusOk: false,
+    token: localStorage.getItem(LS.token) || "",
+    me: null,
+    feed: [],
+    feedEp: localStorage.getItem(LS.feedEp) || DEFAULT_FEED_EP,
+  };
 
-  const statusCandidates = [
-    new URL("server_status.json", location.href).toString(),
-    "https://raw.githubusercontent.com/NoSense-Bot/Servidor/main/server_status.json"
-  ];
+  const el = {
+    dot: $("#dot"),
+    apiPill: $("#apiPill"),
+    btnRefresh: $("#btnRefresh"),
+    btnOpenSettings: $("#btnOpenSettings"),
+    btnLogout: $("#btnLogout"),
 
-  function isLocalHost(url) {
+    auth: $("#auth"),
+    app: $("#app"),
+
+    authTitle: $("#authTitle"),
+    authSub: $("#authSub"),
+    btnToggleAuth: $("#btnToggleAuth"),
+    btnAuthGo: $("#btnAuthGo"),
+    authHint: $("#authHint"),
+    fieldUsuario: $("#fieldUsuario"),
+    inpUsuario: $("#inpUsuario"),
+    inpEmail: $("#inpEmail"),
+    inpSenha: $("#inpSenha"),
+
+    meMini: $("#meMini"),
+
+    viewTitle: $("#viewTitle"),
+    viewSub: $("#viewSub"),
+    btnReloadView: $("#btnReloadView"),
+
+    view_feed: $("#view_feed"),
+    view_profile: $("#view_profile"),
+    view_settings: $("#view_settings"),
+
+    feedGrid: $("#feedGrid"),
+    feedHint: $("#feedHint"),
+    btnFeedRefresh: $("#btnFeedRefresh"),
+    search: $("#search"),
+
+    tokenPill: $("#tokenPill"),
+    profileHint: $("#profileHint"),
+
+    detectedPill: $("#detectedPill"),
+    inpApiOverride: $("#inpApiOverride"),
+    btnSaveApi: $("#btnSaveApi"),
+    btnClearApi: $("#btnClearApi"),
+    inpFeedEp: $("#inpFeedEp"),
+    btnSaveFeed: $("#btnSaveFeed"),
+    btnResetFeed: $("#btnResetFeed"),
+    settingsHint: $("#settingsHint"),
+
+    toasts: $("#toasts"),
+  };
+
+  function toast(title, msg, type="info"){
+    const n = document.createElement("div");
+    n.className = "toast";
+    n.innerHTML = `<b>${escapeHtml(title)}</b><div class="small">${escapeHtml(msg)}</div>`;
+    el.toasts.appendChild(n);
+
+    // WAAPI (rápido e suave) :contentReference[oaicite:1]{index=1}
     try {
-      const u = new URL(url);
-      const h = u.hostname;
-      return h === "127.0.0.1" || h === "localhost" || h.endsWith(".local");
-    } catch { return false; }
-  }
+      n.animate(
+        [
+          { transform: "translateY(8px) scale(.98)", opacity: 0 },
+          { transform: "translateY(0px) scale(1)", opacity: 1 }
+        ],
+        { duration: 220, easing: "cubic-bezier(.2,.8,.2,1)" }
+      );
+    } catch {}
 
-  function isPrivateIpHost(url) {
-    try {
-      const h = new URL(url).hostname;
-      // 10.x.x.x | 192.168.x.x | 172.16-31.x.x
-      if (/^10\./.test(h)) return true;
-      if (/^192\.168\./.test(h)) return true;
-      const m = h.match(/^172\.(\d+)\./);
-      if (m) {
-        const n = parseInt(m[1], 10);
-        return n >= 16 && n <= 31;
-      }
-      return false;
-    } catch { return false; }
-  }
-
-  function normalizeApiBase(url) {
-    if (!url) return null;
-    url = String(url).trim();
-    if (!/^https?:\/\//i.test(url)) return null;
-    return url.replace(/\/+$/, "");
-  }
-
-  function upgradeToHttpsIfSafe(url) {
-    // se página é https e API é http, tenta upgrade (exceto localhost/private ip)
-    if (location.protocol !== "https:") return url;
-    if (!url || !url.startsWith("http://")) return url;
-    if (isLocalHost(url) || isPrivateIpHost(url)) return url; // não inventa
-    return "https://" + url.slice("http://".length);
-  }
-
-  function explainFetchError(err) {
-    const msg = String(err?.message || err || "");
-    // muito comum no Chrome quando extensão bloqueia
-    if (msg.includes("Failed to fetch") || msg.includes("NetworkError")) {
-      return "❌ Falhou (provável bloqueio do navegador/extensão ou API http em site https).\n👉 Tenta aba anônima/desliga AdBlock/uBlock/antivírus web.";
-    }
-    return "❌ " + msg;
-  }
-
-  async function loadStatusJson() {
-    let last = null;
-    for (const u of statusCandidates) {
+    setTimeout(() => {
       try {
-        const r = await fetch(u + (u.includes("?") ? "&" : "?") + "v=" + Date.now(), { cache: "no-store" });
-        if (!r.ok) { last = new Error("HTTP " + r.status); continue; }
-        const j = await r.json();
-        const api = normalizeApiBase(j?.url_api_base);
-        if (api) return { api, raw: j, src: u };
-        last = new Error("url_api_base não encontrado");
-      } catch (e) { last = e; }
-    }
-    throw last || new Error("Não deu pra ler server_status.json");
-  }
-
-  async function apiFetch(path, opts = {}) {
-    if (!API) throw new Error("API não definida");
-    const headers = Object.assign({ "Content-Type": "application/json" }, opts.headers || {});
-    const r = await fetch(API + path, Object.assign({}, opts, { headers }));
-    const ct = r.headers.get("content-type") || "";
-    const body = ct.includes("application/json") ? await r.json().catch(()=>null) : await r.text().catch(()=>null);
-
-    if (!r.ok) {
-      const msg = body?.error || ("HTTP " + r.status);
-      throw new Error(msg);
-    }
-    return body;
-  }
-
-  async function pingStatus() {
-    const r = await fetch(API + "/api/status", { cache: "no-store" });
-    return r.ok;
-  }
-
-  function setAuthMode(mode) {
-    MODE = mode;
-    const isReg = MODE === "register";
-    setText("authTitle", isReg ? "Registrar" : "Entrar");
-    setText("authSub", isReg ? "Register via /api/auth/register 🚀" : "Login via /api/auth/login 😄");
-    setText("btnToggleAuth", isReg ? "Entrar" : "Registrar");
-    setText("btnAuthGo", isReg ? "Registrar" : "Entrar");
-    el("userField").style.display = isReg ? "" : "none";
-    setText("authToast", "");
-  }
-
-  function showAuth() {
-    el("authView").style.display = "";
-    el("appView").style.display = "none";
-    el("btnLogout").style.display = "none";
-  }
-
-  function showApp() {
-    el("authView").style.display = "none";
-    el("appView").style.display = "";
-    el("btnLogout").style.display = "";
-  }
-
-  function renderMe() {
-    setText("meMini", ME ? `@${ME.usuario} • ${ME.email}` : "—");
-    setText("tokenPill", TOKEN || "—");
+        const a = n.animate(
+          [
+            { transform: "translateY(0px) scale(1)", opacity: 1 },
+            { transform: "translateY(8px) scale(.98)", opacity: 0 }
+          ],
+          { duration: 220, easing: "cubic-bezier(.2,.8,.2,1)" }
+        );
+        a.onfinish = () => n.remove();
+      } catch { n.remove(); }
+    }, 3200);
   }
 
   function escapeHtml(s){
@@ -426,27 +663,260 @@
       .replaceAll('"',"&quot;").replaceAll("'","&#039;");
   }
 
-  function initials(name){ return (name?.trim()?.[0] || "?").toUpperCase(); }
-
-  function normalizeUser(u){
-    const user_id = u.user_id || u.email || u.id || u._id || "";
-    const usuario = u.usuario || u.nick || u.username || (u.email ? u.email.split("@")[0] : "User");
-    const chars = Array.isArray(u.personagens) ? u.personagens : (Array.isArray(u.characters) ? u.characters : []);
-    const charNames = chars.map(c => c?.nick || c?.name || c?.nome || (typeof c === "string" ? c : "Personagem"));
-    return { user_id: String(user_id || ""), usuario: String(usuario || "user"), charNames };
+  function normalizeApi(url){
+    if (!url) return null;
+    url = String(url).trim();
+    if (!/^https?:\/\//i.test(url)) return null;
+    return url.replace(/\/+$/, "");
   }
 
-  function renderFeed(list){
-    const q = (el("search").value || "").trim().toLowerCase();
-    const grid = el("feedGrid");
-    grid.innerHTML = "";
+  function initials(name){
+    const t = String(name || "?").trim();
+    return (t[0] || "?").toUpperCase();
+  }
 
-    const norm = list.map(normalizeUser)
-      .filter(u => !q || u.usuario.toLowerCase().includes(q) || u.user_id.toLowerCase().includes(q));
+  function isLikelyBlockedFetch(err){
+    const m = String(err?.message || err || "");
+    return m.includes("Failed to fetch") || m.includes("NetworkError");
+  }
 
-    setText("feedInfo", `${norm.length} contas 👥`);
+  async function fetchWithTimeout(url, opts={}, ms=9000){
+    const c = new AbortController();
+    const t = setTimeout(() => c.abort("timeout"), ms);
+    try{
+      const r = await fetch(url, { ...opts, signal: c.signal });
+      return r;
+    } finally{
+      clearTimeout(t);
+    }
+  }
 
-    norm.forEach(u => {
+  function b64ToText(b64){
+    // remove quebras + padding
+    let s = String(b64 || "").replace(/\n/g, "");
+    const pad = s.length % 4;
+    if (pad) s += "=".repeat(4 - pad);
+    return atob(s);
+  }
+
+  // ===== GitHub status.json resolver =====
+  async function loadStatusFromGithub(){
+    // RAW (JSON direto) — normalmente CORS ok :contentReference[oaicite:2]{index=2}
+    try{
+      const r = await fetchWithTimeout(RAW_URL + "?v=" + Date.now(), { cache:"no-store" }, 9000);
+      if (r.ok){
+        const j = await r.json();
+        const api = normalizeApi(j?.url_api_base);
+        if (api) return { api, src: "raw" };
+      }
+    } catch {}
+
+    // Contents API (content base64) :contentReference[oaicite:3]{index=3}
+    const r2 = await fetchWithTimeout(CONTENTS_URL + "?v=" + Date.now(), {
+      cache:"no-store",
+      headers: { "Accept": "application/vnd.github+json" }
+    }, 9000);
+
+    if (!r2.ok) throw new Error("Falha lendo server_status.json do GitHub (HTTP " + r2.status + ")");
+    const data = await r2.json();
+    const txt = b64ToText(data?.content || "");
+    const j = JSON.parse(txt);
+    const api = normalizeApi(j?.url_api_base);
+    if (!api) throw new Error("url_api_base não encontrado no server_status.json");
+    return { api, src: "contents" };
+  }
+
+  // ===== API calls (fallback-friendly) =====
+  async function apiFetch(path, opts={}){
+    if (!state.apiBase) throw new Error("API não definida");
+    const url = state.apiBase + path;
+    const headers = { "Content-Type":"application/json", ...(opts.headers || {}) };
+    const r = await fetchWithTimeout(url, { ...opts, headers }, 12000);
+    const ct = r.headers.get("content-type") || "";
+    const body = ct.includes("application/json") ? await r.json().catch(()=>null) : await r.text().catch(()=>null);
+
+    if (!r.ok){
+      const msg = body?.error || ("HTTP " + r.status);
+      const e = new Error(msg);
+      e.status = r.status;
+      throw e;
+    }
+    return body;
+  }
+
+  async function ping(){
+    try{
+      const r = await fetchWithTimeout(state.apiBase + "/api/status", { cache:"no-store" }, 8000);
+      return r.ok;
+    } catch { return false; }
+  }
+
+  async function login(email, password){
+    // tenta /api/auth/login -> fallback /login
+    try{
+      return await apiFetch("/api/auth/login", { method:"POST", body: JSON.stringify({ email, password }) });
+    } catch (e){
+      if (e.status === 404){
+        return await apiFetch("/login", { method:"POST", body: JSON.stringify({ email, password }) });
+      }
+      throw e;
+    }
+  }
+
+  async function register(email, password, usuario){
+    try{
+      return await apiFetch("/api/auth/register", { method:"POST", body: JSON.stringify({ email, password, usuario }) });
+    } catch (e){
+      if (e.status === 404){
+        return await apiFetch("/register", { method:"POST", body: JSON.stringify({ email, password, usuario }) });
+      }
+      throw e;
+    }
+  }
+
+  async function validate(token){
+    try{
+      return await apiFetch("/api/auth/validate", { method:"POST", body: JSON.stringify({ session_token: token }) });
+    } catch (e){
+      // se não existir validate, só não quebra a UX
+      if (e.status === 404) return { ok:true, user_id:"", usuario:"" };
+      throw e;
+    }
+  }
+
+  async function fetchFeed(){
+    // 1) GET /api/social/users (ou custom)
+    try{
+      const r = await apiFetch(state.feedEp, { method:"GET" });
+      const users = r?.users ?? r?.result ?? (Array.isArray(r) ? r : []);
+      if (Array.isArray(users)) return users;
+    } catch (e){
+      // continua
+    }
+
+    // 2) fallback: POST /api/cmd {comando:"/social/users"}
+    const r2 = await apiFetch("/api/cmd", {
+      method:"POST",
+      body: JSON.stringify({ comando: "/social/users" })
+    });
+    const users2 = r2?.users ?? r2?.result ?? [];
+    if (Array.isArray(users2)) return users2;
+
+    return [];
+  }
+
+  // ===== UI: transitions =====
+  function viewTransition(updateDOM){
+    // View Transition API (progressivo) :contentReference[oaicite:4]{index=4}
+    if (document.startViewTransition && !window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+      document.startViewTransition(() => updateDOM());
+    } else {
+      updateDOM();
+    }
+  }
+
+  function setDot(kind){
+    el.dot.classList.remove("ok","warn");
+    if (kind === "ok") el.dot.classList.add("ok");
+    else if (kind === "warn") el.dot.classList.add("warn");
+  }
+
+  function setApiPill(){
+    el.apiPill.textContent = "API: " + (state.apiBase || "—");
+    el.apiPill.title = state.apiBase || "API";
+  }
+
+  function showAuth(){
+    el.btnLogout.style.display = "none";
+    el.app.style.display = "none";
+    el.auth.style.display = "";
+  }
+
+  function showApp(){
+    el.btnLogout.style.display = "";
+    el.auth.style.display = "none";
+    el.app.style.display = "";
+  }
+
+  function setAuthMode(mode){
+    state.mode = mode;
+    const isReg = mode === "register";
+    el.authTitle.textContent = isReg ? "Registrar" : "Entrar";
+    el.authSub.textContent = isReg
+      ? "Register (tenta /api/auth/register e cai pro /register) 🚀"
+      : "Login (tenta /api/auth/login e cai pro /login) 😄";
+    el.btnToggleAuth.textContent = isReg ? "Entrar" : "Registrar";
+    el.btnAuthGo.textContent = isReg ? "Registrar" : "Entrar";
+    el.fieldUsuario.style.display = isReg ? "" : "none";
+    el.authHint.textContent = "";
+  }
+
+  function setRoute(route){
+    const routes = ["feed","profile","settings"];
+    if (!routes.includes(route)) route = "feed";
+
+    viewTransition(() => {
+      $$(".navItem").forEach(x => x.classList.toggle("active", x.dataset.route === route));
+      $$(".bItem").forEach(x => x.classList.toggle("active", x.dataset.route === route));
+
+      $$(".view").forEach(v => v.classList.remove("active"));
+      $("#view_" + route).classList.add("active");
+
+      if (route === "feed"){
+        el.viewTitle.textContent = "Feed";
+        el.viewSub.textContent = state.feed.length ? `${state.feed.length} contas 👥` : "Todas as contas";
+        el.btnReloadView.onclick = refreshFeed;
+      }
+      if (route === "profile"){
+        el.viewTitle.textContent = "Perfil";
+        el.viewSub.textContent = "Sua sessão e status";
+        el.btnReloadView.onclick = bootSessionOnly;
+      }
+      if (route === "settings"){
+        el.viewTitle.textContent = "Config";
+        el.viewSub.textContent = "API / Feed";
+        el.btnReloadView.onclick = boot;
+      }
+    });
+
+    history.replaceState({}, "", "#"+route);
+  }
+
+  // ===== Render feed =====
+  function normalizeUser(u){
+    const user_id = String(u?.user_id || u?.email || u?.id || u?._id || "");
+    const usuario = String(u?.usuario || u?.nick || u?.username || (user_id.includes("@") ? user_id.split("@")[0] : "user"));
+    const chars = Array.isArray(u?.personagens) ? u.personagens : (Array.isArray(u?.characters) ? u.characters : []);
+    const names = chars.map(c => c?.nick || c?.name || c?.nome || (typeof c === "string" ? c : "Personagem"));
+    return { user_id, usuario, names };
+  }
+
+  function renderSkeletons(){
+    el.feedGrid.innerHTML = "";
+    for (let i=0; i<9; i++){
+      const s = document.createElement("div");
+      s.className = "skeleton";
+      el.feedGrid.appendChild(s);
+    }
+  }
+
+  function renderFeed(){
+    const q = (el.search.value || "").trim().toLowerCase();
+    const list = state.feed.map(normalizeUser).filter(u => {
+      if (!q) return true;
+      return u.usuario.toLowerCase().includes(q) || u.user_id.toLowerCase().includes(q);
+    });
+
+    el.viewSub.textContent = `${list.length} contas 👥`;
+    el.feedHint.textContent = "";
+
+    el.feedGrid.innerHTML = "";
+    if (!list.length){
+      el.feedHint.textContent = "Nada encontrado 😅";
+      return;
+    }
+
+    list.forEach((u, idx) => {
       const div = document.createElement("div");
       div.className = "userCard";
       div.innerHTML = `
@@ -458,240 +928,238 @@
           </div>
         </div>
         <div class="chips">
-          <span class="chip">${u.charNames.length} personagem(ns)</span>
-          ${(u.charNames.slice(0,4)).map(n => `<span class="chip">${escapeHtml(n)}</span>`).join("")}
-          ${u.charNames.length > 4 ? `<span class="chip">+${u.charNames.length-4}</span>` : ""}
+          <span class="chip">${u.names.length} personagem(ns)</span>
+          ${u.names.slice(0,4).map(n => `<span class="chip">${escapeHtml(n)}</span>`).join("")}
+          ${u.names.length > 4 ? `<span class="chip">+${u.names.length-4}</span>` : ""}
         </div>
       `;
-      grid.appendChild(div);
+
+      el.feedGrid.appendChild(div);
+
+      // Entrada com WAAPI (progressivo) :contentReference[oaicite:5]{index=5}
+      if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+        try{
+          div.animate(
+            [
+              { transform: "translateY(10px) scale(.99)", opacity: 0 },
+              { transform: "translateY(0px) scale(1)", opacity: 1 }
+            ],
+            { duration: 260, easing: "cubic-bezier(.2,.8,.2,1)", delay: Math.min(idx*18, 200) }
+          );
+        } catch {}
+      }
     });
-
-    if (!norm.length) {
-      setText("feedToast", "Nada encontrado 😅");
-    } else {
-      setText("feedToast", "");
-    }
-  }
-
-  async function fetchFeedSmart() {
-    // 1) tenta GET no endpoint configurado
-    try {
-      const res = await apiFetch(FEED_EP, { method: "GET" });
-      const users = res?.users || res?.result || res || [];
-      if (Array.isArray(users)) return users;
-      if (Array.isArray(res)) return res;
-    } catch (e) {
-      // segue fallback
-    }
-
-    // 2) fallback: POST /api/cmd com comando "/social/users"
-    try {
-      const res2 = await apiFetch("/api/cmd", {
-        method: "POST",
-        body: JSON.stringify({ comando: "/social/users" })
-      });
-      const users2 = res2?.users || res2?.result || [];
-      if (Array.isArray(users2)) return users2;
-    } catch (e) {
-      // segue erro final
-    }
-
-    throw new Error("Sem feed disponível. Configure o endpoint do feed (Config) ou implemente comando /social/users.");
   }
 
   async function refreshFeed(){
-    setText("feedToast", "");
-    setText("feedInfo", "Carregando…");
-    try {
-      const users = await fetchFeedSmart();
-      FEED = users;
-      renderFeed(FEED);
-    } catch (e) {
-      setText("feedInfo", "❌ Feed indisponível");
-      setText("feedToast", explainFetchError(e));
-      el("feedGrid").innerHTML = "";
+    el.feedHint.textContent = "";
+    renderSkeletons();
+
+    try{
+      const users = await fetchFeed();
+      state.feed = Array.isArray(users) ? users : [];
+      renderFeed();
+      toast("Feed", "Atualizado ✅");
+    } catch (e){
+      const msg = isLikelyBlockedFetch(e)
+        ? "Bloqueado pelo navegador/extensão ou API inacessível 😵‍💫"
+        : (e.message || "Erro");
+      el.feedGrid.innerHTML = "";
+      el.feedHint.textContent = "❌ " + msg + "\nDica: Config > API override e tente uma URL https pública.";
+      toast("Erro no feed", msg);
     }
   }
 
-  function updateTopbarApi() {
-    setText("apiPill", "API: " + (API || "—"));
-    el("serverDot").classList.toggle("ok", false);
-  }
-
-  function warnMixedContent() {
-    const notes = [];
-    if (location.protocol === "https:" && API && API.startsWith("http://")) {
-      notes.push("⚠️ Seu site está em HTTPS (GitHub Pages) e a API está em HTTP → o browser pode bloquear.");
-      notes.push("✅ Use uma API HTTPS (ex: trycloudflare) e cole em Config > API Base.");
-    }
-    if (API && (isLocalHost(API) || isPrivateIpHost(API))) {
-      notes.push("⚠️ API local/rede privada: isso NÃO funciona para visitantes no GitHub Pages.");
-      notes.push("✅ Precisa de URL pública (ex: tunnel) e colar no override.");
-    }
-    setText("netWarn", notes.join("\n"));
-  }
-
+  // ===== Boot =====
   async function boot(){
-    setText("authToast", "");
-    setText("meToast", "—");
-    setText("feedToast", "");
-    setText("feedInfo", "Carregando…");
-    el("serverDot").classList.remove("ok");
+    el.authHint.textContent = "";
+    el.settingsHint.textContent = "";
+    el.profileHint.textContent = "—";
+    el.tokenPill.textContent = state.token || "—";
+    el.meMini.textContent = "—";
 
-    try {
-      const st = await loadStatusJson();
-      API_DETECTED = st.api;
+    setDot("warn");
+    el.apiPill.textContent = "API: carregando…";
 
-      // aplica override se existir
-      const override = normalizeApiBase(localStorage.getItem(LS.apiOverride));
-      API = override || API_DETECTED;
+    try{
+      const { api } = await loadStatusFromGithub();
+      state.apiDetected = api;
 
-      // tenta upgrade pra https (quando fizer sentido)
-      API = upgradeToHttpsIfSafe(API);
+      const override = normalizeApi(localStorage.getItem(LS.apiOverride));
+      state.apiBase = override || state.apiDetected;
 
-      updateTopbarApi();
-      setText("detectedApi", API_DETECTED || "—");
-      el("manualApi").value = override || "";
-      el("feedEndpoint").value = FEED_EP;
-      setText("defaultFeedEp", DEFAULT_FEED_EP);
+      setApiPill();
 
-      warnMixedContent();
+      // settings fields
+      el.detectedPill.textContent = state.apiDetected || "—";
+      el.inpApiOverride.value = override || "";
+      el.inpFeedEp.value = state.feedEp;
 
       // ping
-      try {
-        const ok = await pingStatus();
-        el("serverDot").classList.toggle("ok", ok);
-      } catch (e) {
-        // se falhar, pode ser bloqueio por extensão
-        setText("authToast", explainFetchError(e));
+      const ok = await ping();
+      state.statusOk = ok;
+      setDot(ok ? "ok" : "warn");
+
+      if (!ok){
+        el.settingsHint.textContent =
+          "⚠️ Não consegui pingar /api/status.\nSe a API detectada for http/localhost, use API override (https pública).";
       }
 
-      if (TOKEN) {
-        try {
-          const v = await apiFetch("/api/auth/validate", {
-            method: "POST",
-            body: JSON.stringify({ session_token: TOKEN })
-          });
-          if (!v?.ok) throw new Error("Sessão inválida");
-          const email = v.user_id || "";
-          const usuario = v.usuario || (email.includes("@") ? email.split("@")[0] : "user");
-          ME = { email, usuario };
-          showApp();
-          renderMe();
-          setText("meToast", "✅ sessão ok");
-          await refreshFeed();
-          return;
-        } catch (e) {
-          TOKEN = "";
-          localStorage.removeItem(LS.token);
-        }
+      if (state.token){
+        await bootSessionOnly();
+        showApp();
+        setRoute(location.hash.replace("#","") || "feed");
+        await refreshFeed();
+      } else {
+        showAuth();
       }
+    } catch (e){
+      setDot("warn");
+      showAuth();
+      const msg = isLikelyBlockedFetch(e)
+        ? "Falha de rede (bloqueio/extensão) ao buscar server_status.json 😵‍💫"
+        : (e.message || "Erro");
+      el.authHint.textContent =
+        "❌ " + msg +
+        "\n\n✅ Dicas:\n- Testa aba anônima (desliga AdBlock/uBlock/antivírus web)\n- Confere se o JSON está público no GitHub";
+      toast("Boot falhou", msg);
+    }
+  }
 
+  async function bootSessionOnly(){
+    try{
+      const v = await validate(state.token);
+      // se validate existir, usa
+      const email = v?.user_id || "";
+      const usuario = v?.usuario || (email.includes("@") ? email.split("@")[0] : "user");
+      state.me = { email, usuario };
+      el.meMini.textContent = state.me.email ? `@${state.me.usuario} • ${state.me.email}` : `@${state.me.usuario}`;
+      el.tokenPill.textContent = state.token || "—";
+      el.profileHint.textContent = state.statusOk ? "✅ sessão ok • servidor online" : "⚠️ sessão ok • servidor sem ping";
+    } catch (e){
+      // sessão inválida
+      state.token = "";
+      localStorage.removeItem(LS.token);
+      state.me = null;
       showAuth();
-    } catch (e) {
-      showAuth();
-      setText("authToast", explainFetchError(e));
+      toast("Sessão", "Sessão inválida, loga de novo 🙏");
     }
   }
 
   // ===== Events =====
-  el("btnToggleAuth").onclick = () => setAuthMode(MODE === "login" ? "register" : "login");
+  el.btnRefresh.onclick = boot;
 
-  el("btnAuthGo").onclick = async () => {
-    const email = (el("inpEmail").value || "").trim();
-    const password = (el("inpPass").value || "").trim();
-    const usuario = (el("inpUser").value || "").trim();
-
-    if (!email || !password) return setText("authToast", "⚠️ preenche email e senha");
-    if (MODE === "register" && !usuario) return setText("authToast", "⚠️ preenche usuário");
-
-    try {
-      setText("authToast", "⏳ enviando...");
-
-      const path = MODE === "register" ? "/api/auth/register" : "/api/auth/login";
-      const body = MODE === "register"
-        ? { email, password, usuario }
-        : { email, password };
-
-      const res = await apiFetch(path, { method:"POST", body: JSON.stringify(body) });
-      const token = res?.session_token;
-      if (!token) throw new Error("API não retornou session_token 😵‍💫");
-
-      TOKEN = token;
-      localStorage.setItem(LS.token, TOKEN);
-
-      // valida pra pegar usuario se vier
-      try {
-        const v = await apiFetch("/api/auth/validate", {
-          method:"POST",
-          body: JSON.stringify({ session_token: TOKEN })
-        });
-        const mail = v.user_id || email;
-        const nick = v.usuario || (MODE === "register" ? usuario : (mail.includes("@") ? mail.split("@")[0] : "user"));
-        ME = { email: mail, usuario: nick };
-      } catch {
-        ME = { email, usuario: (MODE === "register" ? usuario : (email.split("@")[0] || "user")) };
-      }
-
-      showApp();
-      renderMe();
-      setText("meToast", "✅ logado!");
-      await refreshFeed();
-
-    } catch (e) {
-      setText("authToast", explainFetchError(e));
-    }
-  };
-
-  el("btnLogout").onclick = () => {
-    TOKEN = "";
-    ME = null;
+  el.btnLogout.onclick = () => {
+    state.token = "";
     localStorage.removeItem(LS.token);
-    showAuth();
+    state.me = null;
+    toast("Logout", "Saiu ✅");
+    viewTransition(() => showAuth());
     setAuthMode("login");
   };
 
-  el("btnReload").onclick = () => boot();
-  el("btnRefreshFeed").onclick = () => refreshFeed();
-  el("search").addEventListener("input", () => renderFeed(FEED));
+  el.btnToggleAuth.onclick = () => setAuthMode(state.mode === "login" ? "register" : "login");
 
-  // settings modal
-  el("btnSettings").onclick = () => {
-    el("backdrop").style.display = "flex";
-    warnMixedContent();
-    setText("apiHint", "");
+  el.btnAuthGo.onclick = async () => {
+    const email = (el.inpEmail.value || "").trim();
+    const password = (el.inpSenha.value || "").trim();
+    const usuario = (el.inpUsuario.value || "").trim();
+
+    if (!email || !password){
+      el.authHint.textContent = "⚠️ Preenche email e senha";
+      return;
+    }
+    if (state.mode === "register" && !usuario){
+      el.authHint.textContent = "⚠️ Preenche usuário";
+      return;
+    }
+
+    try{
+      el.authHint.textContent = "⏳ enviando…";
+      const res = state.mode === "register"
+        ? await register(email, password, usuario)
+        : await login(email, password);
+
+      const token = res?.session_token;
+      if (!token) throw new Error("API não retornou session_token");
+
+      state.token = token;
+      localStorage.setItem(LS.token, state.token);
+
+      toast(state.mode === "register" ? "Registro" : "Login", "Sucesso ✅");
+      viewTransition(() => showApp());
+      await bootSessionOnly();
+      setRoute("feed");
+      await refreshFeed();
+    } catch (e){
+      const msg = isLikelyBlockedFetch(e)
+        ? "Failed to fetch (bloqueio/extensão ou API inacessível)"
+        : (e.message || "Erro");
+      el.authHint.textContent = "❌ " + msg;
+      toast("Auth", msg);
+    }
   };
-  el("btnCloseSettings").onclick = () => el("backdrop").style.display = "none";
-  el("backdrop").onclick = (e) => { if (e.target.id === "backdrop") el("backdrop").style.display = "none"; };
 
-  el("btnSaveApi").onclick = () => {
-    const v = normalizeApiBase(el("manualApi").value);
-    if (!v) return setText("apiHint", "❌ URL inválida. Ex: https://xxxx.trycloudflare.com");
+  el.btnFeedRefresh.onclick = refreshFeed;
+  el.search.addEventListener("input", () => renderFeed());
+
+  // Sidebar + bottom nav
+  $$(".navItem").forEach(n => n.addEventListener("click", () => setRoute(n.dataset.route)));
+  $$(".bItem").forEach(n => n.addEventListener("click", () => setRoute(n.dataset.route)));
+
+  // Settings open goes to settings view (sem modal)
+  el.btnOpenSettings.onclick = () => setRoute("settings");
+
+  // Settings actions
+  el.btnSaveApi.onclick = () => {
+    const v = normalizeApi(el.inpApiOverride.value);
+    if (!v){
+      el.settingsHint.textContent = "❌ URL inválida. Ex: https://xxxx.trycloudflare.com";
+      toast("Config", "URL inválida");
+      return;
+    }
     localStorage.setItem(LS.apiOverride, v);
-    setText("apiHint", "✅ salvo! clica Recarregar.");
+    el.settingsHint.textContent = "✅ Salvo! Clica Recarregar.";
+    toast("Config", "API override salva ✅");
   };
-  el("btnClearApi").onclick = () => {
+
+  el.btnClearApi.onclick = () => {
     localStorage.removeItem(LS.apiOverride);
-    el("manualApi").value = "";
-    setText("apiHint", "✅ override removido! clica Recarregar.");
+    el.inpApiOverride.value = "";
+    el.settingsHint.textContent = "✅ Override removido! Clica Recarregar.";
+    toast("Config", "Override removido ✅");
   };
 
-  el("btnSaveFeedEp").onclick = () => {
-    const v = (el("feedEndpoint").value || "").trim();
-    if (!v.startsWith("/")) return setText("feedToast", "❌ endpoint tem que começar com /");
-    FEED_EP = v;
-    localStorage.setItem(LS.feedEndpoint, FEED_EP);
-    setText("feedToast", "✅ endpoint do feed salvo! clica Atualizar.");
+  el.btnSaveFeed.onclick = () => {
+    const v = (el.inpFeedEp.value || "").trim();
+    if (!v.startsWith("/")){
+      el.settingsHint.textContent = "❌ Endpoint precisa começar com /";
+      toast("Config", "Endpoint inválido");
+      return;
+    }
+    state.feedEp = v;
+    localStorage.setItem(LS.feedEp, state.feedEp);
+    el.settingsHint.textContent = "✅ Feed endpoint salvo! Vai em Feed e Atualiza.";
+    toast("Config", "Feed endpoint salvo ✅");
   };
 
-  el("btnResetFeedEp").onclick = () => {
-    FEED_EP = DEFAULT_FEED_EP;
-    localStorage.setItem(LS.feedEndpoint, FEED_EP);
-    el("feedEndpoint").value = FEED_EP;
-    setText("feedToast", "✅ resetado pro padrão. clica Atualizar.");
+  el.btnResetFeed.onclick = () => {
+    state.feedEp = DEFAULT_FEED_EP;
+    localStorage.setItem(LS.feedEp, state.feedEp);
+    el.inpFeedEp.value = state.feedEp;
+    el.settingsHint.textContent = "✅ Resetado pro padrão.";
+    toast("Config", "Reset ✅");
   };
 
-  // init
+  // Keyboard shortcuts 1/2/3
+  window.addEventListener("keydown", (e) => {
+    if (e.target && ["INPUT","TEXTAREA"].includes(e.target.tagName)) return;
+    if (e.key === "1") setRoute("feed");
+    if (e.key === "2") setRoute("profile");
+    if (e.key === "3") setRoute("settings");
+  });
+
+  // Start
   setAuthMode("login");
   boot();
 })();
