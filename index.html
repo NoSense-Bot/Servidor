@@ -4,58 +4,37 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>NoSense • Social</title>
-
   <meta name="color-scheme" content="dark light" />
   <meta name="theme-color" content="#0b0e14" />
-
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23111827'/%3E%3Cpath d='M18 38c6 10 22 10 28 0' fill='none' stroke='%237c3aed' stroke-width='6' stroke-linecap='round'/%3E%3Ccircle cx='24' cy='26' r='4' fill='%23e5e7eb'/%3E%3Ccircle cx='40' cy='26' r='4' fill='%23e5e7eb'/%3E%3C/svg%3E" />
 
   <style>
-    /* ====== Design Tokens ====== */
     :root{
-      --bg: #0b0e14;
-      --bg2:#070a10;
+      --bg:#0b0e14; --bg2:#070a10;
       --panel: rgba(17,24,39,.86);
-      --panel2: rgba(15,23,42,.72);
+      --panel2: rgba(15,23,42,.70);
       --stroke: rgba(148,163,184,.14);
-      --text: #e5e7eb;
-      --muted:#94a3b8;
-      --brand:#7c3aed;
-      --ok:#22c55e;
-      --bad:#ef4444;
-      --warn:#f59e0b;
+      --text:#e5e7eb; --muted:#94a3b8;
+      --brand:#7c3aed; --ok:#22c55e; --bad:#ef4444; --warn:#f59e0b;
       --shadow: 0 18px 55px rgba(0,0,0,.45);
-      --r: 18px;
-      --r2: 26px;
-      --pad: 14px;
-      --gap: 14px;
-      --max: 1180px;
-      --blur: 14px;
+      --r:18px; --r2:26px; --pad:14px; --gap:14px; --max:1180px; --blur:14px;
       --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
     }
-
     *{ box-sizing:border-box; }
     html,body{ height:100%; }
     body{
-      margin:0;
-      font-family: var(--font);
-      color: var(--text);
+      margin:0; font-family:var(--font); color:var(--text);
       background:
         radial-gradient(1000px 700px at 10% 0%, rgba(124,58,237,.30) 0%, rgba(124,58,237,0) 55%),
         radial-gradient(900px 700px at 100% 20%, rgba(34,197,94,.12) 0%, rgba(34,197,94,0) 60%),
         linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
       overflow-x:hidden;
     }
-    a{ color: inherit; text-decoration:none; }
-    button, input{ font:inherit; }
+    button,input{ font:inherit; }
+    a{ color:inherit; text-decoration:none; }
     ::selection{ background: rgba(124,58,237,.28); }
+    @media (prefers-reduced-motion: reduce){ *{ animation:none !important; transition:none !important; } }
 
-    /* Accessibility */
-    @media (prefers-reduced-motion: reduce){
-      *{ animation: none !important; transition: none !important; scroll-behavior:auto !important; }
-    }
-
-    /* ====== Layout ====== */
     .topbar{
       position:sticky; top:0; z-index:50;
       backdrop-filter: blur(var(--blur));
@@ -63,183 +42,96 @@
       border-bottom: 1px solid var(--stroke);
     }
     .topbarInner{
-      max-width: var(--max);
-      margin:0 auto;
-      padding: 12px 14px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
+      max-width:var(--max); margin:0 auto; padding:12px 14px;
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
     }
-    .brand{
-      display:flex; align-items:center; gap:10px;
-      font-weight: 900;
-      letter-spacing:.2px;
-      min-width: 0;
-    }
-    .dot{
-      width:10px; height:10px; border-radius:999px;
-      background: var(--bad);
-      box-shadow: 0 0 0 4px rgba(239,68,68,.15);
-      flex:0 0 auto;
-    }
-    .dot.ok{ background: var(--ok); box-shadow: 0 0 0 4px rgba(34,197,94,.16); }
-    .dot.warn{ background: var(--warn); box-shadow: 0 0 0 4px rgba(245,158,11,.16); }
+    .brand{ display:flex; align-items:center; gap:10px; font-weight:900; min-width:0; }
+    .dot{ width:10px; height:10px; border-radius:999px; background: var(--warn);
+      box-shadow: 0 0 0 4px rgba(245,158,11,.16); flex:0 0 auto; }
+    .dot.ok{ background:var(--ok); box-shadow: 0 0 0 4px rgba(34,197,94,.16); }
+    .dot.bad{ background:var(--bad); box-shadow: 0 0 0 4px rgba(239,68,68,.16); }
 
     .pill{
       display:inline-flex; align-items:center; gap:8px;
-      padding: 8px 10px;
-      border: 1px solid var(--stroke);
+      padding:8px 10px; border:1px solid var(--stroke);
       background: rgba(17,24,39,.52);
-      border-radius: 999px;
-      color: var(--muted);
-      font-size: 12.5px;
-      max-width: 52ch;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
+      border-radius:999px; color:var(--muted); font-size:12.5px;
+      max-width: 62ch; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
     }
 
-    .wrap{
-      max-width: var(--max);
-      margin:0 auto;
-      padding: 14px;
+    .btn{
+      border:1px solid var(--stroke);
+      background: rgba(17,24,39,.80);
+      color: var(--text);
+      padding:10px 12px;
+      border-radius:12px; cursor:pointer; user-select:none;
+      transition: transform .15s ease, border-color .15s ease, background .15s ease;
+      display:inline-flex; align-items:center; gap:8px; white-space:nowrap;
     }
-    .shell{
-      display:grid;
-      grid-template-columns: 280px 1fr;
-      gap: var(--gap);
-      align-items:start;
-      padding-top: 6px;
-    }
-    @media (max-width: 980px){
-      .shell{ grid-template-columns: 1fr; }
-    }
+    .btn:hover{ transform: translateY(-1px); border-color: rgba(124,58,237,.42); }
+    .btn:active{ transform: translateY(0px) scale(.99); }
+    .btn.primary{ border-color: rgba(124,58,237,.58); background: rgba(124,58,237,.18); }
+    .btn.ghost{ background: rgba(17,24,39,.35); }
+    .btn.danger{ border-color: rgba(239,68,68,.55); background: rgba(239,68,68,.12); }
+
+    .wrap{ max-width: var(--max); margin:0 auto; padding:14px; }
+    .shell{ display:grid; grid-template-columns: 280px 1fr; gap: var(--gap); align-items:start; padding-top:6px; }
+    @media (max-width: 980px){ .shell{ grid-template-columns: 1fr; } }
 
     .card{
-      border: 1px solid var(--stroke);
+      border:1px solid var(--stroke);
       background: linear-gradient(180deg, var(--panel), var(--panel2));
       border-radius: var(--r);
       box-shadow: var(--shadow);
       overflow:hidden;
     }
-    .hd{
-      display:flex; align-items:center; justify-content:space-between; gap:10px;
-      padding: var(--pad);
-      border-bottom: 1px solid var(--stroke);
-    }
+    .hd{ display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding: var(--pad); border-bottom:1px solid var(--stroke); }
     .bd{ padding: var(--pad); }
-    .title{ font-weight: 900; }
-    .muted{ color: var(--muted); font-size: 13px; }
+    .title{ font-weight:900; }
+    .muted{ color:var(--muted); font-size:13px; }
     .sep{ height:1px; background: var(--stroke); margin: 12px 0; }
-
-    /* ====== Buttons / Inputs ====== */
-    .btn{
-      border: 1px solid var(--stroke);
-      background: rgba(17,24,39,.80);
-      color: var(--text);
-      padding: 10px 12px;
-      border-radius: 12px;
-      cursor:pointer;
-      transition: transform .15s ease, border-color .15s ease, background .15s ease;
-      user-select:none;
-      display:inline-flex; align-items:center; gap:8px;
-      white-space:nowrap;
-    }
-    .btn:hover{ transform: translateY(-1px); border-color: rgba(124,58,237,.42); }
-    .btn:active{ transform: translateY(0px) scale(.99); }
-    .btn.primary{
-      border-color: rgba(124,58,237,.58);
-      background: rgba(124,58,237,.18);
-    }
-    .btn.ghost{ background: rgba(17,24,39,.35); }
-    .btn.danger{
-      border-color: rgba(239,68,68,.55);
-      background: rgba(239,68,68,.12);
-    }
 
     .field{ display:grid; gap:6px; margin: 10px 0; }
     input{
-      width:100%;
-      padding: 12px 12px;
-      border-radius: 12px;
+      width:100%; padding: 12px 12px; border-radius: 12px;
       border: 1px solid var(--stroke);
       background: rgba(2,6,23,.35);
-      color: var(--text);
-      outline:none;
+      color: var(--text); outline:none;
       transition: box-shadow .15s ease, border-color .15s ease;
     }
-    input:focus{
-      border-color: rgba(124,58,237,.60);
-      box-shadow: 0 0 0 4px rgba(124,58,237,.16);
-    }
+    input:focus{ border-color: rgba(124,58,237,.60); box-shadow: 0 0 0 4px rgba(124,58,237,.16); }
 
-    /* ====== Sidebar ====== */
-    .side{
-      position: sticky;
-      top: 68px;
-    }
-    @media (max-width:980px){
-      .side{ position: static; }
-    }
-    .nav{
-      display:grid; gap:10px;
-    }
+    .side{ position: sticky; top: 68px; }
+    @media (max-width:980px){ .side{ position: static; } }
+
+    .nav{ display:grid; gap:10px; }
     .navItem{
-      padding: 12px 12px;
-      border-radius: 14px;
+      padding: 12px 12px; border-radius: 14px;
       border: 1px solid var(--stroke);
       background: rgba(2,6,23,.25);
       cursor:pointer;
-      transition: transform .15s ease, border-color .15s ease;
+      transition: transform .15s ease, border-color .15s ease, background .15s ease;
       display:flex; align-items:center; justify-content:space-between; gap:10px;
     }
     .navItem:hover{ transform: translateY(-2px); border-color: rgba(124,58,237,.42); }
-    .navItem.active{
-      border-color: rgba(124,58,237,.60);
-      background: rgba(124,58,237,.14);
-    }
+    .navItem.active{ border-color: rgba(124,58,237,.60); background: rgba(124,58,237,.14); }
     .kbd{
-      font-size: 12px;
-      padding: 4px 8px;
-      border-radius: 999px;
-      border: 1px solid var(--stroke);
-      color: var(--muted);
+      font-size:12px; padding: 4px 8px; border-radius:999px;
+      border:1px solid var(--stroke); color:var(--muted);
       background: rgba(17,24,39,.5);
     }
 
-    /* ====== Views ====== */
     .view{ display:none; }
     .view.active{ display:block; }
 
-    /* ====== Auth (centered) ====== */
-    .authWrap{
-      max-width: 480px;
-      margin: 40px auto;
-      padding: 0 14px;
-    }
+    .authWrap{ max-width: 480px; margin: 40px auto; padding: 0 14px; }
     .authWrap .card{ border-radius: var(--r2); }
-    .hint{
-      white-space: pre-wrap;
-      font-size: 13px;
-      color: var(--muted);
-      margin-top: 10px;
-    }
+    .hint{ white-space: pre-wrap; font-size: 13px; color: var(--muted); margin-top: 10px; }
 
-    /* ====== Feed ====== */
-    .feedTop{
-      display:flex; align-items:center; justify-content:space-between;
-      gap:10px; flex-wrap:wrap;
-    }
-    .search{
-      flex: 1;
-      min-width: 200px;
-    }
-    .grid{
-      display:grid;
-      grid-template-columns: repeat(3, minmax(0,1fr));
-      gap: 12px;
-    }
+    .feedTop{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+    .search{ flex:1; min-width: 200px; }
+    .grid{ display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
     @media (max-width:980px){ .grid{ grid-template-columns: repeat(2, minmax(0,1fr)); } }
     @media (max-width:560px){ .grid{ grid-template-columns: 1fr; } }
 
@@ -254,76 +146,36 @@
     .userCard:hover{ transform: translateY(-3px); border-color: rgba(124,58,237,.55); }
     .userTop{ display:flex; align-items:center; gap:10px; min-width:0; }
     .avatar{
-      width: 44px; height: 44px;
-      border-radius: 16px;
+      width: 44px; height: 44px; border-radius: 16px;
       display:grid; place-items:center;
       background: rgba(124,58,237,.16);
       border: 1px solid rgba(124,58,237,.35);
-      font-weight: 900;
-      flex:0 0 auto;
+      font-weight: 900; flex:0 0 auto;
     }
     .chips{ display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
     .chip{
-      font-size: 12px;
-      color: var(--muted);
+      font-size: 12px; color: var(--muted);
       border: 1px solid var(--stroke);
       background: rgba(17,24,39,.55);
-      padding: 6px 8px;
-      border-radius: 999px;
-      max-width: 100%;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
+      padding: 6px 8px; border-radius: 999px;
+      max-width: 100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
     }
 
-    /* ====== Skeleton ====== */
     .skeleton{
-      position: relative;
-      overflow:hidden;
-      border-radius: 16px;
-      border:1px solid var(--stroke);
-      background: rgba(2,6,23,.26);
-      height: 118px;
+      position: relative; overflow:hidden;
+      border-radius: 16px; border:1px solid var(--stroke);
+      background: rgba(2,6,23,.26); height: 118px;
     }
     .skeleton::after{
-      content:"";
-      position:absolute; inset:-40%;
+      content:""; position:absolute; inset:-40%;
       background: linear-gradient(90deg, transparent, rgba(255,255,255,.08), transparent);
-      transform: translateX(-40%);
-      animation: shimmer 1.2s infinite;
+      transform: translateX(-40%); animation: shimmer 1.2s infinite;
     }
-    @keyframes shimmer{
-      to{ transform: translateX(40%); }
-    }
-    @media (prefers-reduced-motion: reduce){
-      .skeleton::after{ animation:none; }
-    }
+    @keyframes shimmer{ to{ transform: translateX(40%); } }
+    @media (prefers-reduced-motion: reduce){ .skeleton::after{ animation:none; } }
 
-    /* ====== Toast ====== */
-    .toasts{
-      position: fixed;
-      inset: auto 14px 14px auto;
-      display:grid;
-      gap:10px;
-      z-index:100;
-    }
-    .toast{
-      width: min(360px, calc(100vw - 28px));
-      border: 1px solid var(--stroke);
-      background: rgba(17,24,39,.92);
-      backdrop-filter: blur(var(--blur));
-      border-radius: 16px;
-      box-shadow: var(--shadow);
-      padding: 12px;
-      transform-origin: 100% 100%;
-    }
-    .toast b{ display:block; margin-bottom: 2px; }
-    .toast .small{ color: var(--muted); font-size: 12.5px; white-space: pre-wrap; }
-
-    /* ====== Bottom nav mobile ====== */
     .bottomNav{
-      position: fixed;
-      left: 14px; right: 14px; bottom: 14px;
+      position: fixed; left: 14px; right: 14px; bottom: 14px;
       border: 1px solid var(--stroke);
       background: rgba(17,24,39,.72);
       backdrop-filter: blur(var(--blur));
@@ -333,20 +185,13 @@
       z-index: 60;
       box-shadow: var(--shadow);
     }
-    .bottomNavInner{
-      display:grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap:8px;
-    }
+    .bottomNavInner{ display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; }
     .bItem{
-      padding: 10px 10px;
-      border-radius: 14px;
+      padding: 10px 10px; border-radius: 14px;
       border: 1px solid transparent;
       background: rgba(2,6,23,.20);
-      cursor:pointer;
-      text-align:center;
-      color: var(--muted);
-      font-weight: 700;
+      cursor:pointer; text-align:center;
+      color: var(--muted); font-weight: 800;
       transition: transform .15s ease, background .15s ease, color .15s ease, border-color .15s ease;
     }
     .bItem.active{
@@ -355,17 +200,73 @@
       background: rgba(124,58,237,.14);
     }
     .bItem:hover{ transform: translateY(-1px); }
-    @media (max-width:980px){
-      .bottomNav{ display:block; }
-      .wrap{ padding-bottom: 92px; }
+    @media (max-width:980px){ .bottomNav{ display:block; } .wrap{ padding-bottom: 92px; } }
+
+    .toasts{ position: fixed; inset: auto 14px 14px auto; display:grid; gap:10px; z-index:100; }
+    .toast{
+      width: min(420px, calc(100vw - 28px));
+      border: 1px solid var(--stroke);
+      background: rgba(17,24,39,.92);
+      backdrop-filter: blur(var(--blur));
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 12px;
+      transform-origin: 100% 100%;
+    }
+    .toast b{ display:block; margin-bottom:2px; }
+    .toast .small{ color: var(--muted); font-size: 12.5px; white-space: pre-wrap; }
+
+    .netBanner{
+      position: fixed; inset: 0;
+      display:flex; align-items:center; justify-content:center;
+      padding: 16px;
+      background: rgba(0,0,0,.55);
+      backdrop-filter: blur(10px);
+      z-index: 9999;
+    }
+    .netBanner.hidden{ display:none; }
+    .netBox{
+      width: min(680px, 100%);
+      border: 1px solid rgba(148,163,184,.18);
+      background: rgba(17,24,39,.92);
+      border-radius: 18px;
+      padding: 14px;
+      box-shadow: var(--shadow);
+    }
+    .netTitle{ font-weight: 1000; font-size: 16px; margin-bottom: 6px; }
+    .netText{ color: #e5e7eb; font-size: 13.5px; white-space: pre-wrap; }
+    .netSmall{ margin-top: 10px; color:#94a3b8; font-size: 12.5px; white-space: pre-wrap; }
+    .netActions{ display:flex; gap:10px; margin-top: 12px; flex-wrap:wrap; }
+    .netBtn{
+      border: 1px solid rgba(148,163,184,.18);
+      background: rgba(2,6,23,.35);
+      color: #e5e7eb;
+      padding: 10px 12px;
+      border-radius: 12px;
+      cursor:pointer;
+    }
+    .netBtn.primary{
+      border-color: rgba(124,58,237,.58);
+      background: rgba(124,58,237,.18);
     }
 
-    /* View Transitions (progressivo) */
     ::view-transition-old(root), ::view-transition-new(root){ animation-duration: 260ms; }
   </style>
 </head>
 
 <body>
+  <div id="netBanner" class="netBanner hidden">
+    <div class="netBox">
+      <div class="netTitle">⚠️ Aviso de Conexão</div>
+      <div class="netText" id="netText"></div>
+      <div class="netActions">
+        <button class="netBtn" id="btnHideNet">Entendi</button>
+        <button class="netBtn primary" id="btnCopyApi">Copiar API</button>
+      </div>
+      <div class="netSmall" id="netSmall"></div>
+    </div>
+  </div>
+
   <header class="topbar">
     <div class="topbarInner">
       <div class="brand" style="min-width:0;">
@@ -382,13 +283,12 @@
     </div>
   </header>
 
-  <!-- AUTH -->
   <section id="auth" class="authWrap">
     <div class="card">
       <div class="hd">
         <div>
           <div class="title" id="authTitle">Entrar</div>
-          <div class="muted" id="authSub">Login/Registro com fallback automático ✅</div>
+          <div class="muted" id="authSub">Login/Registro + warnings ✅</div>
         </div>
         <button class="btn" id="btnToggleAuth">Registrar</button>
       </div>
@@ -406,7 +306,7 @@
 
         <div class="field">
           <div class="muted">Senha</div>
-          <input id="inpSenha" type="password" placeholder="••••••••" autocomplete="current-password" />
+          <input id="inpSenha" type="password" placeholder="mínimo 6 chars" autocomplete="current-password" />
         </div>
 
         <button class="btn primary" id="btnAuthGo" style="width:100%;">Entrar</button>
@@ -415,10 +315,8 @@
     </div>
   </section>
 
-  <!-- APP -->
   <main id="app" class="wrap" style="display:none;">
     <div class="shell">
-
       <aside class="side">
         <div class="card">
           <div class="hd">
@@ -431,7 +329,7 @@
             <nav class="nav">
               <div class="navItem active" data-route="feed">
                 <div>
-                  <div style="font-weight:900;">Feed</div>
+                  <div style="font-weight:1000;">Feed</div>
                   <div class="muted">Todas as contas</div>
                 </div>
                 <span class="kbd">1</span>
@@ -439,7 +337,7 @@
 
               <div class="navItem" data-route="profile">
                 <div>
-                  <div style="font-weight:900;">Perfil</div>
+                  <div style="font-weight:1000;">Perfil</div>
                   <div class="muted">Sua sessão</div>
                 </div>
                 <span class="kbd">2</span>
@@ -447,7 +345,7 @@
 
               <div class="navItem" data-route="settings">
                 <div>
-                  <div style="font-weight:900;">Config</div>
+                  <div style="font-weight:1000;">Config</div>
                   <div class="muted">API / Feed</div>
                 </div>
                 <span class="kbd">3</span>
@@ -458,7 +356,7 @@
       </aside>
 
       <section class="card">
-        <div class="hd" id="viewHeader">
+        <div class="hd">
           <div>
             <div class="title" id="viewTitle">Feed</div>
             <div class="muted" id="viewSub">Carregando…</div>
@@ -469,45 +367,37 @@
         </div>
 
         <div class="bd">
-          <!-- FEED -->
           <div class="view active" id="view_feed">
             <div class="feedTop">
               <input class="search" id="search" placeholder="Buscar usuário/email…" />
               <button class="btn" id="btnFeedRefresh">Atualizar feed</button>
             </div>
             <div class="sep"></div>
-
             <div id="feedGrid" class="grid"></div>
             <div class="hint" id="feedHint"></div>
           </div>
 
-          <!-- PROFILE -->
           <div class="view" id="view_profile">
             <div class="title">Sua sessão</div>
-            <div class="muted">Token fica salvo no navegador (localStorage) 🙂</div>
-
+            <div class="muted">Token salvo no navegador 🙂</div>
             <div class="sep"></div>
-
             <div class="muted">session_token</div>
             <div class="pill" id="tokenPill" style="max-width:100%;">—</div>
-
             <div class="sep"></div>
             <div class="hint" id="profileHint">—</div>
           </div>
 
-          <!-- SETTINGS -->
           <div class="view" id="view_settings">
             <div class="title">Configurações</div>
-            <div class="muted">Pra GitHub Pages funcionar suave 😄</div>
-
+            <div class="muted">Se a API estiver bloqueada, ajusta aqui 😄</div>
             <div class="sep"></div>
 
-            <div class="muted">API detectada (GitHub server_status.json)</div>
+            <div class="muted">API detectada (server_status.json)</div>
             <div class="pill" id="detectedPill" style="max-width:100%;">—</div>
 
             <div class="sep"></div>
 
-            <div class="muted">API override (se o JSON vier localhost/http)</div>
+            <div class="muted">API override (recomendado HTTPS público)</div>
             <div class="field">
               <input id="inpApiOverride" placeholder="https://xxxx.trycloudflare.com" />
             </div>
@@ -518,7 +408,7 @@
 
             <div class="sep"></div>
 
-            <div class="muted">Feed endpoint (opcional)</div>
+            <div class="muted">Feed endpoint (se você criar no server)</div>
             <div class="field">
               <input id="inpFeedEp" placeholder="/api/social/users" />
             </div>
@@ -534,7 +424,6 @@
     </div>
   </main>
 
-  <!-- Bottom nav (mobile) -->
   <div class="bottomNav" aria-hidden="true">
     <div class="bottomNavInner">
       <button class="bItem active" data-route="feed">Feed</button>
@@ -547,21 +436,18 @@
 
 <script>
 (() => {
-  // ===== Utils =====
   const $ = (q, el=document) => el.querySelector(q);
   const $$ = (q, el=document) => Array.from(el.querySelectorAll(q));
+  const escapeHtml = (s) => String(s ?? "")
+    .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;").replaceAll("'","&#039;");
+  const initials = (name) => (String(name || "?").trim()[0] || "?").toUpperCase();
 
-  const LS = {
-    token: "ns_session_token",
-    apiOverride: "ns_api_override",
-    feedEp: "ns_feed_endpoint"
-  };
+  const LS = { token:"ns_session_token", apiOverride:"ns_api_override", feedEp:"ns_feed_endpoint" };
 
-  const GITHUB_OWNER = "NoSense-Bot";
-  const GITHUB_REPO  = "Servidor";
-  const STATUS_PATH  = "server_status.json";
-  const RAW_URL = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/main/${STATUS_PATH}`;
-  const CONTENTS_URL = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${STATUS_PATH}`;
+  // ✅ do jeito que você pediu: link do GitHub (blob) + raw fallback
+  const STATUS_BLOB_RAW = "https://github.com/NoSense-Bot/Servidor/blob/main/server_status.json?raw=1";
+  const STATUS_RAW_FALLBACK = "https://raw.githubusercontent.com/NoSense-Bot/Servidor/main/server_status.json";
 
   const DEFAULT_FEED_EP = "/api/social/users";
 
@@ -585,7 +471,6 @@
 
     auth: $("#auth"),
     app: $("#app"),
-
     authTitle: $("#authTitle"),
     authSub: $("#authSub"),
     btnToggleAuth: $("#btnToggleAuth"),
@@ -597,14 +482,9 @@
     inpSenha: $("#inpSenha"),
 
     meMini: $("#meMini"),
-
     viewTitle: $("#viewTitle"),
     viewSub: $("#viewSub"),
     btnReloadView: $("#btnReloadView"),
-
-    view_feed: $("#view_feed"),
-    view_profile: $("#view_profile"),
-    view_settings: $("#view_settings"),
 
     feedGrid: $("#feedGrid"),
     feedHint: $("#feedHint"),
@@ -624,43 +504,58 @@
     settingsHint: $("#settingsHint"),
 
     toasts: $("#toasts"),
+
+    netBanner: $("#netBanner"),
+    netText: $("#netText"),
+    netSmall: $("#netSmall"),
+    btnHideNet: $("#btnHideNet"),
+    btnCopyApi: $("#btnCopyApi"),
   };
 
-  function toast(title, msg, type="info"){
+  function toast(title, msg){
     const n = document.createElement("div");
     n.className = "toast";
     n.innerHTML = `<b>${escapeHtml(title)}</b><div class="small">${escapeHtml(msg)}</div>`;
     el.toasts.appendChild(n);
 
-    // WAAPI (rápido e suave) :contentReference[oaicite:1]{index=1}
-    try {
-      n.animate(
-        [
-          { transform: "translateY(8px) scale(.98)", opacity: 0 },
-          { transform: "translateY(0px) scale(1)", opacity: 1 }
-        ],
-        { duration: 220, easing: "cubic-bezier(.2,.8,.2,1)" }
-      );
-    } catch {}
+    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      try {
+        n.animate(
+          [{ transform:"translateY(8px) scale(.98)", opacity:0 }, { transform:"translateY(0) scale(1)", opacity:1 }],
+          { duration:220, easing:"cubic-bezier(.2,.8,.2,1)" }
+        );
+      } catch {}
+    }
 
     setTimeout(() => {
       try {
         const a = n.animate(
-          [
-            { transform: "translateY(0px) scale(1)", opacity: 1 },
-            { transform: "translateY(8px) scale(.98)", opacity: 0 }
-          ],
-          { duration: 220, easing: "cubic-bezier(.2,.8,.2,1)" }
+          [{ transform:"translateY(0) scale(1)", opacity:1 }, { transform:"translateY(8px) scale(.98)", opacity:0 }],
+          { duration:220, easing:"cubic-bezier(.2,.8,.2,1)" }
         );
         a.onfinish = () => n.remove();
       } catch { n.remove(); }
     }, 3200);
   }
 
-  function escapeHtml(s){
-    return String(s ?? "")
-      .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;").replaceAll("'","&#039;");
+  function viewTransition(updateDOM){
+    if (document.startViewTransition && !matchMedia("(prefers-reduced-motion: reduce)").matches){
+      document.startViewTransition(() => updateDOM());
+    } else updateDOM();
+  }
+
+  async function isBraveBrowser(){
+    try{
+      if (navigator.brave && typeof navigator.brave.isBrave === "function") {
+        return await navigator.brave.isBrave();
+      }
+    } catch {}
+    return /Brave/i.test(navigator.userAgent);
+  }
+
+  function isLikelyBlockedFetch(err){
+    const m = String(err?.message || err || "");
+    return m.includes("Failed to fetch") || m.includes("NetworkError") || m.includes("Load failed");
   }
 
   function normalizeApi(url){
@@ -670,68 +565,106 @@
     return url.replace(/\/+$/, "");
   }
 
-  function initials(name){
-    const t = String(name || "?").trim();
-    return (t[0] || "?").toUpperCase();
+  function isMixedContentRisk(){
+    return location.protocol === "https:" && state.apiBase && state.apiBase.startsWith("http://");
   }
 
-  function isLikelyBlockedFetch(err){
-    const m = String(err?.message || err || "");
-    return m.includes("Failed to fetch") || m.includes("NetworkError");
+  function showNetBlockBanner({ where, errMsg }){
+    (async () => {
+      const brave = await isBraveBrowser();
+      const mixed = isMixedContentRisk();
+
+      let tips = [];
+      if (brave) tips.push("• Brave: clique no leão 🦁 e coloque Shields DOWN pra este site");
+      tips.push("• Desative AdBlock/uBlock/antivírus web para este site");
+      tips.push("• Teste em aba anônima (sem extensões)");
+      if (mixed) tips.push("• HTTPS site + HTTP API (mixed content) → use API HTTPS pública no override");
+
+      el.netText.textContent =
+`O navegador bloqueou a conexão com a API.
+
+📌 Onde: ${where}
+🔗 API: ${state.apiBase || "—"}
+
+✅ Como resolver:
+${tips.join("\n")}`;
+
+      el.netSmall.textContent =
+`Detalhe técnico: ${errMsg || "Failed to fetch / ERR_BLOCKED_BY_CLIENT (provável)"}\nObs: o site não consegue desligar Shields por código.`;
+
+      el.netBanner.classList.remove("hidden");
+
+      el.btnHideNet.onclick = () => el.netBanner.classList.add("hidden");
+      el.btnCopyApi.onclick = async () => {
+        try{
+          await navigator.clipboard.writeText(state.apiBase || "");
+          el.netSmall.textContent = "✅ API copiada!";
+        } catch {
+          el.netSmall.textContent = "❌ Não consegui copiar (permite clipboard no navegador).";
+        }
+      };
+    })();
   }
 
-  async function fetchWithTimeout(url, opts={}, ms=9000){
+  function setDot(kind){
+    el.dot.classList.remove("ok","bad");
+    if (kind === "ok") el.dot.classList.add("ok");
+    if (kind === "bad") el.dot.classList.add("bad");
+  }
+
+  function setApiPill(){
+    el.apiPill.textContent = "API: " + (state.apiBase || "—");
+    el.apiPill.title = state.apiBase || "API";
+  }
+
+  function showAuth(){ el.btnLogout.style.display="none"; el.app.style.display="none"; el.auth.style.display=""; }
+  function showApp(){ el.btnLogout.style.display=""; el.auth.style.display="none"; el.app.style.display=""; }
+
+  function setAuthMode(mode){
+    state.mode = mode;
+    const isReg = mode === "register";
+    el.authTitle.textContent = isReg ? "Registrar" : "Entrar";
+    el.authSub.textContent = isReg ? "Registro (bcrypt + validações) 🚀" : "Login (session_token) 😄";
+    el.btnToggleAuth.textContent = isReg ? "Entrar" : "Registrar";
+    el.btnAuthGo.textContent = isReg ? "Registrar" : "Entrar";
+    el.fieldUsuario.style.display = isReg ? "" : "none";
+    el.authHint.textContent = "";
+  }
+
+  async function fetchWithTimeout(url, opts={}, ms=12000){
     const c = new AbortController();
     const t = setTimeout(() => c.abort("timeout"), ms);
-    try{
-      const r = await fetch(url, { ...opts, signal: c.signal });
-      return r;
-    } finally{
-      clearTimeout(t);
-    }
+    try{ return await fetch(url, { ...opts, signal:c.signal }); }
+    finally{ clearTimeout(t); }
   }
 
-  function b64ToText(b64){
-    // remove quebras + padding
-    let s = String(b64 || "").replace(/\n/g, "");
-    const pad = s.length % 4;
-    if (pad) s += "=".repeat(4 - pad);
-    return atob(s);
-  }
-
-  // ===== GitHub status.json resolver =====
   async function loadStatusFromGithub(){
-    // RAW (JSON direto) — normalmente CORS ok :contentReference[oaicite:2]{index=2}
+    // 1) blob?raw=1 (como você pediu)
     try{
-      const r = await fetchWithTimeout(RAW_URL + "?v=" + Date.now(), { cache:"no-store" }, 9000);
+      const r = await fetchWithTimeout(STATUS_BLOB_RAW + "&v=" + Date.now(), { cache:"no-store" }, 10000);
       if (r.ok){
         const j = await r.json();
         const api = normalizeApi(j?.url_api_base);
-        if (api) return { api, src: "raw" };
+        if (api) return api;
       }
     } catch {}
 
-    // Contents API (content base64) :contentReference[oaicite:3]{index=3}
-    const r2 = await fetchWithTimeout(CONTENTS_URL + "?v=" + Date.now(), {
-      cache:"no-store",
-      headers: { "Accept": "application/vnd.github+json" }
-    }, 9000);
-
-    if (!r2.ok) throw new Error("Falha lendo server_status.json do GitHub (HTTP " + r2.status + ")");
-    const data = await r2.json();
-    const txt = b64ToText(data?.content || "");
-    const j = JSON.parse(txt);
-    const api = normalizeApi(j?.url_api_base);
-    if (!api) throw new Error("url_api_base não encontrado no server_status.json");
-    return { api, src: "contents" };
+    // 2) fallback raw.githubusercontent
+    const r2 = await fetchWithTimeout(STATUS_RAW_FALLBACK + "?v=" + Date.now(), { cache:"no-store" }, 10000);
+    if (!r2.ok) throw new Error("Falha lendo server_status.json (HTTP " + r2.status + ")");
+    const j2 = await r2.json();
+    const api2 = normalizeApi(j2?.url_api_base);
+    if (!api2) throw new Error("url_api_base não encontrado no server_status.json");
+    return api2;
   }
 
-  // ===== API calls (fallback-friendly) =====
   async function apiFetch(path, opts={}){
     if (!state.apiBase) throw new Error("API não definida");
     const url = state.apiBase + path;
+
     const headers = { "Content-Type":"application/json", ...(opts.headers || {}) };
     const r = await fetchWithTimeout(url, { ...opts, headers }, 12000);
+
     const ct = r.headers.get("content-type") || "";
     const body = ct.includes("application/json") ? await r.json().catch(()=>null) : await r.text().catch(()=>null);
 
@@ -748,16 +681,22 @@
     try{
       const r = await fetchWithTimeout(state.apiBase + "/api/status", { cache:"no-store" }, 8000);
       return r.ok;
-    } catch { return false; }
+    } catch (e){
+      if (isLikelyBlockedFetch(e)) showNetBlockBanner({ where:"/api/status", errMsg: e?.message });
+      return false;
+    }
   }
 
+  // ✅ bate com seu server.py:
+  // /api/auth/login recebe {email, password}
+  // /api/auth/register recebe {email, password, usuario}
   async function login(email, password){
-    // tenta /api/auth/login -> fallback /login
     try{
       return await apiFetch("/api/auth/login", { method:"POST", body: JSON.stringify({ email, password }) });
     } catch (e){
+      // fallback: rota direta /login usa {email, senha}
       if (e.status === 404){
-        return await apiFetch("/login", { method:"POST", body: JSON.stringify({ email, password }) });
+        return await apiFetch("/login", { method:"POST", body: JSON.stringify({ email, senha: password, comando:"/login" }) });
       }
       throw e;
     }
@@ -767,128 +706,16 @@
     try{
       return await apiFetch("/api/auth/register", { method:"POST", body: JSON.stringify({ email, password, usuario }) });
     } catch (e){
+      // fallback: rota direta /register usa {email, senha, usuario}
       if (e.status === 404){
-        return await apiFetch("/register", { method:"POST", body: JSON.stringify({ email, password, usuario }) });
+        return await apiFetch("/register", { method:"POST", body: JSON.stringify({ email, senha: password, usuario, comando:"/register" }) });
       }
       throw e;
     }
   }
 
   async function validate(token){
-    try{
-      return await apiFetch("/api/auth/validate", { method:"POST", body: JSON.stringify({ session_token: token }) });
-    } catch (e){
-      // se não existir validate, só não quebra a UX
-      if (e.status === 404) return { ok:true, user_id:"", usuario:"" };
-      throw e;
-    }
-  }
-
-  async function fetchFeed(){
-    // 1) GET /api/social/users (ou custom)
-    try{
-      const r = await apiFetch(state.feedEp, { method:"GET" });
-      const users = r?.users ?? r?.result ?? (Array.isArray(r) ? r : []);
-      if (Array.isArray(users)) return users;
-    } catch (e){
-      // continua
-    }
-
-    // 2) fallback: POST /api/cmd {comando:"/social/users"}
-    const r2 = await apiFetch("/api/cmd", {
-      method:"POST",
-      body: JSON.stringify({ comando: "/social/users" })
-    });
-    const users2 = r2?.users ?? r2?.result ?? [];
-    if (Array.isArray(users2)) return users2;
-
-    return [];
-  }
-
-  // ===== UI: transitions =====
-  function viewTransition(updateDOM){
-    // View Transition API (progressivo) :contentReference[oaicite:4]{index=4}
-    if (document.startViewTransition && !window.matchMedia("(prefers-reduced-motion: reduce)").matches){
-      document.startViewTransition(() => updateDOM());
-    } else {
-      updateDOM();
-    }
-  }
-
-  function setDot(kind){
-    el.dot.classList.remove("ok","warn");
-    if (kind === "ok") el.dot.classList.add("ok");
-    else if (kind === "warn") el.dot.classList.add("warn");
-  }
-
-  function setApiPill(){
-    el.apiPill.textContent = "API: " + (state.apiBase || "—");
-    el.apiPill.title = state.apiBase || "API";
-  }
-
-  function showAuth(){
-    el.btnLogout.style.display = "none";
-    el.app.style.display = "none";
-    el.auth.style.display = "";
-  }
-
-  function showApp(){
-    el.btnLogout.style.display = "";
-    el.auth.style.display = "none";
-    el.app.style.display = "";
-  }
-
-  function setAuthMode(mode){
-    state.mode = mode;
-    const isReg = mode === "register";
-    el.authTitle.textContent = isReg ? "Registrar" : "Entrar";
-    el.authSub.textContent = isReg
-      ? "Register (tenta /api/auth/register e cai pro /register) 🚀"
-      : "Login (tenta /api/auth/login e cai pro /login) 😄";
-    el.btnToggleAuth.textContent = isReg ? "Entrar" : "Registrar";
-    el.btnAuthGo.textContent = isReg ? "Registrar" : "Entrar";
-    el.fieldUsuario.style.display = isReg ? "" : "none";
-    el.authHint.textContent = "";
-  }
-
-  function setRoute(route){
-    const routes = ["feed","profile","settings"];
-    if (!routes.includes(route)) route = "feed";
-
-    viewTransition(() => {
-      $$(".navItem").forEach(x => x.classList.toggle("active", x.dataset.route === route));
-      $$(".bItem").forEach(x => x.classList.toggle("active", x.dataset.route === route));
-
-      $$(".view").forEach(v => v.classList.remove("active"));
-      $("#view_" + route).classList.add("active");
-
-      if (route === "feed"){
-        el.viewTitle.textContent = "Feed";
-        el.viewSub.textContent = state.feed.length ? `${state.feed.length} contas 👥` : "Todas as contas";
-        el.btnReloadView.onclick = refreshFeed;
-      }
-      if (route === "profile"){
-        el.viewTitle.textContent = "Perfil";
-        el.viewSub.textContent = "Sua sessão e status";
-        el.btnReloadView.onclick = bootSessionOnly;
-      }
-      if (route === "settings"){
-        el.viewTitle.textContent = "Config";
-        el.viewSub.textContent = "API / Feed";
-        el.btnReloadView.onclick = boot;
-      }
-    });
-
-    history.replaceState({}, "", "#"+route);
-  }
-
-  // ===== Render feed =====
-  function normalizeUser(u){
-    const user_id = String(u?.user_id || u?.email || u?.id || u?._id || "");
-    const usuario = String(u?.usuario || u?.nick || u?.username || (user_id.includes("@") ? user_id.split("@")[0] : "user"));
-    const chars = Array.isArray(u?.personagens) ? u.personagens : (Array.isArray(u?.characters) ? u.characters : []);
-    const names = chars.map(c => c?.nick || c?.name || c?.nome || (typeof c === "string" ? c : "Personagem"));
-    return { user_id, usuario, names };
+    return await apiFetch("/api/auth/validate", { method:"POST", body: JSON.stringify({ session_token: token }) });
   }
 
   function renderSkeletons(){
@@ -902,142 +729,123 @@
 
   function renderFeed(){
     const q = (el.search.value || "").trim().toLowerCase();
-    const list = state.feed.map(normalizeUser).filter(u => {
-      if (!q) return true;
-      return u.usuario.toLowerCase().includes(q) || u.user_id.toLowerCase().includes(q);
+    const list = state.feed.filter(u => {
+      const usuario = String(u?.usuario || "").toLowerCase();
+      const email = String(u?.email || "").toLowerCase();
+      return !q || usuario.includes(q) || email.includes(q);
     });
 
     el.viewSub.textContent = `${list.length} contas 👥`;
-    el.feedHint.textContent = "";
-
     el.feedGrid.innerHTML = "";
+
     if (!list.length){
       el.feedHint.textContent = "Nada encontrado 😅";
       return;
     }
 
     list.forEach((u, idx) => {
+      const usuario = String(u?.usuario || "user");
+      const email = String(u?.email || "—");
+      const chars = Array.isArray(u?.personagens) ? u.personagens : [];
+      const names = chars.map(c => c?.nome || c?.nick || c?.name || (typeof c === "string" ? c : "Personagem"));
+
       const div = document.createElement("div");
       div.className = "userCard";
       div.innerHTML = `
         <div class="userTop">
-          <div class="avatar">${initials(u.usuario)}</div>
+          <div class="avatar">${initials(usuario)}</div>
           <div style="min-width:0;">
-            <div style="font-weight:900; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(u.usuario)}</div>
-            <div class="muted" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(u.user_id || "—")}</div>
+            <div style="font-weight:1000; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(usuario)}</div>
+            <div class="muted" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(email)}</div>
           </div>
         </div>
         <div class="chips">
-          <span class="chip">${u.names.length} personagem(ns)</span>
-          ${u.names.slice(0,4).map(n => `<span class="chip">${escapeHtml(n)}</span>`).join("")}
-          ${u.names.length > 4 ? `<span class="chip">+${u.names.length-4}</span>` : ""}
+          <span class="chip">${names.length} personagem(ns)</span>
+          ${names.slice(0,4).map(n => `<span class="chip">${escapeHtml(n)}</span>`).join("")}
+          ${names.length > 4 ? `<span class="chip">+${names.length-4}</span>` : ""}
         </div>
       `;
-
       el.feedGrid.appendChild(div);
 
-      // Entrada com WAAPI (progressivo) :contentReference[oaicite:5]{index=5}
-      if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+      if (!matchMedia("(prefers-reduced-motion: reduce)").matches){
         try{
           div.animate(
-            [
-              { transform: "translateY(10px) scale(.99)", opacity: 0 },
-              { transform: "translateY(0px) scale(1)", opacity: 1 }
-            ],
-            { duration: 260, easing: "cubic-bezier(.2,.8,.2,1)", delay: Math.min(idx*18, 200) }
+            [{ transform:"translateY(10px) scale(.99)", opacity:0 }, { transform:"translateY(0) scale(1)", opacity:1 }],
+            { duration:260, easing:"cubic-bezier(.2,.8,.2,1)", delay: Math.min(idx*18, 200) }
           );
         } catch {}
       }
     });
   }
 
+  // ⚠️ FEED: seu backend ainda não tem comando/rota pra listar usuários no Comandos.py
   async function refreshFeed(){
     el.feedHint.textContent = "";
     renderSkeletons();
 
     try{
-      const users = await fetchFeed();
-      state.feed = Array.isArray(users) ? users : [];
-      renderFeed();
-      toast("Feed", "Atualizado ✅");
+      // tentativa 1: endpoint configurável (se você criar depois)
+      try{
+        const r = await apiFetch(state.feedEp, { method:"GET" });
+        const users = r?.users ?? r?.result ?? (Array.isArray(r) ? r : []);
+        if (Array.isArray(users)) {
+          state.feed = users;
+          el.feedHint.textContent = "";
+          renderFeed();
+          toast("Feed", "Atualizado ✅");
+          return;
+        }
+      } catch {}
+
+      // tentativa 2: por /api/cmd (mas seu Comandos.py não tem comando de users)
+      // então mostramos aviso amigável:
+      state.feed = [];
+      el.feedGrid.innerHTML = "";
+      el.feedHint.textContent =
+"⚠️ O servidor ainda NÃO expõe um comando/rota de FEED.\n\n" +
+"✅ Seu Comandos.py tem só: /register, /login, /status.\n" +
+"👉 Quando você criar algo tipo /users (listagem), eu plugo aqui e fica 100% automático.\n\n" +
+"Dica rápida: crie uma rota GET /api/users ou um comando /users retornando [{email, usuario, personagens}]";
+      toast("Feed", "Sem endpoint de listagem no servidor 😅");
+
     } catch (e){
       const msg = isLikelyBlockedFetch(e)
-        ? "Bloqueado pelo navegador/extensão ou API inacessível 😵‍💫"
-        : (e.message || "Erro");
+        ? "Bloqueado pelo navegador/extensão (ou mixed content) 😵‍💫"
+        : (e.message || "Erro no feed");
       el.feedGrid.innerHTML = "";
-      el.feedHint.textContent = "❌ " + msg + "\nDica: Config > API override e tente uma URL https pública.";
-      toast("Erro no feed", msg);
+      el.feedHint.textContent = "❌ " + msg + "\n👉 Abre Config e ajusta a API (de preferência HTTPS público).";
+      toast("Erro", msg);
+      if (isLikelyBlockedFetch(e)) showNetBlockBanner({ where:"Feed", errMsg: e?.message });
     }
   }
 
-  // ===== Boot =====
-  async function boot(){
-    el.authHint.textContent = "";
-    el.settingsHint.textContent = "";
-    el.profileHint.textContent = "—";
-    el.tokenPill.textContent = state.token || "—";
-    el.meMini.textContent = "—";
+  function setRoute(route){
+    const routes = ["feed","profile","settings"];
+    if (!routes.includes(route)) route = "feed";
+    viewTransition(() => {
+      $$(".navItem").forEach(x => x.classList.toggle("active", x.dataset.route === route));
+      $$(".bItem").forEach(x => x.classList.toggle("active", x.dataset.route === route));
+      $$(".view").forEach(v => v.classList.remove("active"));
+      $("#view_" + route).classList.add("active");
 
-    setDot("warn");
-    el.apiPill.textContent = "API: carregando…";
-
-    try{
-      const { api } = await loadStatusFromGithub();
-      state.apiDetected = api;
-
-      const override = normalizeApi(localStorage.getItem(LS.apiOverride));
-      state.apiBase = override || state.apiDetected;
-
-      setApiPill();
-
-      // settings fields
-      el.detectedPill.textContent = state.apiDetected || "—";
-      el.inpApiOverride.value = override || "";
-      el.inpFeedEp.value = state.feedEp;
-
-      // ping
-      const ok = await ping();
-      state.statusOk = ok;
-      setDot(ok ? "ok" : "warn");
-
-      if (!ok){
-        el.settingsHint.textContent =
-          "⚠️ Não consegui pingar /api/status.\nSe a API detectada for http/localhost, use API override (https pública).";
-      }
-
-      if (state.token){
-        await bootSessionOnly();
-        showApp();
-        setRoute(location.hash.replace("#","") || "feed");
-        await refreshFeed();
-      } else {
-        showAuth();
-      }
-    } catch (e){
-      setDot("warn");
-      showAuth();
-      const msg = isLikelyBlockedFetch(e)
-        ? "Falha de rede (bloqueio/extensão) ao buscar server_status.json 😵‍💫"
-        : (e.message || "Erro");
-      el.authHint.textContent =
-        "❌ " + msg +
-        "\n\n✅ Dicas:\n- Testa aba anônima (desliga AdBlock/uBlock/antivírus web)\n- Confere se o JSON está público no GitHub";
-      toast("Boot falhou", msg);
-    }
+      if (route === "feed"){ el.viewTitle.textContent="Feed"; el.btnReloadView.onclick = refreshFeed; }
+      if (route === "profile"){ el.viewTitle.textContent="Perfil"; el.btnReloadView.onclick = bootSessionOnly; }
+      if (route === "settings"){ el.viewTitle.textContent="Config"; el.btnReloadView.onclick = boot; }
+    });
+    history.replaceState({}, "", "#"+route);
   }
 
   async function bootSessionOnly(){
     try{
       const v = await validate(state.token);
-      // se validate existir, usa
       const email = v?.user_id || "";
-      const usuario = v?.usuario || (email.includes("@") ? email.split("@")[0] : "user");
+      const usuario = email.includes("@") ? email.split("@")[0] : "user";
       state.me = { email, usuario };
+
       el.meMini.textContent = state.me.email ? `@${state.me.usuario} • ${state.me.email}` : `@${state.me.usuario}`;
       el.tokenPill.textContent = state.token || "—";
-      el.profileHint.textContent = state.statusOk ? "✅ sessão ok • servidor online" : "⚠️ sessão ok • servidor sem ping";
+      el.profileHint.textContent = state.statusOk ? "✅ sessão ok • servidor online" : "⚠️ sessão ok • sem ping";
     } catch (e){
-      // sessão inválida
       state.token = "";
       localStorage.removeItem(LS.token);
       state.me = null;
@@ -1046,8 +854,72 @@
     }
   }
 
-  // ===== Events =====
+  async function boot(){
+    el.authHint.textContent = "";
+    el.settingsHint.textContent = "";
+    el.profileHint.textContent = "—";
+    el.tokenPill.textContent = state.token || "—";
+    el.meMini.textContent = "—";
+
+    el.apiPill.textContent = "API: carregando…";
+    setDot("warn");
+
+    try{
+      const api = await loadStatusFromGithub();
+      state.apiDetected = api;
+
+      const override = normalizeApi(localStorage.getItem(LS.apiOverride));
+      state.apiBase = override || state.apiDetected;
+
+      setApiPill();
+      el.detectedPill.textContent = state.apiDetected || "—";
+      el.inpApiOverride.value = override || "";
+      el.inpFeedEp.value = state.feedEp;
+
+      if (isMixedContentRisk()){
+        el.settingsHint.textContent =
+"⚠️ HTTPS site + HTTP API (mixed content) pode ser bloqueado.\n" +
+"✅ Use uma API HTTPS pública e coloque no override.";
+        setDot("bad");
+      }
+
+      const ok = await ping();
+      state.statusOk = ok;
+      setDot(ok ? "ok" : "bad");
+
+      if (!ok){
+        el.settingsHint.textContent =
+(el.settingsHint.textContent ? el.settingsHint.textContent + "\n\n" : "") +
+"⚠️ Não consegui pingar /api/status.\nSe aparecer ERR_BLOCKED_BY_CLIENT é Brave/Adblock bloqueando.";
+      }
+
+      if (state.token){
+        await bootSessionOnly();
+        showApp();
+        setRoute(location.hash.replace("#","") || "feed");
+        await refreshFeed();
+      } else showAuth();
+
+    } catch (e){
+      setDot("bad");
+      showAuth();
+
+      const msg = isLikelyBlockedFetch(e)
+        ? "Falha de rede/bloqueio ao buscar server_status.json 😵‍💫"
+        : (e.message || "Erro no boot");
+
+      el.authHint.textContent =
+"❌ " + msg +
+"\n\n✅ Dicas:\n- Brave: Shields DOWN 🦁\n- Desliga AdBlock/uBlock/antivírus web\n- Testa aba anônima";
+
+      toast("Boot", msg);
+      if (isLikelyBlockedFetch(e)) showNetBlockBanner({ where:"server_status.json", errMsg: e?.message });
+    }
+  }
+
+  // ====== Eventos ======
   el.btnRefresh.onclick = boot;
+  el.btnOpenSettings.onclick = () => setRoute("settings");
 
   el.btnLogout.onclick = () => {
     state.token = "";
@@ -1065,14 +937,8 @@
     const password = (el.inpSenha.value || "").trim();
     const usuario = (el.inpUsuario.value || "").trim();
 
-    if (!email || !password){
-      el.authHint.textContent = "⚠️ Preenche email e senha";
-      return;
-    }
-    if (state.mode === "register" && !usuario){
-      el.authHint.textContent = "⚠️ Preenche usuário";
-      return;
-    }
+    if (!email || !password){ el.authHint.textContent = "⚠️ Preenche email e senha"; return; }
+    if (state.mode === "register" && !usuario){ el.authHint.textContent = "⚠️ Preenche usuário"; return; }
 
     try{
       el.authHint.textContent = "⏳ enviando…";
@@ -1091,56 +957,45 @@
       await bootSessionOnly();
       setRoute("feed");
       await refreshFeed();
+
     } catch (e){
       const msg = isLikelyBlockedFetch(e)
-        ? "Failed to fetch (bloqueio/extensão ou API inacessível)"
-        : (e.message || "Erro");
+        ? "Failed to fetch (bloqueio/extensão ou mixed content)"
+        : (e.message || "Erro no auth");
       el.authHint.textContent = "❌ " + msg;
       toast("Auth", msg);
+      if (isLikelyBlockedFetch(e)) showNetBlockBanner({ where: state.mode === "register" ? "register" : "login", errMsg: e?.message });
     }
   };
 
   el.btnFeedRefresh.onclick = refreshFeed;
   el.search.addEventListener("input", () => renderFeed());
 
-  // Sidebar + bottom nav
   $$(".navItem").forEach(n => n.addEventListener("click", () => setRoute(n.dataset.route)));
   $$(".bItem").forEach(n => n.addEventListener("click", () => setRoute(n.dataset.route)));
 
-  // Settings open goes to settings view (sem modal)
-  el.btnOpenSettings.onclick = () => setRoute("settings");
-
-  // Settings actions
   el.btnSaveApi.onclick = () => {
     const v = normalizeApi(el.inpApiOverride.value);
-    if (!v){
-      el.settingsHint.textContent = "❌ URL inválida. Ex: https://xxxx.trycloudflare.com";
-      toast("Config", "URL inválida");
-      return;
-    }
+    if (!v){ el.settingsHint.textContent = "❌ URL inválida. Ex: https://xxxx.trycloudflare.com"; toast("Config","URL inválida"); return; }
     localStorage.setItem(LS.apiOverride, v);
     el.settingsHint.textContent = "✅ Salvo! Clica Recarregar.";
-    toast("Config", "API override salva ✅");
+    toast("Config","API override salva ✅");
   };
 
   el.btnClearApi.onclick = () => {
     localStorage.removeItem(LS.apiOverride);
     el.inpApiOverride.value = "";
     el.settingsHint.textContent = "✅ Override removido! Clica Recarregar.";
-    toast("Config", "Override removido ✅");
+    toast("Config","Override removido ✅");
   };
 
   el.btnSaveFeed.onclick = () => {
     const v = (el.inpFeedEp.value || "").trim();
-    if (!v.startsWith("/")){
-      el.settingsHint.textContent = "❌ Endpoint precisa começar com /";
-      toast("Config", "Endpoint inválido");
-      return;
-    }
+    if (!v.startsWith("/")){ el.settingsHint.textContent = "❌ Endpoint precisa começar com /"; toast("Config","Endpoint inválido"); return; }
     state.feedEp = v;
     localStorage.setItem(LS.feedEp, state.feedEp);
     el.settingsHint.textContent = "✅ Feed endpoint salvo! Vai em Feed e Atualiza.";
-    toast("Config", "Feed endpoint salvo ✅");
+    toast("Config","Feed endpoint salvo ✅");
   };
 
   el.btnResetFeed.onclick = () => {
@@ -1148,10 +1003,9 @@
     localStorage.setItem(LS.feedEp, state.feedEp);
     el.inpFeedEp.value = state.feedEp;
     el.settingsHint.textContent = "✅ Resetado pro padrão.";
-    toast("Config", "Reset ✅");
+    toast("Config","Reset ✅");
   };
 
-  // Keyboard shortcuts 1/2/3
   window.addEventListener("keydown", (e) => {
     if (e.target && ["INPUT","TEXTAREA"].includes(e.target.tagName)) return;
     if (e.key === "1") setRoute("feed");
@@ -1159,7 +1013,17 @@
     if (e.key === "3") setRoute("settings");
   });
 
-  // Start
+  // ✅ warnings globais (qualquer erro vira toast + modal se for bloqueio)
+  window.addEventListener("error", (ev) => {
+    const msg = ev?.message || "Erro desconhecido";
+    toast("Erro", msg);
+  });
+  window.addEventListener("unhandledrejection", (ev) => {
+    const msg = String(ev?.reason?.message || ev?.reason || "Promise rejeitada");
+    toast("Erro", msg);
+    if (isLikelyBlockedFetch(ev?.reason)) showNetBlockBanner({ where:"Promise", errMsg: msg });
+  });
+
   setAuthMode("login");
   boot();
 })();
