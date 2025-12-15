@@ -1,672 +1,479 @@
-# Server.py
-import os
-import json
-import time
-import secrets
-import asyncio
-import subprocess
-import threading
-from typing import Dict, Any, Tuple, List, Optional
-from contextlib import asynccontextmanager
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NoSense • Social</title>
 
-from fastapi import FastAPI, Request, Body
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23111827'/%3E%3Cpath d='M18 38c6 10 22 10 28 0' fill='none' stroke='%237c3aed' stroke-width='6' stroke-linecap='round'/%3E%3Ccircle cx='24' cy='26' r='4' fill='%23e5e7eb'/%3E%3Ccircle cx='40' cy='26' r='4' fill='%23e5e7eb'/%3E%3C/svg%3E" />
 
-from Comandos import processar_comando
-from Database import Database
+  <style>
+    :root{
+      --bg:#0b0e14; --panel:#111827; --panel2:#0f172a;
+      --text:#e5e7eb; --muted:#9ca3af; --line:#1f2937;
+      --ok:#22c55e; --bad:#ef4444; --brand:#7c3aed;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --r: 16px; --pad: 14px; --gap: 14px;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+    }
+    *{ box-sizing:border-box; }
+    body{ margin:0; background:radial-gradient(1200px 800px at 10% 0%, #1b1238 0%, transparent 50%), var(--bg); color:var(--text); }
+    button, input{ font:inherit; }
 
-# ============================================================
-# CONFIG BÁSICA
-# ============================================================
-HTTP_HOST = os.getenv("HTTP_HOST", "0.0.0.0")
-HTTP_PORT = int(os.getenv("HTTP_PORT", "5000"))
-VERSION_API = "0.0.0.1"
+    .topbar{
+      position:sticky; top:0; z-index:10;
+      display:flex; gap:10px; align-items:center; justify-content:space-between;
+      padding:10px 14px; border-bottom:1px solid var(--line);
+      background:rgba(11,14,20,.75); backdrop-filter: blur(10px);
+    }
+    .brand{ display:flex; align-items:center; gap:10px; font-weight:900; }
+    .dot{ width:10px; height:10px; border-radius:999px; background:var(--bad); box-shadow:0 0 0 4px rgba(239,68,68,.15); }
+    .dot.ok{ background:var(--ok); box-shadow:0 0 0 4px rgba(34,197,94,.15); }
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 10px; border:1px solid var(--line);
+      background:rgba(17,24,39,.6); border-radius:999px;
+      color:var(--muted); font-size:13px;
+      max-width:520px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    }
+    .btn{
+      border:1px solid var(--line);
+      background:rgba(17,24,39,.9);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:12px;
+      cursor:pointer;
+      transition:.15s transform ease;
+    }
+    .btn:hover{ transform: translateY(-1px); }
+    .btn.primary{ border-color:rgba(124,58,237,.55); background:rgba(124,58,237,.18); }
+    .btn.danger{ border-color:rgba(239,68,68,.5); background:rgba(239,68,68,.14); }
 
-PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL", f"http://127.0.0.1:{HTTP_PORT}")
+    .wrap{ max-width:1100px; margin:0 auto; padding:14px; }
+    .grid{ display:grid; gap:var(--gap); grid-template-columns: 340px 1fr; align-items:start; }
+    @media (max-width: 980px){ .grid{ grid-template-columns: 1fr; } }
 
-LAUNCHER_VERSION = "0.0.2"
-LAUNCHER_ZIP_NAME = "OBEARCO-Launcher.zip"
+    .card{
+      border:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(17,24,39,.9), rgba(15,23,42,.75));
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card .hd{
+      padding: var(--pad);
+      border-bottom:1px solid var(--line);
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+    }
+    .card .bd{ padding: var(--pad); }
+    .title{ font-weight:900; }
+    .muted{ color:var(--muted); font-size:13px; }
+    .sep{ height:1px; background:var(--line); margin:10px 0; }
+    .toast{ margin-top:10px; font-size:13px; color:var(--muted); }
 
-GAME_VERSION = "1.0.0"
-GAME_ZIP_NAME = "game_v1.0.0.zip"
+    .auth{ max-width:460px; margin:40px auto; padding:0 14px; }
+    .auth .card{ border-radius:20px; }
+    .field{ display:grid; gap:6px; margin:10px 0; }
+    input{
+      width:100%; padding:12px 12px; border-radius:12px;
+      border:1px solid var(--line); background:rgba(2,6,23,.45);
+      color:var(--text); outline:none;
+    }
+    input:focus{ border-color:rgba(124,58,237,.6); box-shadow:0 0 0 4px rgba(124,58,237,.15); }
 
-# ============================================================
-# LOBBY UDP (jogadores)
-# ============================================================
-UDP_BIND_HOST = os.getenv("UDP_BIND_HOST", "0.0.0.0")
-UDP_BIND_PORT = int(os.getenv("UDP_BIND_PORT", "7777"))
+    .feedGrid{ display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap:12px; }
+    @media (max-width: 980px){ .feedGrid{ grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 520px){ .feedGrid{ grid-template-columns: 1fr; } }
 
-UDP_PUBLIC_HOST = os.getenv("UDP_PUBLIC_HOST", "127.0.0.1")
-UDP_PUBLIC_PORT = int(os.getenv("UDP_PUBLIC_PORT", str(UDP_BIND_PORT)))
-
-# ============================================================
-# STATUS JSON + GIT
-# ============================================================
-DEFAULT_STATUS_DIR = r"C:\Users\Admin\Desktop\Meu_Jogo\meu_launcher\servidor\site-servidor\Servidor"
-STATUS_DIR = os.getenv("STATUS_DIR", DEFAULT_STATUS_DIR)
-STATUS_FILE_PATH = os.path.join(STATUS_DIR, "server_status.json")
-GIT_REMOTE_NAME = os.getenv("GIT_REMOTE_NAME", "origin")
-
-
-def _write_status_json(status_servidor: str) -> None:
-    os.makedirs(STATUS_DIR, exist_ok=True)
-
-    data = {
-        "url_api_base": PUBLIC_BASE_URL,
-        "porta": HTTP_PORT,
-        "status_servidor": status_servidor,
-        "version_api": VERSION_API,
-        "LAUCHER": {
-            "current_version": LAUNCHER_VERSION,
-            "update_zip_name": LAUNCHER_ZIP_NAME,
-        },
-        "GAME": {
-            "current_version": GAME_VERSION,
-            "update_zip_name": GAME_ZIP_NAME,
-        },
-        "UDP_LOBBY": {"host": UDP_PUBLIC_HOST, "port": UDP_PUBLIC_PORT},
+    .userCard{
+      border:1px solid var(--line); background:rgba(2,6,23,.35);
+      border-radius:14px; padding:12px; cursor:pointer;
+      transition:.15s transform ease, .15s border-color ease;
+    }
+    .userCard:hover{ transform: translateY(-2px); border-color:rgba(124,58,237,.55); }
+    .userTop{ display:flex; gap:10px; align-items:center; }
+    .avatar{
+      width:42px; height:42px; border-radius:14px;
+      display:grid; place-items:center;
+      background:rgba(124,58,237,.18);
+      border:1px solid rgba(124,58,237,.35);
+      font-weight:900;
+    }
+    .chips{ display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+    .chip{
+      font-size:12px; color:var(--muted);
+      border:1px solid var(--line);
+      background:rgba(17,24,39,.6);
+      padding:6px 8px; border-radius:999px;
+      max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
     }
 
-    with open(STATUS_FILE_PATH, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=4, ensure_ascii=False)
-
-    print(f"[STATUS] Atualizado: {STATUS_FILE_PATH} -> {status_servidor}")
-    print(f"[STATUS] url_api_base = {PUBLIC_BASE_URL}")
-
-
-def _git_push_status(commit_message: str) -> None:
-    repo_path = STATUS_DIR
-    filename = os.path.basename(STATUS_FILE_PATH)
-
-    if not os.path.isdir(repo_path):
-        print(f"[GIT] STATUS_DIR não existe: {repo_path}")
-        return
-
-    try:
-        subprocess.run(["git", "add", filename], cwd=repo_path, check=True)
-
-        commit_result = subprocess.run(
-            ["git", "commit", "-m", commit_message],
-            cwd=repo_path,
-            check=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-        )
-
-        if "nothing to commit" in (commit_result.stdout or ""):
-            print("[GIT] Nada para commitar.")
-            return
-
-        branch_result = subprocess.run(
-            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
-            cwd=repo_path,
-            check=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-        )
-        branch = branch_result.stdout.strip()
-
-        subprocess.run(["git", "push", GIT_REMOTE_NAME, branch], cwd=repo_path, check=True)
-        print("[GIT] Push OK.")
-    except Exception as e:
-        print(f"[GIT] ERRO: {e}")
-
-
-def update_status_and_push(status: str) -> None:
-    _write_status_json(status)
-    msg = f"STATUS: Servidor {status.upper()} - {PUBLIC_BASE_URL}"
-    _git_push_status(msg)
-
-
-# ============================================================
-# DB + SESSÕES
-# ============================================================
-db_connection: Database | None = None
-
-SESSION_TTL = 60 * 60 * 24 * 7  # 7 dias
-SESSIONS: Dict[str, Dict[str, Any]] = {}
-
-
-def _create_session(email: str, usuario: str | None, ip: str | None, ua: str | None) -> str:
-    now_ts = time.time()
-    token: str | None = None
-
-    if db_connection and getattr(db_connection, "is_connected", lambda: False)():
-        try:
-            fn = getattr(db_connection, "create_session", None)
-            if callable(fn):
-                sess_result = fn(email=email, ip=ip or "", ua=ua or "", ttl_seconds=SESSION_TTL)
-                if isinstance(sess_result, dict) and sess_result.get("ok"):
-                    token = sess_result.get("token")
-        except Exception as e:
-            print(f"[SESSION] Exceção ao criar sessão no DB: {e}")
-
-    if not token:
-        token = secrets.token_hex(32)
-
-    SESSIONS[token] = {
-        "email": email,
-        "usuario": usuario or "",
-        "created_ts": now_ts,
-        "ip": ip or "",
-        "ua": ua or "",
+    /* Modal simples */
+    .modalBack{
+      position:fixed; inset:0; background:rgba(0,0,0,.55);
+      display:none; align-items:center; justify-content:center; padding:14px;
     }
-
-    print(f"[SESSION] criada para {email}: {token}")
-    return token
-
-
-def _get_session(token: str | None) -> Dict[str, Any] | None:
-    if not token:
-        return None
-
-    now_ts = time.time()
-
-    data = SESSIONS.get(token)
-    if data:
-        if now_ts - data.get("created_ts", 0) <= SESSION_TTL:
-            return data
-        SESSIONS.pop(token, None)
-
-    if db_connection and getattr(db_connection, "is_connected", lambda: False)():
-        fn = getattr(db_connection, "get_valid_session", None)
-        if callable(fn):
-            try:
-                db_data = fn(token=token, ttl_seconds=SESSION_TTL)
-                if db_data:
-                    mapped = {
-                        "email": db_data.get("email"),
-                        "usuario": db_data.get("usuario", ""),
-                        "created_ts": db_data.get("created_at", now_ts),
-                        "ip": db_data.get("ip", ""),
-                        "ua": db_data.get("ua", ""),
-                    }
-                    SESSIONS[token] = mapped
-                    return mapped
-            except Exception as e:
-                print(f"[SESSION] Erro ao carregar sessão do DB: {e}")
-
-    return None
-
-
-def _get_password(body: Dict[str, Any]) -> str:
-    return (body.get("password") or body.get("senha") or body.get("pass") or "").strip()
-
-
-# ============================================================
-# UDP LOBBY
-# ============================================================
-class LobbyProtocol(asyncio.DatagramProtocol):
-    def connection_made(self, transport):
-        self.transport = transport
-        print(
-            f"[UDP] Lobby escutando em {UDP_BIND_HOST}:{UDP_BIND_PORT} "
-            f"(publicado como {UDP_PUBLIC_HOST}:{UDP_PUBLIC_PORT})"
-        )
-
-    def datagram_received(self, data, addr):
-        msg = data.decode("utf-8", errors="ignore").strip()
-        print(f"[UDP] {addr} -> {msg}")
-        self.transport.sendto(b"OK", addr)
-
-
-_udp_task: asyncio.Task | None = None
-
-
-async def start_udp_lobby() -> None:
-    loop = asyncio.get_running_loop()
-    transport, _protocol = await loop.create_datagram_endpoint(
-        lambda: LobbyProtocol(),
-        local_addr=(UDP_BIND_HOST, UDP_BIND_PORT),
-    )
-    try:
-        await asyncio.Future()
-    finally:
-        transport.close()
-        print("[UDP] Lobby encerrado.")
-
-
-async def stop_udp_lobby() -> None:
-    global _udp_task
-    if _udp_task:
-        _udp_task.cancel()
-        try:
-            await _udp_task
-        except asyncio.CancelledError:
-            pass
-        _udp_task = None
-
-
-# ============================================================
-# CLOUDFLARE TUNNEL (trycloudflare)
-# ============================================================
-CLOUDFLARED_PATH = os.getenv("CLOUDFLARED_PATH", "cloudflared")
-_cf_process: subprocess.Popen | None = None
-
-
-def _start_cloudflare_tunnel():
-    global _cf_process, PUBLIC_BASE_URL
-
-    if _cf_process is not None and _cf_process.poll() is None:
-        print("[CF] Já existe um cloudflared rodando.")
-        return
-
-    try:
-        cmd = [
-            CLOUDFLARED_PATH,
-            "tunnel",
-            "--url",
-            f"http://127.0.0.1:{HTTP_PORT}",
-            "--no-autoupdate",
-        ]
-        print(f"[CF] Iniciando Cloudflare Tunnel: {' '.join(cmd)}")
-        _cf_process = subprocess.Popen(
-            cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True,
-            bufsize=1,
-        )
-    except FileNotFoundError:
-        print("[CF] ERRO: 'cloudflared' não encontrado.")
-        return
-    except Exception as e:
-        print(f"[CF] ERRO ao iniciar cloudflared: {e}")
-        return
-
-    def _reader():
-        global PUBLIC_BASE_URL
-        if not _cf_process or not _cf_process.stdout:
-            return
-
-        for line in _cf_process.stdout:
-            line = line.rstrip("\n")
-            print(f"[CF] {line}")
-            if "trycloudflare.com" in line and "https://" in line:
-                start = line.find("https://")
-                end = line.find(" ", start)
-                if end == -1:
-                    end = len(line)
-                url = line[start:end].strip()
-                if url:
-                    PUBLIC_BASE_URL = url
-                    print(f"[CF] URL do túnel detectada: {PUBLIC_BASE_URL}")
-                    update_status_and_push("Online")
-
-    threading.Thread(target=_reader, daemon=True).start()
-
-
-def _stop_cloudflare_tunnel():
-    global _cf_process
-    if _cf_process is None:
-        return
-    if _cf_process.poll() is not None:
-        _cf_process = None
-        return
-
-    print("[CF] Encerrando cloudflared...")
-    try:
-        _cf_process.terminate()
-        _cf_process.wait(timeout=10)
-    except Exception as e:
-        print(f"[CF] Erro ao encerrar cloudflared: {e}")
-    finally:
-        _cf_process = None
-
-
-# ============================================================
-# FASTAPI + LIFESPAN
-# ============================================================
-async def on_startup():
-    global db_connection, _udp_task
-    print("[STARTUP] Iniciando servidor...")
-
-    try:
-        db_connection = Database()
-        print("[DB] Conectado.")
-    except Exception as e:
-        db_connection = None
-        print(f"[DB] ERRO: {e}")
-
-    _udp_task = asyncio.create_task(start_udp_lobby())
-
-    update_status_and_push("Online")
-    _start_cloudflare_tunnel()
-
-
-async def on_shutdown():
-    global db_connection
-    print("[SHUTDOWN] Encerrando servidor...")
-
-    await stop_udp_lobby()
-    _stop_cloudflare_tunnel()
-
-    if db_connection and hasattr(db_connection, "close"):
-        try:
-            db_connection.close()
-            print("[DB] Conexão fechada.")
-        except Exception as e:
-            print(f"[DB] Erro ao fechar: {e}")
-    db_connection = None
-
-    update_status_and_push("Offline")
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    await on_startup()
-    try:
-        yield
-    finally:
-        await on_shutdown()
-
-
-app = FastAPI(lifespan=lifespan)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# ============================================================
-# HELPER DE COMANDOS (DB)
-# ============================================================
-def _check_db_and_process(data: Dict[str, Any], command: str) -> Tuple[Dict[str, Any], int]:
-    global db_connection
-
-    if not db_connection or not getattr(db_connection, "is_connected", lambda: False)():
-        return (
-            {"error": "Servidor temporariamente indisponível. Falha na conexão com o Banco de Dados."},
-            503,
-        )
-
-    if not isinstance(data, dict):
-        return ({"error": "Payload inválido. JSON deve ser um objeto."}, 400)
-
-    data["comando"] = command
-
-    try:
-        print(f"[CMD] => {json.dumps(data, ensure_ascii=False)}")
-        resp = processar_comando(db_connection, data)
-    except Exception as e:
-        print(f"[CMD] ERRO processar_comando: {e}")
-        return ({"error": "Erro interno ao processar comando."}, 500)
-
-    if not isinstance(resp, dict):
-        resp = {"result": resp}
-
-    print(f"[CMD] <= {resp}")
-    code = 200 if "error" not in resp else 400
-    return resp, code
-
-
-# ============================================================
-# ROTAS HTTP
-# ============================================================
-@app.get("/api/status")
-def api_status():
-    return {
-        "status": "Online",
-        "version_api": VERSION_API,
-        "url_api_base": PUBLIC_BASE_URL,
-        "udp_lobby": {"host": UDP_PUBLIC_HOST, "port": UDP_PUBLIC_PORT},
+    .modal{
+      width:min(560px, 100%);
+      border:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(17,24,39,.98), rgba(15,23,42,.95));
+      border-radius:18px; box-shadow: var(--shadow);
+      overflow:hidden;
     }
+  </style>
+</head>
 
+<body>
+  <div class="topbar">
+    <div class="brand">
+      <div class="dot" id="serverDot"></div>
+      <div>NoSense • Social</div>
+      <div class="pill" id="apiPill">API: carregando…</div>
+    </div>
+    <div style="display:flex; gap:10px; align-items:center;">
+      <button class="btn" id="btnReload">Recarregar</button>
+      <button class="btn danger" id="btnLogout" style="display:none;">Sair</button>
+    </div>
+  </div>
 
-# -------- AUTH (site usa essas) --------
-@app.post("/api/auth/login")
-def api_auth_login(request: Request, body: Dict[str, Any] = Body(default_factory=dict)):
-    email = (body.get("email") or "").strip()
-    senha = _get_password(body)
+  <!-- AUTH -->
+  <section class="auth" id="authView">
+    <div class="card">
+      <div class="hd">
+        <div>
+          <div class="title" id="authTitle">Entrar</div>
+          <div class="muted" id="authSub">Login via /api/auth/login 😄</div>
+        </div>
+        <button class="btn" id="btnToggleAuth">Registrar</button>
+      </div>
 
-    ip = request.client.host if request.client else ""
-    ua = request.headers.get("User-Agent", "")
+      <div class="bd">
+        <div class="field" id="userField" style="display:none;">
+          <div class="muted">Usuário</div>
+          <input id="inpUser" placeholder="ex: Guh" />
+        </div>
 
-    data_cmd = {"email": email, "senha": senha, "ip": ip, "ua": ua}
-    resp, status = _check_db_and_process(data_cmd, "/login")
+        <div class="field">
+          <div class="muted">Email</div>
+          <input id="inpEmail" placeholder="seu@email.com" />
+        </div>
 
-    if "error" in resp or status != 200:
-        return JSONResponse(status_code=401, content={"ok": False, "error": resp.get("error", "Erro de login")})
+        <div class="field">
+          <div class="muted">Senha</div>
+          <input id="inpPass" type="password" placeholder="••••••••" />
+        </div>
 
-    usuario = (resp.get("usuario") or "").strip() or (email.split("@")[0] if "@" in email else email)
-    token = _create_session(email, usuario, ip, ua)
-    return {"ok": True, "user_id": email, "usuario": usuario, "session_token": token}
+        <button class="btn primary" id="btnAuthGo" style="width:100%;">Entrar</button>
+        <div class="toast" id="authToast"></div>
+      </div>
+    </div>
+  </section>
 
+  <!-- APP -->
+  <section class="wrap" id="appView" style="display:none;">
+    <div class="grid">
 
-@app.post("/api/auth/register")
-def api_auth_register(request: Request, body: Dict[str, Any] = Body(default_factory=dict)):
-    email = (body.get("email") or "").strip()
-    senha = _get_password(body)
-    usuario = (body.get("usuario") or "").strip()
+      <div class="card">
+        <div class="hd">
+          <div>
+            <div class="title">Meu perfil</div>
+            <div class="muted" id="meMini">—</div>
+          </div>
+        </div>
+        <div class="bd">
+          <div class="muted">session_token</div>
+          <div class="pill" id="tokenPill" title="session_token">—</div>
+          <div class="sep"></div>
+          <div class="muted">Status</div>
+          <div class="toast" id="meToast">—</div>
+        </div>
+      </div>
 
-    if not usuario and "@" in email:
-        usuario = email.split("@", 1)[0]
+      <div class="card">
+        <div class="hd">
+          <div>
+            <div class="title">Feed</div>
+            <div class="muted" id="feedInfo">Carregando…</div>
+          </div>
+          <button class="btn" id="btnRefreshFeed">Atualizar</button>
+        </div>
+        <div class="bd">
+          <div class="feedGrid" id="feedGrid"></div>
+          <div class="toast" id="feedToast"></div>
+        </div>
+      </div>
 
-    data_cmd = {"email": email, "senha": senha, "usuario": usuario}
-    resp, status = _check_db_and_process(data_cmd, "/register")
+    </div>
+  </section>
 
-    if "error" in resp or status != 200:
-        return JSONResponse(status_code=400, content={"ok": False, "error": resp.get("error", "Erro ao registrar")})
+  <!-- Modal -->
+  <div class="modalBack" id="modalBack">
+    <div class="modal">
+      <div class="hd" style="padding:14px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <div class="title" id="mTitle">Conta</div>
+          <div class="muted" id="mSub">—</div>
+        </div>
+        <button class="btn" id="mClose">Fechar</button>
+      </div>
+      <div class="bd" style="padding:14px;">
+        <div class="muted">Personagens</div>
+        <div class="sep"></div>
+        <div id="mChars" class="chips"></div>
+      </div>
+    </div>
+  </div>
 
-    ip = request.client.host if request.client else ""
-    ua = request.headers.get("User-Agent", "")
-    token = _create_session(email, usuario, ip, ua)
+<script>
+  const el = (id) => document.getElementById(id);
+  const setToast = (id, msg) => el(id).textContent = msg || "";
 
-    return {"ok": True, "user_id": email, "usuario": usuario, "session_token": token, "message": resp.get("message", "")}
+  let API = null;
+  let MODE = "login";
+  let TOKEN = localStorage.getItem("ns_session_token") || "";
+  let ME = null;
 
+  const statusUrls = [
+    new URL("server_status.json", location.href).toString(),
+    "https://raw.githubusercontent.com/NoSense-Bot/Servidor/main/server_status.json"
+  ];
 
-@app.post("/api/auth/validate")
-def api_auth_validate(body: Dict[str, Any] = Body(default_factory=dict)):
-    token = (body.get("session_token") or "").strip()
-    sess = _get_session(token)
-    if not sess:
-        return JSONResponse(status_code=401, content={"ok": False})
-    return {"ok": True, "user_id": sess["email"], "usuario": sess.get("usuario", "")}
+  function escapeHtml(s){
+    return String(s ?? "")
+      .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;").replaceAll("'","&#039;");
+  }
 
+  async function loadConfig(){
+    let lastErr = null;
+    for (const url of statusUrls){
+      try{
+        const r = await fetch(url, { cache:"no-store" });
+        if (!r.ok) { lastErr = new Error("HTTP " + r.status); continue; }
+        const cfg = await r.json();
+        const api = cfg?.url_api_base;
+        if (typeof api === "string" && api.startsWith("http")) return api.replace(/\/+$/,"");
+        lastErr = new Error("url_api_base não encontrado");
+      }catch(e){ lastErr = e; }
+    }
+    throw lastErr || new Error("Falha lendo server_status.json");
+  }
 
-# -------- COMPAT (pra quem ainda chama /login e /register direto) --------
-@app.post("/login")
-def compat_login(request: Request, body: Dict[str, Any] = Body(default_factory=dict)):
-    # aceita senha/password
-    email = (body.get("email") or "").strip()
-    senha = _get_password(body)
+  async function ping(){
+    try{
+      const r = await fetch(API + "/api/status", { cache:"no-store" });
+      return r.ok;
+    }catch(_){ return false; }
+  }
 
-    ip = request.client.host if request.client else ""
-    ua = request.headers.get("User-Agent", "")
+  async function apiFetch(path, opts = {}){
+    const headers = Object.assign({ "Content-Type":"application/json" }, opts.headers || {});
+    const r = await fetch(API + path, Object.assign({}, opts, { headers }));
+    const ct = r.headers.get("content-type") || "";
+    const body = ct.includes("application/json") ? await r.json().catch(()=>null) : await r.text().catch(()=>null);
+    if (!r.ok){
+      const msg = body?.error || ("HTTP " + r.status);
+      throw new Error(msg);
+    }
+    return body;
+  }
 
-    data_cmd = {"email": email, "senha": senha, "ip": ip, "ua": ua}
-    resp, status = _check_db_and_process(data_cmd, "/login")
-    if "error" in resp or status != 200:
-        return JSONResponse(status_code=401, content={"ok": False, "error": resp.get("error", "Erro de login")})
+  function setAuthMode(mode){
+    MODE = mode;
+    const isReg = MODE === "register";
+    el("authTitle").textContent = isReg ? "Registrar" : "Entrar";
+    el("authSub").textContent = isReg ? "Register via /api/auth/register 🚀" : "Login via /api/auth/login 😄";
+    el("btnToggleAuth").textContent = isReg ? "Entrar" : "Registrar";
+    el("btnAuthGo").textContent = isReg ? "Registrar" : "Entrar";
+    el("userField").style.display = isReg ? "" : "none";
+    setToast("authToast","");
+  }
 
-    usuario = (resp.get("usuario") or "").strip() or (email.split("@")[0] if "@" in email else email)
-    token = _create_session(email, usuario, ip, ua)
-    return {"ok": True, "user_id": email, "usuario": usuario, "session_token": token}
+  function showAuth(){
+    el("authView").style.display = "";
+    el("appView").style.display = "none";
+    el("btnLogout").style.display = "none";
+  }
+  function showApp(){
+    el("authView").style.display = "none";
+    el("appView").style.display = "";
+    el("btnLogout").style.display = "";
+  }
+  function renderMe(){
+    el("meMini").textContent = ME ? `@${ME.usuario} • ${ME.email}` : "—";
+    el("tokenPill").textContent = TOKEN || "—";
+  }
 
+  // ===== FEED =====
+  function initials(name){ return (name?.trim()?.[0] || "?").toUpperCase(); }
 
-@app.post("/register")
-def compat_register(request: Request, body: Dict[str, Any] = Body(default_factory=dict)):
-    email = (body.get("email") or "").strip()
-    senha = _get_password(body)
-    usuario = (body.get("usuario") or "").strip()
+  function normalizeUser(u){
+    const user_id = u.user_id || u.email || u.id || u._id || "";
+    const usuario = u.usuario || u.nick || u.username || (u.email ? u.email.split("@")[0] : "User");
+    const chars = Array.isArray(u.personagens) ? u.personagens : (Array.isArray(u.characters) ? u.characters : []);
+    const charNames = chars.map(c => c.nick || c.name || c.nome || "Personagem");
+    return { user_id, usuario, charNames, raw:u };
+  }
 
-    if not usuario and "@" in email:
-        usuario = email.split("@", 1)[0]
+  function openModal(u){
+    el("mTitle").textContent = "@" + u.usuario;
+    el("mSub").textContent = u.user_id || "—";
+    const wrap = el("mChars");
+    wrap.innerHTML = "";
+    if (!u.charNames.length){
+      wrap.innerHTML = `<span class="chip">Sem personagens</span>`;
+    } else {
+      u.charNames.forEach(n => {
+        const span = document.createElement("span");
+        span.className = "chip";
+        span.textContent = n;
+        wrap.appendChild(span);
+      });
+    }
+    el("modalBack").style.display = "flex";
+  }
 
-    data_cmd = {"email": email, "senha": senha, "usuario": usuario}
-    resp, status = _check_db_and_process(data_cmd, "/register")
-    if "error" in resp or status != 200:
-        return JSONResponse(status_code=400, content={"ok": False, "error": resp.get("error", "Erro ao registrar")})
+  function renderFeed(users){
+    const grid = el("feedGrid");
+    grid.innerHTML = "";
+    const norm = users.map(normalizeUser);
 
-    ip = request.client.host if request.client else ""
-    ua = request.headers.get("User-Agent", "")
-    token = _create_session(email, usuario, ip, ua)
+    el("feedInfo").textContent = `${norm.length} contas 👥`;
+    norm.forEach(u => {
+      const div = document.createElement("div");
+      div.className = "userCard";
+      div.innerHTML = `
+        <div class="userTop">
+          <div class="avatar">${initials(u.usuario)}</div>
+          <div style="min-width:0;">
+            <div style="font-weight:900; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(u.usuario)}</div>
+            <div class="muted">${u.charNames.length} personagem(ns)</div>
+          </div>
+        </div>
+        <div class="chips">
+          ${(u.charNames.slice(0,4)).map(n => `<span class="chip">${escapeHtml(n)}</span>`).join("")}
+          ${u.charNames.length > 4 ? `<span class="chip">+${u.charNames.length-4}</span>` : ""}
+        </div>
+      `;
+      div.onclick = () => openModal(u);
+      grid.appendChild(div);
+    });
+  }
 
-    return {"ok": True, "user_id": email, "usuario": usuario, "session_token": token, "message": resp.get("message", "")}
+  async function refreshFeed(){
+    setToast("feedToast","");
+    el("feedInfo").textContent = "Carregando…";
+    try{
+      const res = await apiFetch("/api/social/users", { method:"GET" });
+      const users = res?.users || [];
+      renderFeed(users);
+    }catch(e){
+      el("feedInfo").textContent = "❌ Feed indisponível";
+      setToast("feedToast", "Backend: cria /api/social/users (código abaixo) 😅");
+      el("feedGrid").innerHTML = "";
+    }
+  }
 
+  // ===== BOOT =====
+  async function boot(){
+    setToast("authToast","");
+    el("apiPill").textContent = "API: carregando…";
+    el("serverDot").classList.remove("ok");
 
-# -------- FEED (site usa isso) --------
-def _normalize_char_list(chars: Any) -> List[Dict[str, str]]:
-    if not isinstance(chars, list):
-        return []
-    out: List[Dict[str, str]] = []
-    for c in chars:
-        if isinstance(c, str):
-            out.append({"nick": c})
-        elif isinstance(c, dict):
-            nick = c.get("nick") or c.get("nome") or c.get("name") or "Personagem"
-            out.append({"nick": str(nick)})
-        else:
-            out.append({"nick": "Personagem"})
-    return out
+    try{
+      API = await loadConfig();
+      el("apiPill").textContent = "API: " + API;
 
+      const ok = await ping();
+      el("serverDot").classList.toggle("ok", ok);
 
-def _auto_feed_from_pymongo() -> Optional[List[Dict[str, Any]]]:
-    """
-    Tenta montar o feed automaticamente se Database expõe .db (pymongo database).
-    Não é garantido, mas ajuda MUITO sem mexer em Database.py.
-    """
-    if not db_connection:
-        return None
+      if (TOKEN){
+        try{
+          const v = await apiFetch("/api/auth/validate", {
+            method:"POST",
+            body: JSON.stringify({ session_token: TOKEN })
+          });
+          if (!v?.ok) throw new Error("Sessão inválida");
+          ME = { email: v.user_id, usuario: (v.user_id?.split("@")?.[0] || "user") };
+          showApp();
+          renderMe();
+          setToast("meToast","✅ sessão ok");
+          await refreshFeed();
+          return;
+        }catch(_){
+          TOKEN = "";
+          localStorage.removeItem("ns_session_token");
+        }
+      }
 
-    db = getattr(db_connection, "db", None) or getattr(db_connection, "database", None)
-    if db is None:
-        return None
+      showAuth();
+    }catch(e){
+      showAuth();
+      setToast("authToast", "❌ " + e.message);
+    }
+  }
 
-    list_cols = getattr(db, "list_collection_names", None)
-    if not callable(list_cols):
-        return None
+  // ===== EVENTS =====
+  el("btnToggleAuth").onclick = () => setAuthMode(MODE === "login" ? "register" : "login");
 
-    try:
-        cols = set(list_cols())
-    except Exception:
-        return None
+  el("btnAuthGo").onclick = async () => {
+    const email = (el("inpEmail").value || "").trim();
+    const password = (el("inpPass").value || "").trim();
+    const usuario = (el("inpUser").value || "").trim();
 
-    user_candidates = ["users", "usuarios", "accounts", "contas", "user", "account"]
-    char_candidates = ["personagens", "characters", "chars", "saves", "players", "profiles"]
+    if (!email || !password) return setToast("authToast","⚠️ preenche email e senha");
+    if (MODE === "register" && !usuario) return setToast("authToast","⚠️ preenche usuário");
 
-    user_col = next((c for c in user_candidates if c in cols), None)
-    char_col = next((c for c in char_candidates if c in cols), None)
+    try{
+      setToast("authToast","⏳ enviando...");
+      let res;
 
-    if not user_col:
-        return None
+      if (MODE === "register"){
+        res = await apiFetch("/api/auth/register", {
+          method:"POST",
+          body: JSON.stringify({ email, password, usuario })
+        });
+      }else{
+        res = await apiFetch("/api/auth/login", {
+          method:"POST",
+          body: JSON.stringify({ email, password })
+        });
+      }
 
-    users_coll = db[user_col]
-    chars_coll = db[char_col] if char_col else None
+      const token = res?.session_token;
+      if (!token) throw new Error("API não retornou session_token 😵‍💫");
 
-    users: List[Dict[str, Any]] = []
-    try:
-        # busca leve
-        cursor = users_coll.find({}, {"email": 1, "usuario": 1, "nick": 1, "username": 1, "personagens": 1, "characters": 1}).limit(500)
-        for doc in cursor:
-            email = doc.get("email") or doc.get("user_id") or doc.get("id") or ""
-            if not email and isinstance(doc.get("_id"), str):
-                email = doc["_id"]
+      TOKEN = token;
+      localStorage.setItem("ns_session_token", TOKEN);
 
-            usuario = doc.get("usuario") or doc.get("username") or doc.get("nick") or ""
-            if not usuario and isinstance(email, str) and "@" in email:
-                usuario = email.split("@", 1)[0]
-            if not usuario:
-                usuario = "user"
+      ME = { email, usuario: (MODE === "register" ? usuario : (email.split("@")[0] || "user")) };
 
-            embedded = doc.get("personagens") or doc.get("characters")
-            personagens = _normalize_char_list(embedded)
+      showApp();
+      renderMe();
+      setToast("meToast","✅ logado!");
+      await refreshFeed();
 
-            # se não tem embedded, tenta buscar em outra collection
-            if not personagens and chars_coll and isinstance(email, str) and email:
-                q_list = [
-                    {"email": email},
-                    {"user_id": email},
-                    {"owner_email": email},
-                    {"owner": email},
-                    {"uid": email},
-                ]
-                found = []
-                for q in q_list:
-                    try:
-                        found = list(chars_coll.find(q, {"nick": 1, "nome": 1, "name": 1}).limit(50))
-                        if found:
-                            break
-                    except Exception:
-                        pass
-                personagens = _normalize_char_list(found)
+    }catch(e){
+      setToast("authToast", "❌ " + e.message);
+    }
+  };
 
-            users.append({"user_id": email, "usuario": usuario, "personagens": personagens})
-    except Exception:
-        return None
+  el("btnLogout").onclick = () => {
+    TOKEN = "";
+    ME = null;
+    localStorage.removeItem("ns_session_token");
+    showAuth();
+    setAuthMode("login");
+  };
 
-    return users
+  el("btnReload").onclick = () => boot();
+  el("btnRefreshFeed").onclick = () => refreshFeed();
 
+  el("mClose").onclick = () => el("modalBack").style.display = "none";
+  el("modalBack").onclick = (e) => { if (e.target.id === "modalBack") el("modalBack").style.display = "none"; };
 
-@app.get("/api/social/users")
-def api_social_users():
-    """
-    Retorna:
-    { ok: true, users: [ {user_id,email/uid, usuario, personagens:[{nick}]} ] }
-    """
-    global db_connection
-
-    if not db_connection or not getattr(db_connection, "is_connected", lambda: False)():
-        return JSONResponse(status_code=503, content={"ok": False, "error": "DB offline"})
-
-    # 1) Se você implementar no Database.py, aqui vira perfeito:
-    fn = getattr(db_connection, "list_users_with_characters", None)
-    if callable(fn):
-        try:
-            users = fn()
-            return {"ok": True, "users": users}
-        except Exception as e:
-            print(f"[FEED] Erro list_users_with_characters(): {e}")
-
-    # 2) tenta auto-montar via pymongo (se existir .db)
-    users_auto = _auto_feed_from_pymongo()
-    if users_auto is not None:
-        return {"ok": True, "users": users_auto}
-
-    # 3) fallback via comandos (se você criar /social/users no Comandos.py)
-    resp, status = _check_db_and_process({}, "/social/users")
-    if status != 200 or "error" in resp:
-        return JSONResponse(
-            status_code=501,
-            content={"ok": False, "error": "Implemente Database.list_users_with_characters() OU exponha db_connection.db (pymongo) OU crie comando /social/users"},
-        )
-
-    users = resp.get("users") or resp.get("result") or []
-    return {"ok": True, "users": users}
-
-
-# ============================================================
-# OUTROS ENDPOINTS (mantidos)
-# ============================================================
-@app.post("/api/game/save")
-def api_game_save(body: Dict[str, Any] = Body(default_factory=dict)):
-    token = (body.get("session_token") or "").strip()
-    sess = _get_session(token)
-    if not sess:
-        return JSONResponse(status_code=401, content={"ok": False, "error": "Sessão inválida"})
-
-    entries = body.get("data") or []
-    email = sess["email"]
-    print(f"[SAVE] {email} -> {entries}")
-    return {"ok": True}
-
-
-@app.post("/api/cmd")
-def api_cmd(body: Dict[str, Any] = Body(default_factory=dict)):
-    command = body.get("comando", "comando-desconhecido")
-    resp, status = _check_db_and_process(body, command)
-    return JSONResponse(status_code=status, content=resp)
-
-
-# ============================================================
-# ENTRY POINT
-# ============================================================
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("Server:app", host=HTTP_HOST, port=HTTP_PORT, reload=False, workers=1)
+  setAuthMode("login");
+  boot();
+</script>
+</body>
+</html>
