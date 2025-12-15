@@ -5,11 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>NoSense • Social</title>
 
-  <!-- evita spam de favicon 404 -->
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs/%3E%3Crect width='64' height='64' rx='14' fill='%23111827'/%3E%3Cpath d='M18 38c6 10 22 10 28 0' fill='none' stroke='%237c3aed' stroke-width='6' stroke-linecap='round'/%3E%3Ccircle cx='24' cy='26' r='4' fill='%23e5e7eb'/%3E%3Ccircle cx='40' cy='26' r='4' fill='%23e5e7eb'/%3E%3C/svg%3E" />
-
-  <!-- Socket.IO client (pro chat real) -->
-  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23111827'/%3E%3Cpath d='M18 38c6 10 22 10 28 0' fill='none' stroke='%237c3aed' stroke-width='6' stroke-linecap='round'/%3E%3Ccircle cx='24' cy='26' r='4' fill='%23e5e7eb'/%3E%3Ccircle cx='40' cy='26' r='4' fill='%23e5e7eb'/%3E%3C/svg%3E" />
 
   <style>
     :root{
@@ -17,23 +13,19 @@
       --text:#e5e7eb; --muted:#9ca3af; --line:#1f2937;
       --ok:#22c55e; --bad:#ef4444; --brand:#7c3aed;
       --shadow: 0 10px 30px rgba(0,0,0,.35);
-      --r: 16px;
-      --pad: 14px;
-      --gap: 14px;
+      --r: 16px; --pad: 14px; --gap: 14px;
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
     }
     *{ box-sizing:border-box; }
     body{ margin:0; background:radial-gradient(1200px 800px at 10% 0%, #1b1238 0%, transparent 50%), var(--bg); color:var(--text); }
-    a{ color:inherit; text-decoration:none; }
     button, input{ font:inherit; }
-
     .topbar{
       position:sticky; top:0; z-index:10;
       display:flex; gap:10px; align-items:center; justify-content:space-between;
       padding:10px 14px; border-bottom:1px solid var(--line);
       background:rgba(11,14,20,.75); backdrop-filter: blur(10px);
     }
-    .brand{ display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:.2px; }
+    .brand{ display:flex; align-items:center; gap:10px; font-weight:900; }
     .dot{ width:10px; height:10px; border-radius:999px; background:var(--bad); box-shadow:0 0 0 4px rgba(239,68,68,.15); }
     .dot.ok{ background:var(--ok); box-shadow:0 0 0 4px rgba(34,197,94,.15); }
     .pill{
@@ -41,7 +33,7 @@
       padding:8px 10px; border:1px solid var(--line);
       background:rgba(17,24,39,.6); border-radius:999px;
       color:var(--muted); font-size:13px;
-      max-width: 520px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+      max-width:520px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
     }
     .btn{
       border:1px solid var(--line);
@@ -50,21 +42,14 @@
       padding:10px 12px;
       border-radius:12px;
       cursor:pointer;
-      transition:.15s transform ease, .15s opacity ease;
+      transition:.15s transform ease;
     }
     .btn:hover{ transform: translateY(-1px); }
     .btn.primary{ border-color:rgba(124,58,237,.55); background:rgba(124,58,237,.18); }
     .btn.danger{ border-color:rgba(239,68,68,.5); background:rgba(239,68,68,.14); }
-
     .wrap{ max-width:1200px; margin:0 auto; padding:14px; }
-    .grid{
-      display:grid; gap:var(--gap);
-      grid-template-columns: 320px 1fr 340px;
-      align-items:start;
-    }
-    @media (max-width: 980px){
-      .grid{ grid-template-columns: 1fr; }
-    }
+    .grid{ display:grid; gap:var(--gap); grid-template-columns: 320px 1fr 360px; align-items:start; }
+    @media (max-width: 980px){ .grid{ grid-template-columns: 1fr; } }
 
     .card{
       border:1px solid var(--line);
@@ -76,48 +61,34 @@
     .card .hd{
       padding: var(--pad);
       border-bottom:1px solid var(--line);
-      display:flex; align-items:center; justify-content:space-between;
-      gap:10px;
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
     }
     .card .bd{ padding: var(--pad); }
-    .title{ font-weight:800; }
+    .title{ font-weight:900; }
     .muted{ color:var(--muted); font-size:13px; }
     .sep{ height:1px; background:var(--line); margin:10px 0; }
 
-    .auth{
-      max-width:460px; margin:40px auto; padding:0 14px;
-    }
+    .auth{ max-width:460px; margin:40px auto; padding:0 14px; }
     .auth .card{ border-radius:20px; }
-    .row{ display:grid; gap:10px; }
     .field{ display:grid; gap:6px; margin:10px 0; }
     input{
-      width:100%;
-      padding:12px 12px;
-      border-radius:12px;
-      border:1px solid var(--line);
-      background:rgba(2,6,23,.45);
-      color:var(--text);
-      outline:none;
+      width:100%; padding:12px 12px; border-radius:12px;
+      border:1px solid var(--line); background:rgba(2,6,23,.45);
+      color:var(--text); outline:none;
     }
     input:focus{ border-color:rgba(124,58,237,.6); box-shadow:0 0 0 4px rgba(124,58,237,.15); }
+    .toast{ margin-top:10px; font-size:13px; color:var(--muted); }
 
-    .feedGrid{
-      display:grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap:12px;
-    }
+    .feedGrid{ display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap:12px; }
     @media (max-width: 1100px){ .feedGrid{ grid-template-columns: repeat(2, minmax(0, 1fr)); } }
     @media (max-width: 520px){ .feedGrid{ grid-template-columns: 1fr; } }
-
     .userCard{
-      border:1px solid var(--line);
-      background:rgba(2,6,23,.35);
-      border-radius:14px;
-      padding:12px;
-      cursor:pointer;
+      border:1px solid var(--line); background:rgba(2,6,23,.35);
+      border-radius:14px; padding:12px; cursor:pointer;
       transition:.15s transform ease, .15s border-color ease;
     }
     .userCard:hover{ transform: translateY(-2px); border-color:rgba(124,58,237,.55); }
+    .userTop{ display:flex; gap:10px; align-items:center; }
     .avatar{
       width:42px; height:42px; border-radius:14px;
       display:grid; place-items:center;
@@ -125,49 +96,30 @@
       border:1px solid rgba(124,58,237,.35);
       font-weight:900;
     }
-    .userTop{ display:flex; gap:10px; align-items:center; }
     .chips{ display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
     .chip{
       font-size:12px; color:var(--muted);
       border:1px solid var(--line);
       background:rgba(17,24,39,.6);
       padding:6px 8px; border-radius:999px;
-      max-width:100%;
-      overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+      max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
     }
 
     .chatBox{ display:flex; flex-direction:column; gap:10px; height:560px; }
     .chatMsgs{
-      flex:1; overflow:auto;
-      padding:10px;
-      border:1px solid var(--line);
-      border-radius:14px;
+      flex:1; overflow:auto; padding:10px;
+      border:1px solid var(--line); border-radius:14px;
       background:rgba(2,6,23,.28);
     }
     .msg{ display:flex; margin:8px 0; }
     .msg.me{ justify-content:flex-end; }
     .bubble{
-      max-width:80%;
-      padding:10px 12px;
-      border-radius:14px;
-      border:1px solid var(--line);
-      background:rgba(17,24,39,.75);
-      color:var(--text);
-      font-size:14px;
-      line-height:1.25;
-      white-space:pre-wrap;
-      word-break:break-word;
+      max-width:80%; padding:10px 12px; border-radius:14px;
+      border:1px solid var(--line); background:rgba(17,24,39,.75);
+      white-space:pre-wrap; word-break:break-word; font-size:14px;
     }
-    .msg.me .bubble{
-      border-color:rgba(124,58,237,.45);
-      background:rgba(124,58,237,.14);
-    }
+    .msg.me .bubble{ border-color:rgba(124,58,237,.45); background:rgba(124,58,237,.14); }
     .chatSend{ display:flex; gap:10px; }
-    .toast{
-      margin-top:10px;
-      font-size:13px;
-      color:var(--muted);
-    }
   </style>
 </head>
 
@@ -178,7 +130,6 @@
       <div>NoSense • Social</div>
       <div class="pill" id="apiPill">API: carregando…</div>
     </div>
-
     <div style="display:flex; gap:10px; align-items:center;">
       <button class="btn" id="btnReload">Recarregar</button>
       <button class="btn danger" id="btnLogout" style="display:none;">Sair</button>
@@ -191,15 +142,15 @@
       <div class="hd">
         <div>
           <div class="title" id="authTitle">Entrar</div>
-          <div class="muted" id="authSub">Use sua conta 😄</div>
+          <div class="muted" id="authSub">Login via /api/auth/login 😄</div>
         </div>
         <button class="btn" id="btnToggleAuth">Registrar</button>
       </div>
 
       <div class="bd">
-        <div class="field" id="nickField" style="display:none;">
+        <div class="field" id="userField" style="display:none;">
           <div class="muted">Usuário</div>
-          <input id="inpNick" placeholder="ex: Guh" />
+          <input id="inpUser" placeholder="ex: Guh" />
         </div>
 
         <div class="field">
@@ -212,10 +163,8 @@
           <input id="inpPass" type="password" placeholder="••••••••" />
         </div>
 
-        <div class="row">
-          <button class="btn primary" id="btnAuthGo">Entrar</button>
-          <div class="toast" id="authToast"></div>
-        </div>
+        <button class="btn primary" id="btnAuthGo" style="width:100%;">Entrar</button>
+        <div class="toast" id="authToast"></div>
       </div>
     </div>
   </section>
@@ -235,10 +184,8 @@
           <div class="muted">session_token</div>
           <div class="pill" id="tokenPill" title="session_token">—</div>
           <div class="sep"></div>
-          <div class="muted">Dica</div>
-          <div style="margin-top:6px; font-size:14px;">
-            Clique em alguém no feed pra abrir o chat 💬
-          </div>
+          <div class="muted">Status</div>
+          <div class="toast" id="meToast">—</div>
         </div>
       </div>
 
@@ -246,12 +193,13 @@
         <div class="hd">
           <div>
             <div class="title">Feed</div>
-            <div class="muted" id="feedInfo">Carregando usuários…</div>
+            <div class="muted" id="feedInfo">Carregando…</div>
           </div>
           <button class="btn" id="btnRefreshFeed">Atualizar</button>
         </div>
         <div class="bd">
           <div class="feedGrid" id="feedGrid"></div>
+          <div class="toast" id="feedToast"></div>
         </div>
       </div>
 
@@ -268,10 +216,10 @@
           <div class="chatBox">
             <div class="chatMsgs" id="chatMsgs"></div>
             <div class="chatSend">
-              <input id="chatInput" placeholder="Digite sua msg…" disabled />
+              <input id="chatInput" placeholder="Digite…" disabled />
               <button class="btn primary" id="chatSendBtn" disabled>Enviar</button>
             </div>
-            <div class="toast" id="chatToast">⚠️ Chat é temporário (não salva no banco).</div>
+            <div class="toast" id="chatToast">⚠️ temporário (sem salvar)</div>
           </div>
         </div>
       </div>
@@ -280,447 +228,337 @@
   </section>
 
 <script>
-/* =========================
-   CONFIG: GitHub -> API base
-========================= */
+  const el = (id) => document.getElementById(id);
+  const setToast = (id, msg) => el(id).textContent = msg || "";
 
-const RAW_STATUS_URL =
-  "https://raw.githubusercontent.com/NoSense-Bot/Servidor/main/server_status.json";
+  let API = null;
+  let MODE = "login";
+  let TOKEN = localStorage.getItem("ns_session_token") || "";
+  let ME = null;
 
-const GITHUB_CONTENTS_URL =
-  "https://api.github.com/repos/NoSense-Bot/Servidor/contents/server_status.json?ref=main";
+  // Chat
+  let ws = null;
+  let CHAT_TARGET = null;
 
-let API = null;
-let TOKEN = localStorage.getItem("ns_session_token") || "";
-let ME = null;
-let MODE = "login";
-
-const el = (id) => document.getElementById(id);
-const setToast = (target, msg) => el(target).textContent = msg || "";
-
-class ApiError extends Error {
-  constructor(message, status, body) {
-    super(message);
-    this.name = "ApiError";
-    this.status = status;
-    this.body = body;
-  }
-}
-
-function pickApiBase(cfg){
-  const keys = ["url_api_base","api_base_url","apiBaseUrl","api_base","api","base_url","url_api","apiUrl","api_url"];
-  for (const k of keys){
-    if (cfg && typeof cfg[k] === "string" && /^https?:\/\//i.test(cfg[k])) return cfg[k];
-  }
-  return null;
-}
-
-async function loadConfig(){
-  // 1) tenta RAW (bem mais leve que API do GitHub)
-  try{
-    const r = await fetch(RAW_STATUS_URL, { cache: "no-store" });
-    if (r.ok) {
-      const cfg = await r.json();
-      const api = pickApiBase(cfg);
-      if (api) return { api, cfg };
-    }
-  }catch(_){}
-
-  // 2) fallback: GitHub Contents API (base64)
-  const r2 = await fetch(GITHUB_CONTENTS_URL, {
-    cache: "no-store",
-    headers: { "Accept": "application/vnd.github+json" }
-  });
-  if (!r2.ok) throw new Error("Falha ao ler server_status.json (GitHub): HTTP " + r2.status);
-
-  const data = await r2.json();
-  const b64 = (data.content || "").replace(/\n/g, "");
-  const txt = atob(b64);
-  const cfg = JSON.parse(txt);
-
-  const api = pickApiBase(cfg);
-  if (!api) throw new Error("Não achei url_api_base no JSON 😵‍💫");
-  return { api, cfg };
-}
-
-async function ping(){
-  if (!API) return false;
-  const candidates = ["/api/status","/status","/health","/api/health"];
-  for (const p of candidates){
-    try{
-      const r = await fetch(API + p, { cache: "no-store" });
-      if (r.ok) return true;
-    }catch(e){}
-  }
-  return false;
-}
-
-/* =========================
-   API helper (compat)
-========================= */
-async function apiFetch(path, opts = {}){
-  if (!API) throw new Error("API não carregada");
-  const headers = Object.assign({ "Content-Type": "application/json" }, opts.headers || {});
-
-  // seu backend parece não precisar Bearer pra /login e /register,
-  // mas deixo aqui pra endpoints futuros
-  if (TOKEN) headers["Authorization"] = "Bearer " + TOKEN;
-
-  const r = await fetch(API + path, Object.assign({}, opts, { headers }));
-  const ct = r.headers.get("content-type") || "";
-  const body = ct.includes("application/json")
-    ? await r.json().catch(()=>null)
-    : await r.text().catch(()=>null);
-
-  if (!r.ok){
-    const msg = (body && body.error) ? body.error : ("HTTP " + r.status);
-    throw new ApiError(msg, r.status, body);
-  }
-  return body;
-}
-
-/* =========================
-   AUTH (bate com seu servidor)
-   - POST /register: {email, senha, usuario}
-   - POST /login:    {email, senha}
-   - resposta: { ok, usuario, email, session_token }
-========================= */
-
-function extractToken(res){
-  return res?.session_token || res?.token || res?.access_token || "";
-}
-
-async function tryAuth(kind, payload){
-  const endpoints = (kind === "login")
-    ? ["/login", "/api/login", "/api/auth/login"]
-    : ["/register", "/api/register", "/api/auth/register"];
-
-  let lastErr = null;
-
-  for (const ep of endpoints){
-    try{
-      const res = await apiFetch(ep, { method:"POST", body: JSON.stringify(payload) });
-      return res;
-    }catch(e){
-      lastErr = e;
-
-      // se endpoint NÃO existe -> tenta o próximo
-      if (e instanceof ApiError && e.status === 404) continue;
-
-      // se é erro de validação/credencial -> para aqui (não spamma outras rotas)
-      if (e instanceof ApiError && (e.status === 400 || e.status === 401)) throw e;
-
-      // outros erros -> tenta próximo (ou cai no lastErr)
-    }
-  }
-  throw lastErr || new Error("Auth falhou");
-}
-
-/* =========================
-   FEED
-========================= */
-async function getUsersFeed(){
-  const endpoints = [
-    "/api/users", "/api/usuarios", "/api/contas",
-    "/users", "/usuarios", "/contas",
-    "/api/feed", "/feed"
+  // tenta ler server_status.json do próprio site primeiro
+  const statusUrls = [
+    new URL("server_status.json", location.href).toString(),
+    "https://raw.githubusercontent.com/NoSense-Bot/Servidor/main/server_status.json"
   ];
 
-  let lastErr = null;
-  for (const ep of endpoints){
+  function escapeHtml(s){
+    return String(s ?? "")
+      .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;").replaceAll("'","&#039;");
+  }
+
+  async function loadConfig(){
+    let lastErr = null;
+    for (const url of statusUrls){
+      try{
+        const r = await fetch(url, { cache:"no-store" });
+        if (!r.ok) { lastErr = new Error("HTTP " + r.status); continue; }
+        const cfg = await r.json();
+        const api = cfg?.url_api_base;
+        if (typeof api === "string" && api.startsWith("http")) return api.replace(/\/+$/,"");
+        lastErr = new Error("url_api_base não encontrado");
+      }catch(e){ lastErr = e; }
+    }
+    throw lastErr || new Error("Falha lendo server_status.json");
+  }
+
+  async function ping(){
     try{
-      const res = await apiFetch(ep);
-      if (Array.isArray(res)) return res;
-      if (res && Array.isArray(res.users)) return res.users;
-      if (res && Array.isArray(res.contas)) return res.contas;
-      if (res && Array.isArray(res.accounts)) return res.accounts;
-      return Array.isArray(res) ? res : [];
+      const r = await fetch(API + "/api/status", { cache:"no-store" });
+      return r.ok;
+    }catch(_){ return false; }
+  }
+
+  async function apiFetch(path, opts = {}){
+    const headers = Object.assign({ "Content-Type":"application/json" }, opts.headers || {});
+    const r = await fetch(API + path, Object.assign({}, opts, { headers }));
+    const ct = r.headers.get("content-type") || "";
+    const body = ct.includes("application/json") ? await r.json().catch(()=>null) : await r.text().catch(()=>null);
+    if (!r.ok){
+      const msg = body?.error || ("HTTP " + r.status);
+      throw new Error(msg);
+    }
+    return body;
+  }
+
+  function setAuthMode(mode){
+    MODE = mode;
+    const isReg = MODE === "register";
+    el("authTitle").textContent = isReg ? "Registrar" : "Entrar";
+    el("authSub").textContent = isReg ? "Register via /api/auth/register 🚀" : "Login via /api/auth/login 😄";
+    el("btnToggleAuth").textContent = isReg ? "Entrar" : "Registrar";
+    el("btnAuthGo").textContent = isReg ? "Registrar" : "Entrar";
+    el("userField").style.display = isReg ? "" : "none";
+    setToast("authToast","");
+  }
+
+  function showAuth(){
+    el("authView").style.display = "";
+    el("appView").style.display = "none";
+    el("btnLogout").style.display = "none";
+  }
+  function showApp(){
+    el("authView").style.display = "none";
+    el("appView").style.display = "";
+    el("btnLogout").style.display = "";
+  }
+
+  function renderMe(){
+    el("meMini").textContent = ME ? `@${ME.usuario} • ${ME.email}` : "—";
+    el("tokenPill").textContent = TOKEN || "—";
+  }
+
+  // =========================
+  // FEED
+  // =========================
+  function initials(name){ return (name?.trim()?.[0] || "?").toUpperCase(); }
+
+  function normalizeUser(u){
+    // esperado do backend: { user_id(email), usuario, personagens:[{nick/name...}] }
+    const user_id = u.user_id || u.email || u.id || u._id || "";
+    const usuario = u.usuario || u.nick || u.username || (u.email ? u.email.split("@")[0] : "User");
+    const chars = Array.isArray(u.personagens) ? u.personagens : (Array.isArray(u.characters) ? u.characters : []);
+    const charNames = chars.map(c => c.nick || c.name || c.nome || "Personagem");
+    return { user_id, usuario, charNames, raw:u };
+  }
+
+  function renderFeed(users){
+    const grid = el("feedGrid");
+    grid.innerHTML = "";
+    const norm = users.map(normalizeUser);
+    el("feedInfo").textContent = `${norm.length} contas 👥`;
+
+    norm.forEach(u => {
+      const div = document.createElement("div");
+      div.className = "userCard";
+      div.innerHTML = `
+        <div class="userTop">
+          <div class="avatar">${initials(u.usuario)}</div>
+          <div style="min-width:0;">
+            <div style="font-weight:900; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(u.usuario)}</div>
+            <div class="muted">${u.charNames.length} personagem(ns)</div>
+          </div>
+        </div>
+        <div class="chips">
+          ${(u.charNames.slice(0,4)).map(n => `<span class="chip">${escapeHtml(n)}</span>`).join("")}
+          ${u.charNames.length > 4 ? `<span class="chip">+${u.charNames.length-4}</span>` : ""}
+        </div>
+      `;
+      div.onclick = () => openChat(u);
+      grid.appendChild(div);
+    });
+  }
+
+  async function refreshFeed(){
+    setToast("feedToast","");
+    el("feedInfo").textContent = "Carregando…";
+    try{
+      // ✅ endpoint que vamos adicionar no backend:
+      const res = await apiFetch("/api/social/users", { method:"GET" });
+      const users = res?.users || [];
+      renderFeed(users);
     }catch(e){
-      lastErr = e;
-      if (e instanceof ApiError && e.status === 404) continue;
-      throw e;
+      el("feedInfo").textContent = "❌ Feed indisponível";
+      setToast("feedToast", "Crie /api/social/users no backend 😅 (patch abaixo)");
+      el("feedGrid").innerHTML = "";
     }
   }
 
-  // se não existir endpoint, só informa bonito
-  throw lastErr || new Error("Sem endpoint de feed (crie /api/users no servidor)");
-}
-
-/* =========================
-   UI state
-========================= */
-function showAuth(){
-  el("authView").style.display = "";
-  el("appView").style.display = "none";
-  el("btnLogout").style.display = "none";
-}
-function showApp(){
-  el("authView").style.display = "none";
-  el("appView").style.display = "";
-  el("btnLogout").style.display = "";
-}
-function setAuthMode(mode){
-  MODE = mode;
-  const isReg = MODE === "register";
-  el("authTitle").textContent = isReg ? "Registrar" : "Entrar";
-  el("authSub").textContent   = isReg ? "Crie sua conta rapidinho 🚀" : "Use sua conta 😄";
-  el("btnToggleAuth").textContent = isReg ? "Entrar" : "Registrar";
-  el("btnAuthGo").textContent = isReg ? "Registrar" : "Entrar";
-  el("nickField").style.display = isReg ? "" : "none";
-  setToast("authToast","");
-}
-function renderMe(){
-  el("meMini").textContent = ME?.usuario ? `@${ME.usuario}` : "—";
-  el("tokenPill").textContent = TOKEN ? TOKEN : "—";
-}
-
-/* =========================
-   Feed render
-========================= */
-let FEED = [];
-let CHAT_TARGET = null;
-
-function initials(name){
-  const n = (name || "?").trim();
-  return (n[0] || "?").toUpperCase();
-}
-function escapeHtml(s){
-  return String(s ?? "")
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
-}
-function normalizeUser(u){
-  const usuario = u.usuario || u.nick || u.nickname || u.username || u.name || (u.email ? u.email.split("@")[0] : "User");
-  const id = u.id || u._id || u.user_id || u.uid || usuario;
-
-  const chars = u.personagens || u.characters || u.chars || [];
-  let charNames = [];
-  if (Array.isArray(chars)){
-    charNames = chars.map(c => c.nick || c.name || c.nome || "Personagem");
-  }
-  const charCount = u.character_count ?? u.characters_count ?? (Array.isArray(chars) ? chars.length : 0);
-
-  return { id, nick: usuario, charNames, charCount, raw: u };
-}
-function renderFeed(users){
-  const grid = el("feedGrid");
-  grid.innerHTML = "";
-
-  const norm = users.map(normalizeUser);
-  el("feedInfo").textContent = `${norm.length} contas encontradas 👥`;
-
-  norm.forEach(u => {
-    const div = document.createElement("div");
-    div.className = "userCard";
-    div.innerHTML = `
-      <div class="userTop">
-        <div class="avatar">${initials(u.nick)}</div>
-        <div style="min-width:0;">
-          <div style="font-weight:800; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(u.nick)}</div>
-          <div class="muted">${u.charCount} personagem(ns)</div>
-        </div>
-      </div>
-      <div class="chips">
-        ${(u.charNames.slice(0,4)).map(n => `<span class="chip">${escapeHtml(n)}</span>`).join("")}
-        ${u.charNames.length > 4 ? `<span class="chip">+${u.charNames.length-4}</span>` : ""}
-      </div>
-    `;
-    div.onclick = () => openChat(u);
-    grid.appendChild(div);
-  });
-}
-
-/* =========================
-   Chat (Socket.IO) no MESMO servidor
-========================= */
-let socket = null;
-
-function setChatStatus(ok, msg){
-  el("chatStatus").textContent = ok ? "online" : "offline";
-  el("chatStatus").style.borderColor = ok ? "rgba(34,197,94,.4)" : "rgba(239,68,68,.4)";
-  el("chatStatus").style.background  = ok ? "rgba(34,197,94,.12)" : "rgba(239,68,68,.12)";
-  if (msg) el("chatToast").textContent = msg;
-}
-function connectSocket(){
-  if (!window.io){
-    setChatStatus(false, "⚠️ Socket.IO client não carregou.");
-    return;
-  }
-  if (!API || !TOKEN){
-    setChatStatus(false, "⚠️ Sem API/token.");
-    return;
+  // =========================
+  // CHAT (WebSocket no mesmo server)
+  // =========================
+  function setChatStatus(ok, msg){
+    el("chatStatus").textContent = ok ? "online" : "offline";
+    el("chatStatus").style.borderColor = ok ? "rgba(34,197,94,.4)" : "rgba(239,68,68,.4)";
+    el("chatStatus").style.background  = ok ? "rgba(34,197,94,.12)" : "rgba(239,68,68,.12)";
+    if (msg) setToast("chatToast", msg);
   }
 
-  socket = io(API, {
-    transports: ["websocket","polling"],
-    auth: { session_token: TOKEN } // <<<<<<<<<< usa o mesmo session_token do seu servidor
-  });
-
-  socket.on("connect", () => setChatStatus(true, "💬 Chat conectado!"));
-  socket.on("disconnect", () => setChatStatus(false, "⚠️ Chat caiu."));
-
-  socket.on("dm", (payload) => {
-    if (!CHAT_TARGET) return;
-    if (String(payload?.from) === String(CHAT_TARGET.id)) addMsg(payload.text, false);
-  });
-}
-function openChat(user){
-  CHAT_TARGET = user;
-  el("chatWith").textContent = `Com @${user.nick}`;
-  el("chatMsgs").innerHTML = "";
-  el("chatInput").disabled = false;
-  el("chatSendBtn").disabled = false;
-  el("chatInput").focus();
-}
-function addMsg(text, isMe){
-  const wrap = document.createElement("div");
-  wrap.className = "msg" + (isMe ? " me" : "");
-  const bub = document.createElement("div");
-  bub.className = "bubble";
-  bub.textContent = text;
-  wrap.appendChild(bub);
-  el("chatMsgs").appendChild(wrap);
-  el("chatMsgs").scrollTop = el("chatMsgs").scrollHeight;
-}
-function sendChat(){
-  const text = (el("chatInput").value || "").trim();
-  if (!text || !CHAT_TARGET) return;
-  el("chatInput").value = "";
-  addMsg(text, true);
-
-  if (socket && socket.connected){
-    socket.emit("dm", { to: CHAT_TARGET.id, text }); // backend entrega pro room do usuario
-  }else{
-    setToast("chatToast", "⚠️ Sem socket conectado; ficou só local.");
+  function wsUrl(){
+    // http -> ws, https -> wss
+    const base = API.replace(/^http/, "ws");
+    return `${base}/ws/chat?session_token=${encodeURIComponent(TOKEN)}`;
   }
-}
 
-/* =========================
-   Boot
-========================= */
-async function refreshFeed(){
-  el("feedInfo").textContent = "Carregando usuários…";
-  try{
-    const users = await getUsersFeed();
-    FEED = users;
-    renderFeed(users);
-  }catch(e){
-    el("feedInfo").textContent = "❌ " + (e.message || "Erro no feed");
-    el("feedGrid").innerHTML = "";
+  function connectWS(){
+    if (!API || !TOKEN) return;
+
+    try{
+      ws?.close();
+    }catch(_){}
+
+    ws = new WebSocket(wsUrl());
+
+    ws.onopen = () => setChatStatus(true, "💬 chat conectado!");
+    ws.onclose = () => setChatStatus(false, "⚠️ chat desconectado");
+    ws.onerror = () => setChatStatus(false, "❌ erro no chat");
+
+    ws.onmessage = (ev) => {
+      let msg = null;
+      try{ msg = JSON.parse(ev.data); }catch(_){ return; }
+
+      // esperado: {type:"dm", from:{user_id,usuario}, to:"...", text:"..."}
+      if (msg.type === "dm"){
+        if (!CHAT_TARGET) return;
+        if (String(msg.from?.user_id) === String(CHAT_TARGET.user_id)){
+          addMsg(msg.text, false);
+        }
+      }
+    };
   }
-}
 
-async function boot(){
-  setToast("authToast","");
-  el("apiPill").textContent = "API: carregando…";
-  el("serverDot").classList.remove("ok");
+  function openChat(user){
+    CHAT_TARGET = user;
+    el("chatWith").textContent = `Com @${user.usuario}`;
+    el("chatMsgs").innerHTML = "";
+    el("chatInput").disabled = false;
+    el("chatSendBtn").disabled = false;
+    el("chatInput").focus();
+  }
 
-  try{
-    const cfg = await loadConfig();
-    API = cfg.api.replace(/\/+$/,"");
-    el("apiPill").textContent = "API: " + API;
+  function addMsg(text, isMe){
+    const wrap = document.createElement("div");
+    wrap.className = "msg" + (isMe ? " me" : "");
+    const bub = document.createElement("div");
+    bub.className = "bubble";
+    bub.textContent = text;
+    wrap.appendChild(bub);
+    el("chatMsgs").appendChild(wrap);
+    el("chatMsgs").scrollTop = el("chatMsgs").scrollHeight;
+  }
 
-    const ok = await ping();
-    el("serverDot").classList.toggle("ok", ok);
+  function sendChat(){
+    const text = (el("chatInput").value || "").trim();
+    if (!text || !CHAT_TARGET) return;
+    el("chatInput").value = "";
+    addMsg(text, true);
 
-    if (TOKEN){
-      // sem endpoint /me no seu servidor? tranquilo: a gente só entra no app e carrega feed
-      ME = { usuario: "logado" };
-      showApp();
-      renderMe();
-      connectSocket();
-      await refreshFeed();
+    if (!ws || ws.readyState !== 1){
+      setToast("chatToast", "⚠️ ws offline");
       return;
     }
 
-    showAuth();
-  }catch(e){
-    showAuth();
-    setToast("authToast", "❌ " + e.message);
-  }
-}
-
-/* =========================
-   Events
-========================= */
-el("btnToggleAuth").onclick = () => setAuthMode(MODE === "login" ? "register" : "login");
-
-el("btnAuthGo").onclick = async () => {
-  const email = (el("inpEmail").value || "").trim();
-  const senha  = (el("inpPass").value || "").trim();
-  const usuario  = (el("inpNick").value || "").trim();
-
-  if (!email || !senha){
-    setToast("authToast", "⚠️ Preenche email e senha 🙏");
-    return;
-  }
-  if (MODE === "register" && !usuario){
-    setToast("authToast", "⚠️ Escolhe um usuário 😄");
-    return;
+    ws.send(JSON.stringify({
+      type: "dm",
+      to: CHAT_TARGET.user_id,
+      text
+    }));
   }
 
-  try{
-    setToast("authToast","⏳ enviando…");
+  // =========================
+  // BOOT
+  // =========================
+  async function boot(){
+    setToast("authToast","");
+    el("apiPill").textContent = "API: carregando…";
+    el("serverDot").classList.remove("ok");
 
-    if (MODE === "register"){
-      // 1) registra
-      const reg = await tryAuth("register", { email, senha, usuario });
+    try{
+      API = await loadConfig();
+      el("apiPill").textContent = "API: " + API;
 
-      // 2) se o register não der token (seu caso), faz login automático
-      const regTok = extractToken(reg);
-      if (!regTok){
-        const log = await tryAuth("login", { email, senha });
-        TOKEN = extractToken(log);
-        if (!TOKEN) throw new Error("Login não retornou session_token 😵‍💫");
-        ME = { usuario: log.usuario || usuario, email: log.email || email };
-      } else {
-        TOKEN = regTok;
-        ME = { usuario: reg.usuario || usuario, email: reg.email || email };
+      const ok = await ping();
+      el("serverDot").classList.toggle("ok", ok);
+
+      if (TOKEN){
+        // valida sessão
+        try{
+          const v = await apiFetch("/api/auth/validate", {
+            method:"POST",
+            body: JSON.stringify({ session_token: TOKEN })
+          });
+          if (!v?.ok) throw new Error("Sessão inválida");
+          ME = { email: v.user_id, usuario: (v.user_id?.split("@")?.[0] || "user") };
+          showApp();
+          renderMe();
+          setToast("meToast","✅ sessão ok");
+          connectWS();
+          await refreshFeed();
+          return;
+        }catch(_){
+          TOKEN = "";
+          localStorage.removeItem("ns_session_token");
+        }
       }
-    } else {
-      // login
-      const log = await tryAuth("login", { email, senha });
-      TOKEN = extractToken(log);
-      if (!TOKEN) throw new Error("Login não retornou session_token 😵‍💫");
-      ME = { usuario: log.usuario || usuario || "user", email: log.email || email };
+
+      showAuth();
+    }catch(e){
+      showAuth();
+      setToast("authToast", "❌ " + e.message);
     }
-
-    localStorage.setItem("ns_session_token", TOKEN);
-
-    showApp();
-    renderMe();
-    connectSocket();
-    await refreshFeed();
-
-  }catch(e){
-    const msg = e?.message || "Erro";
-    setToast("authToast", "❌ " + msg);
   }
-};
 
-el("btnLogout").onclick = () => {
-  TOKEN = "";
-  ME = null;
-  CHAT_TARGET = null;
-  localStorage.removeItem("ns_session_token");
-  if (socket) { try{ socket.disconnect(); }catch(e){} }
-  socket = null;
-  showAuth();
+  // =========================
+  // EVENTS
+  // =========================
+  el("btnToggleAuth").onclick = () => setAuthMode(MODE === "login" ? "register" : "login");
+
+  el("btnAuthGo").onclick = async () => {
+    const email = (el("inpEmail").value || "").trim();
+    const password = (el("inpPass").value || "").trim();
+    const usuario = (el("inpUser").value || "").trim();
+
+    if (!email || !password) return setToast("authToast","⚠️ preenche email e senha");
+    if (MODE === "register" && !usuario) return setToast("authToast","⚠️ preenche usuário");
+
+    try{
+      setToast("authToast","⏳ enviando...");
+      let res;
+
+      if (MODE === "register"){
+        res = await apiFetch("/api/auth/register", {
+          method:"POST",
+          body: JSON.stringify({ email, password, usuario })
+        });
+      }else{
+        res = await apiFetch("/api/auth/login", {
+          method:"POST",
+          body: JSON.stringify({ email, password })
+        });
+      }
+
+      const token = res?.session_token;
+      if (!token) throw new Error("API não retornou session_token 😵‍💫");
+
+      TOKEN = token;
+      localStorage.setItem("ns_session_token", TOKEN);
+
+      ME = { email, usuario: (MODE === "register" ? usuario : (email.split("@")[0] || "user")) };
+
+      showApp();
+      renderMe();
+      setToast("meToast","✅ logado!");
+      connectWS();
+      await refreshFeed();
+
+    }catch(e){
+      setToast("authToast", "❌ " + e.message);
+    }
+  };
+
+  el("btnLogout").onclick = () => {
+    TOKEN = "";
+    ME = null;
+    CHAT_TARGET = null;
+    localStorage.removeItem("ns_session_token");
+    try{ ws?.close(); }catch(_){}
+    ws = null;
+    showAuth();
+    setAuthMode("login");
+  };
+
+  el("btnReload").onclick = () => boot();
+  el("btnRefreshFeed").onclick = () => refreshFeed();
+  el("chatSendBtn").onclick = () => sendChat();
+  el("chatInput").addEventListener("keydown", (e) => { if (e.key === "Enter") sendChat(); });
+
   setAuthMode("login");
-};
-
-el("btnReload").onclick = () => boot();
-el("btnRefreshFeed").onclick = () => refreshFeed();
-el("chatSendBtn").onclick = () => sendChat();
-el("chatInput").addEventListener("keydown", (e) => {
-  if (e.key === "Enter") sendChat();
-});
-
-setAuthMode("login");
-boot();
+  boot();
 </script>
 </body>
 </html>
