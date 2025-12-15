@@ -19,6 +19,7 @@
     *{ box-sizing:border-box; }
     body{ margin:0; background:radial-gradient(1200px 800px at 10% 0%, #1b1238 0%, transparent 50%), var(--bg); color:var(--text); }
     button, input{ font:inherit; }
+
     .topbar{
       position:sticky; top:0; z-index:10;
       display:flex; gap:10px; align-items:center; justify-content:space-between;
@@ -47,8 +48,9 @@
     .btn:hover{ transform: translateY(-1px); }
     .btn.primary{ border-color:rgba(124,58,237,.55); background:rgba(124,58,237,.18); }
     .btn.danger{ border-color:rgba(239,68,68,.5); background:rgba(239,68,68,.14); }
-    .wrap{ max-width:1200px; margin:0 auto; padding:14px; }
-    .grid{ display:grid; gap:var(--gap); grid-template-columns: 320px 1fr 360px; align-items:start; }
+
+    .wrap{ max-width:1100px; margin:0 auto; padding:14px; }
+    .grid{ display:grid; gap:var(--gap); grid-template-columns: 340px 1fr; align-items:start; }
     @media (max-width: 980px){ .grid{ grid-template-columns: 1fr; } }
 
     .card{
@@ -67,6 +69,7 @@
     .title{ font-weight:900; }
     .muted{ color:var(--muted); font-size:13px; }
     .sep{ height:1px; background:var(--line); margin:10px 0; }
+    .toast{ margin-top:10px; font-size:13px; color:var(--muted); }
 
     .auth{ max-width:460px; margin:40px auto; padding:0 14px; }
     .auth .card{ border-radius:20px; }
@@ -77,11 +80,11 @@
       color:var(--text); outline:none;
     }
     input:focus{ border-color:rgba(124,58,237,.6); box-shadow:0 0 0 4px rgba(124,58,237,.15); }
-    .toast{ margin-top:10px; font-size:13px; color:var(--muted); }
 
     .feedGrid{ display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap:12px; }
-    @media (max-width: 1100px){ .feedGrid{ grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 980px){ .feedGrid{ grid-template-columns: repeat(2, minmax(0, 1fr)); } }
     @media (max-width: 520px){ .feedGrid{ grid-template-columns: 1fr; } }
+
     .userCard{
       border:1px solid var(--line); background:rgba(2,6,23,.35);
       border-radius:14px; padding:12px; cursor:pointer;
@@ -105,21 +108,18 @@
       max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
     }
 
-    .chatBox{ display:flex; flex-direction:column; gap:10px; height:560px; }
-    .chatMsgs{
-      flex:1; overflow:auto; padding:10px;
-      border:1px solid var(--line); border-radius:14px;
-      background:rgba(2,6,23,.28);
+    /* Modal simples */
+    .modalBack{
+      position:fixed; inset:0; background:rgba(0,0,0,.55);
+      display:none; align-items:center; justify-content:center; padding:14px;
     }
-    .msg{ display:flex; margin:8px 0; }
-    .msg.me{ justify-content:flex-end; }
-    .bubble{
-      max-width:80%; padding:10px 12px; border-radius:14px;
-      border:1px solid var(--line); background:rgba(17,24,39,.75);
-      white-space:pre-wrap; word-break:break-word; font-size:14px;
+    .modal{
+      width:min(560px, 100%);
+      border:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(17,24,39,.98), rgba(15,23,42,.95));
+      border-radius:18px; box-shadow: var(--shadow);
+      overflow:hidden;
     }
-    .msg.me .bubble{ border-color:rgba(124,58,237,.45); background:rgba(124,58,237,.14); }
-    .chatSend{ display:flex; gap:10px; }
   </style>
 </head>
 
@@ -203,29 +203,26 @@
         </div>
       </div>
 
-      <div class="card">
-        <div class="hd">
-          <div>
-            <div class="title">Chat</div>
-            <div class="muted" id="chatWith">Selecione alguém 👀</div>
-          </div>
-          <span class="pill" id="chatStatus">offline</span>
-        </div>
-
-        <div class="bd">
-          <div class="chatBox">
-            <div class="chatMsgs" id="chatMsgs"></div>
-            <div class="chatSend">
-              <input id="chatInput" placeholder="Digite…" disabled />
-              <button class="btn primary" id="chatSendBtn" disabled>Enviar</button>
-            </div>
-            <div class="toast" id="chatToast">⚠️ temporário (sem salvar)</div>
-          </div>
-        </div>
-      </div>
-
     </div>
   </section>
+
+  <!-- Modal -->
+  <div class="modalBack" id="modalBack">
+    <div class="modal">
+      <div class="hd" style="padding:14px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <div class="title" id="mTitle">Conta</div>
+          <div class="muted" id="mSub">—</div>
+        </div>
+        <button class="btn" id="mClose">Fechar</button>
+      </div>
+      <div class="bd" style="padding:14px;">
+        <div class="muted">Personagens</div>
+        <div class="sep"></div>
+        <div id="mChars" class="chips"></div>
+      </div>
+    </div>
+  </div>
 
 <script>
   const el = (id) => document.getElementById(id);
@@ -236,11 +233,6 @@
   let TOKEN = localStorage.getItem("ns_session_token") || "";
   let ME = null;
 
-  // Chat
-  let ws = null;
-  let CHAT_TARGET = null;
-
-  // tenta ler server_status.json do próprio site primeiro
   const statusUrls = [
     new URL("server_status.json", location.href).toString(),
     "https://raw.githubusercontent.com/NoSense-Bot/Servidor/main/server_status.json"
@@ -307,19 +299,15 @@
     el("appView").style.display = "";
     el("btnLogout").style.display = "";
   }
-
   function renderMe(){
     el("meMini").textContent = ME ? `@${ME.usuario} • ${ME.email}` : "—";
     el("tokenPill").textContent = TOKEN || "—";
   }
 
-  // =========================
-  // FEED
-  // =========================
+  // ===== FEED =====
   function initials(name){ return (name?.trim()?.[0] || "?").toUpperCase(); }
 
   function normalizeUser(u){
-    // esperado do backend: { user_id(email), usuario, personagens:[{nick/name...}] }
     const user_id = u.user_id || u.email || u.id || u._id || "";
     const usuario = u.usuario || u.nick || u.username || (u.email ? u.email.split("@")[0] : "User");
     const chars = Array.isArray(u.personagens) ? u.personagens : (Array.isArray(u.characters) ? u.characters : []);
@@ -327,12 +315,30 @@
     return { user_id, usuario, charNames, raw:u };
   }
 
+  function openModal(u){
+    el("mTitle").textContent = "@" + u.usuario;
+    el("mSub").textContent = u.user_id || "—";
+    const wrap = el("mChars");
+    wrap.innerHTML = "";
+    if (!u.charNames.length){
+      wrap.innerHTML = `<span class="chip">Sem personagens</span>`;
+    } else {
+      u.charNames.forEach(n => {
+        const span = document.createElement("span");
+        span.className = "chip";
+        span.textContent = n;
+        wrap.appendChild(span);
+      });
+    }
+    el("modalBack").style.display = "flex";
+  }
+
   function renderFeed(users){
     const grid = el("feedGrid");
     grid.innerHTML = "";
     const norm = users.map(normalizeUser);
-    el("feedInfo").textContent = `${norm.length} contas 👥`;
 
+    el("feedInfo").textContent = `${norm.length} contas 👥`;
     norm.forEach(u => {
       const div = document.createElement("div");
       div.className = "userCard";
@@ -349,7 +355,7 @@
           ${u.charNames.length > 4 ? `<span class="chip">+${u.charNames.length-4}</span>` : ""}
         </div>
       `;
-      div.onclick = () => openChat(u);
+      div.onclick = () => openModal(u);
       grid.appendChild(div);
     });
   }
@@ -358,101 +364,17 @@
     setToast("feedToast","");
     el("feedInfo").textContent = "Carregando…";
     try{
-      // ✅ endpoint que vamos adicionar no backend:
       const res = await apiFetch("/api/social/users", { method:"GET" });
       const users = res?.users || [];
       renderFeed(users);
     }catch(e){
       el("feedInfo").textContent = "❌ Feed indisponível";
-      setToast("feedToast", "Crie /api/social/users no backend 😅 (patch abaixo)");
+      setToast("feedToast", "Backend: cria /api/social/users (código abaixo) 😅");
       el("feedGrid").innerHTML = "";
     }
   }
 
-  // =========================
-  // CHAT (WebSocket no mesmo server)
-  // =========================
-  function setChatStatus(ok, msg){
-    el("chatStatus").textContent = ok ? "online" : "offline";
-    el("chatStatus").style.borderColor = ok ? "rgba(34,197,94,.4)" : "rgba(239,68,68,.4)";
-    el("chatStatus").style.background  = ok ? "rgba(34,197,94,.12)" : "rgba(239,68,68,.12)";
-    if (msg) setToast("chatToast", msg);
-  }
-
-  function wsUrl(){
-    // http -> ws, https -> wss
-    const base = API.replace(/^http/, "ws");
-    return `${base}/ws/chat?session_token=${encodeURIComponent(TOKEN)}`;
-  }
-
-  function connectWS(){
-    if (!API || !TOKEN) return;
-
-    try{
-      ws?.close();
-    }catch(_){}
-
-    ws = new WebSocket(wsUrl());
-
-    ws.onopen = () => setChatStatus(true, "💬 chat conectado!");
-    ws.onclose = () => setChatStatus(false, "⚠️ chat desconectado");
-    ws.onerror = () => setChatStatus(false, "❌ erro no chat");
-
-    ws.onmessage = (ev) => {
-      let msg = null;
-      try{ msg = JSON.parse(ev.data); }catch(_){ return; }
-
-      // esperado: {type:"dm", from:{user_id,usuario}, to:"...", text:"..."}
-      if (msg.type === "dm"){
-        if (!CHAT_TARGET) return;
-        if (String(msg.from?.user_id) === String(CHAT_TARGET.user_id)){
-          addMsg(msg.text, false);
-        }
-      }
-    };
-  }
-
-  function openChat(user){
-    CHAT_TARGET = user;
-    el("chatWith").textContent = `Com @${user.usuario}`;
-    el("chatMsgs").innerHTML = "";
-    el("chatInput").disabled = false;
-    el("chatSendBtn").disabled = false;
-    el("chatInput").focus();
-  }
-
-  function addMsg(text, isMe){
-    const wrap = document.createElement("div");
-    wrap.className = "msg" + (isMe ? " me" : "");
-    const bub = document.createElement("div");
-    bub.className = "bubble";
-    bub.textContent = text;
-    wrap.appendChild(bub);
-    el("chatMsgs").appendChild(wrap);
-    el("chatMsgs").scrollTop = el("chatMsgs").scrollHeight;
-  }
-
-  function sendChat(){
-    const text = (el("chatInput").value || "").trim();
-    if (!text || !CHAT_TARGET) return;
-    el("chatInput").value = "";
-    addMsg(text, true);
-
-    if (!ws || ws.readyState !== 1){
-      setToast("chatToast", "⚠️ ws offline");
-      return;
-    }
-
-    ws.send(JSON.stringify({
-      type: "dm",
-      to: CHAT_TARGET.user_id,
-      text
-    }));
-  }
-
-  // =========================
-  // BOOT
-  // =========================
+  // ===== BOOT =====
   async function boot(){
     setToast("authToast","");
     el("apiPill").textContent = "API: carregando…";
@@ -466,7 +388,6 @@
       el("serverDot").classList.toggle("ok", ok);
 
       if (TOKEN){
-        // valida sessão
         try{
           const v = await apiFetch("/api/auth/validate", {
             method:"POST",
@@ -477,7 +398,6 @@
           showApp();
           renderMe();
           setToast("meToast","✅ sessão ok");
-          connectWS();
           await refreshFeed();
           return;
         }catch(_){
@@ -493,9 +413,7 @@
     }
   }
 
-  // =========================
-  // EVENTS
-  // =========================
+  // ===== EVENTS =====
   el("btnToggleAuth").onclick = () => setAuthMode(MODE === "login" ? "register" : "login");
 
   el("btnAuthGo").onclick = async () => {
@@ -533,7 +451,6 @@
       showApp();
       renderMe();
       setToast("meToast","✅ logado!");
-      connectWS();
       await refreshFeed();
 
     }catch(e){
@@ -544,18 +461,16 @@
   el("btnLogout").onclick = () => {
     TOKEN = "";
     ME = null;
-    CHAT_TARGET = null;
     localStorage.removeItem("ns_session_token");
-    try{ ws?.close(); }catch(_){}
-    ws = null;
     showAuth();
     setAuthMode("login");
   };
 
   el("btnReload").onclick = () => boot();
   el("btnRefreshFeed").onclick = () => refreshFeed();
-  el("chatSendBtn").onclick = () => sendChat();
-  el("chatInput").addEventListener("keydown", (e) => { if (e.key === "Enter") sendChat(); });
+
+  el("mClose").onclick = () => el("modalBack").style.display = "none";
+  el("modalBack").onclick = (e) => { if (e.target.id === "modalBack") el("modalBack").style.display = "none"; };
 
   setAuthMode("login");
   boot();
