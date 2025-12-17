@@ -181,13 +181,11 @@
    CONFIG (GitHub status.json)
    ============================================================ */
 
-// Você pode deixar o "blob" mesmo que eu converto pra RAW automaticamente 😉
 const STATUS_BLOB_URL = "https://github.com/NoSense-Bot/Servidor/blob/main/server_status.json";
 
 function blobToRaw(url){
   try{
     if(url.includes("raw.githubusercontent.com")) return url;
-    // github.com/<u>/<r>/blob/<branch>/<path> -> raw.githubusercontent.com/<u>/<r>/<branch>/<path>
     return url
       .replace("https://github.com/", "https://raw.githubusercontent.com/")
       .replace("/blob/", "/");
@@ -254,7 +252,6 @@ function apiUrl(path){
 }
 
 async function apiCmd(payload){
-  // principal: /api/v1/cmd
   const url = apiUrl("/api/v1/cmd");
   const headers = { "Content-Type":"application/json" };
   if(state.token) headers["Authorization"] = "Bearer " + state.token;
@@ -265,7 +262,6 @@ async function apiCmd(payload){
     if(!r.ok || j.ok === false) throw new Error(j.error || "Falha no cmd");
     return j;
   }catch(err){
-    // fallback: login/register legacy se for esse caso
     if(payload?.comando === "/login" || payload?.comando === "/register"){
       const legacyPath = payload.comando === "/login" ? "/login" : "/register";
       const rr = await fetch(apiUrl(legacyPath), { method:"POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(payload) });
@@ -282,7 +278,6 @@ function pickId(user){
 }
 
 function isAdminFromMe(me){
-  // aceite qualquer variação que você quiser no backend
   return !!(me?.is_admin || me?.admin || me?.role === "admin" || me?.nivel === "admin");
 }
 
@@ -301,8 +296,9 @@ async function doLogin(email, senha){
   go("#/feed");
 }
 
-async function doRegister(email, senha, extra={}){
-  const out = await apiCmd({ comando:"/register", email, senha, ...extra });
+/* AQUI: agora enviando também `usuario` para o backend */
+async function doRegister(email, senha, usuario, extra={}){
+  const out = await apiCmd({ comando:"/register", email, senha, usuario, ...extra });
   toast("Conta criada", "Agora faz login 😉", "ok");
   go("#/login");
 }
@@ -319,12 +315,10 @@ function doLogout(){
 
 /* ============================================================
    ME / USER CRUD (normal)
-   - Ajuste os comandos no backend conforme preferir.
    ============================================================ */
 
 async function loadMe(){
   if(!state.token) return null;
-  // 1) tenta /me/get
   try{
     const out = await apiCmd({ comando:"/me/get" });
     const me = out.me || out.user || out.account || out.data || out;
@@ -334,7 +328,6 @@ async function loadMe(){
     renderNav();
     return me;
   }catch(e1){
-    // 2) fallback: /me
     const out2 = await apiCmd({ comando:"/me" }).catch(()=> null);
     if(out2){
       const me = out2.me || out2.user || out2.account || out2.data || out2;
@@ -374,8 +367,7 @@ async function removeSkill(skill){
 }
 
 /* ============================================================
-   ADMIN CRUD (tudo)
-   - Ajuste os comandos no backend.
+   ADMIN CRUD
    ============================================================ */
 
 async function adminListUsers(){
@@ -464,7 +456,6 @@ function render(){
   const app = document.getElementById("app");
   const r = state.route;
 
-  // guard
   if(!state.token && (r.startsWith("#/feed") || r.startsWith("#/config") || r.startsWith("#/admin"))){
     go("#/login");
     return;
@@ -556,7 +547,6 @@ function renderLogin(app){
     }
   };
 
-  // KPIs
   const st = state.status || {};
   app.querySelector("#kpiStatus").textContent = st.status_servidor ?? "—";
   app.querySelector("#kpiApi").textContent = st.version_api ?? "—";
@@ -575,6 +565,10 @@ function renderRegister(app){
         <div class="field">
           <label>Email</label>
           <input id="email" placeholder="email@exemplo.com" />
+        </div>
+        <div class="field">
+          <label>Usuário</label>
+          <input id="usuario" placeholder="seu_usuario" />
         </div>
         <div class="field">
           <label>Senha</label>
@@ -601,17 +595,22 @@ function renderRegister(app){
   `;
 
   const email = app.querySelector("#email");
+  const usuario = app.querySelector("#usuario");
   const senha = app.querySelector("#senha");
   const btnReg = app.querySelector("#btnReg");
 
   btnReg.onclick = async ()=>{
     const e = (email.value || "").trim();
+    const u = (usuario.value || "").trim();
     const s = (senha.value || "");
-    if(!e || !s){ toast("Ops", "Preenche email e senha 😅", "warn"); return; }
+    if(!e || !u || !s){
+      toast("Ops", "Preenche email, usuário e senha 😅", "warn");
+      return;
+    }
     btnReg.disabled = true;
     btnReg.textContent = "Criando…";
     try{
-      await doRegister(e, s);
+      await doRegister(e, s, u);
     }catch(err){
       toast("Registro falhou", err?.message || String(err), "bad");
     }finally{
@@ -954,11 +953,13 @@ function renderAdmin(app){
   btnNew.onclick = async ()=>{
     const email = prompt("Email do novo usuário:");
     if(!email) return;
+    const usuario = prompt("Usuário (nick) do novo usuário:");
+    if(!usuario) return;
     const senha = prompt("Senha:");
     if(!senha) return;
     const isAdmin = confirm("Esse usuário é ADMIN?");
     try{
-      await adminCreateUser({ email, senha, is_admin: isAdmin });
+      await adminCreateUser({ email, senha, usuario, is_admin: isAdmin });
       await btnLoad.onclick();
     }catch(err){
       toast("Criar falhou", err?.message || String(err), "bad");
@@ -1026,18 +1027,15 @@ async function boot(){
     const st = await fetchStatus();
     state.status = st;
 
-    // seta API base do status.json
     const base = (st?.url_api_base || "").trim();
     if(base){
       state.apiBase = base.replace(/\/+$/,"");
       localStorage.setItem(LS.apiBase, state.apiBase);
     }
 
-    // UI server badge
     const online = String(st?.status_servidor || "").toLowerCase().includes("online");
     setServerBadge(online);
 
-    // se já tiver token, tenta carregar /me
     if(state.token){
       try{ await loadMe(); }
       catch(e){ toast("Sessão", "Token inválido/expirado. Faz login de novo 😉", "warn"); doLogout(); }
