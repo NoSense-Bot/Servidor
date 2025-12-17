@@ -2,1344 +2,1060 @@
 <html lang="pt-br">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>NoSense • Social</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>OBEARCO • Web</title>
   <meta name="color-scheme" content="dark light" />
-  <meta name="theme-color" content="#0b0e14" />
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23111827'/%3E%3Cpath d='M18 38c6 10 22 10 28 0' fill='none' stroke='%237c3aed' stroke-width='6' stroke-linecap='round'/%3E%3Ccircle cx='24' cy='26' r='4' fill='%23e5e7eb'/%3E%3Ccircle cx='40' cy='26' r='4' fill='%23e5e7eb'/%3E%3C/svg%3E" />
-
   <style>
     :root{
-      --bg:#0b0e14; --bg2:#070a10;
-      --panel: rgba(17,24,39,.86);
-      --panel2: rgba(15,23,42,.70);
-      --stroke: rgba(148,163,184,.14);
-      --text:#e5e7eb; --muted:#94a3b8;
-      --brand:#7c3aed; --ok:#22c55e; --bad:#ef4444; --warn:#f59e0b;
-      --shadow: 0 18px 55px rgba(0,0,0,.45);
-      --r:18px; --r2:26px; --pad:14px; --gap:14px; --max:1180px; --blur:14px;
-      --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      --bg:#0b0d10; --panel:#10141a; --panel2:#0f1318;
+      --text:#e7eef7; --muted:#a6b2c2; --border:#1e2632;
+      --accent:#5aa6ff; --accent2:#8b5cf6; --ok:#22c55e; --bad:#ef4444; --warn:#f59e0b;
+      --shadow: 0 10px 35px rgba(0,0,0,.35);
+      --radius: 16px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
     }
-    *{ box-sizing:border-box; }
-    html,body{ height:100%; }
+    *{box-sizing:border-box}
     body{
-      margin:0; font-family:var(--font); color:var(--text);
-      background:
-        radial-gradient(1000px 700px at 10% 0%, rgba(124,58,237,.30) 0%, rgba(124,58,237,0) 55%),
-        radial-gradient(900px 700px at 100% 20%, rgba(34,197,94,.12) 0%, rgba(34,197,94,0) 60%),
-        linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
-      overflow-x:hidden;
+      margin:0; font-family:var(--sans); background:radial-gradient(1200px 700px at 10% -10%, rgba(90,166,255,.12), transparent 50%),
+      radial-gradient(900px 600px at 90% 0%, rgba(139,92,246,.10), transparent 45%),
+      var(--bg);
+      color:var(--text);
     }
-    button,input{ font:inherit; }
-    a{ color:inherit; text-decoration:none; }
-    ::selection{ background: rgba(124,58,237,.28); }
-    @media (prefers-reduced-motion: reduce){ *{ animation:none !important; transition:none !important; } }
-
+    a{color:inherit; text-decoration:none}
+    .app{min-height:100vh; display:flex; flex-direction:column}
     .topbar{
       position:sticky; top:0; z-index:50;
-      backdrop-filter: blur(var(--blur));
-      background: rgba(11,14,20,.62);
-      border-bottom: 1px solid var(--stroke);
+      background: rgba(11,13,16,.75); backdrop-filter: blur(10px);
+      border-bottom:1px solid var(--border);
     }
-    .topbarInner{
-      max-width:var(--max); margin:0 auto; padding:12px 14px;
-      display:flex; align-items:center; justify-content:space-between; gap:10px;
+    .topbar-inner{
+      max-width:1100px; margin:0 auto; padding:14px 16px;
+      display:flex; align-items:center; gap:12px; justify-content:space-between;
     }
-    .brand{ display:flex; align-items:center; gap:10px; font-weight:900; min-width:0; }
-    .dot{ width:10px; height:10px; border-radius:999px; background: var(--warn);
-      box-shadow: 0 0 0 4px rgba(245,158,11,.16); flex:0 0 auto; }
-    .dot.ok{ background:var(--ok); box-shadow: 0 0 0 4px rgba(34,197,94,.16); }
-    .dot.bad{ background:var(--bad); box-shadow: 0 0 0 4px rgba(239,68,68,.16); }
-
+    .brand{
+      display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:.4px;
+    }
+    .dot{width:10px;height:10px;border-radius:99px;background:var(--warn); box-shadow:0 0 0 4px rgba(245,158,11,.12)}
+    .nav{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+    .chip{
+      border:1px solid var(--border); background:rgba(16,20,26,.6);
+      padding:8px 10px; border-radius:999px; color:var(--muted);
+      font-size:13px;
+      display:inline-flex; gap:8px; align-items:center;
+    }
+    .btn{
+      border:1px solid var(--border);
+      background:linear-gradient(180deg, rgba(16,20,26,.85), rgba(16,20,26,.55));
+      color:var(--text);
+      padding:9px 12px; border-radius:12px;
+      cursor:pointer; transition:.15s transform,.15s filter,.15s border-color;
+      display:inline-flex; align-items:center; gap:8px; font-weight:650;
+    }
+    .btn:hover{transform:translateY(-1px); filter:brightness(1.05); border-color:#2a3648}
+    .btn.primary{
+      border-color: rgba(90,166,255,.35);
+      background: linear-gradient(180deg, rgba(90,166,255,.22), rgba(90,166,255,.10));
+    }
+    .btn.danger{
+      border-color: rgba(239,68,68,.35);
+      background: linear-gradient(180deg, rgba(239,68,68,.22), rgba(239,68,68,.10));
+    }
+    .btn.ghost{background:transparent}
+    .container{
+      max-width:1100px; width:100%;
+      margin:0 auto; padding:18px 16px 34px;
+      display:grid; gap:16px;
+    }
+    .grid{
+      display:grid; gap:16px;
+      grid-template-columns: 1.2fr .8fr;
+    }
+    @media (max-width: 920px){
+      .grid{grid-template-columns:1fr}
+    }
+    .card{
+      background:linear-gradient(180deg, rgba(16,20,26,.95), rgba(16,20,26,.70));
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:14px;
+    }
+    .card h2{margin:0 0 8px; font-size:18px}
+    .card h3{margin:0 0 8px; font-size:15px; color:var(--muted); font-weight:700}
+    .muted{color:var(--muted)}
+    .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+    .col{display:flex; flex-direction:column; gap:10px}
     .pill{
       display:inline-flex; align-items:center; gap:8px;
-      padding:8px 10px; border:1px solid var(--stroke);
-      background: rgba(17,24,39,.52);
-      border-radius:999px; color:var(--muted); font-size:12.5px;
-      max-width: 62ch; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+      padding:6px 10px; border-radius:999px; font-size:12px;
+      border:1px solid var(--border); background:rgba(15,19,24,.65);
+      color:var(--muted);
     }
-
-    .btn{
-      border:1px solid var(--stroke);
-      background: rgba(17,24,39,.80);
-      color: var(--text);
-      padding:10px 12px;
-      border-radius:12px; cursor:pointer; user-select:none;
-      transition: transform .15s ease, border-color .15s ease, background .15s ease, opacity .15s ease;
-      display:inline-flex; align-items:center; gap:8px; white-space:nowrap;
+    .pill.ok{border-color: rgba(34,197,94,.35); color:#b7f7cb; background:rgba(34,197,94,.08)}
+    .pill.bad{border-color: rgba(239,68,68,.35); color:#ffd0d0; background:rgba(239,68,68,.08)}
+    .pill.warn{border-color: rgba(245,158,11,.35); color:#ffe2b3; background:rgba(245,158,11,.08)}
+    .hr{height:1px; background:var(--border); margin:12px 0}
+    .field{display:flex; flex-direction:column; gap:6px}
+    .field label{font-size:12px; color:var(--muted)}
+    input, textarea, select{
+      width:100%;
+      padding:10px 11px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background:rgba(15,19,24,.85);
+      color:var(--text);
+      outline:none;
     }
-    .btn[disabled]{ opacity:.55; cursor:not-allowed; transform:none !important; }
-    .btn:hover{ transform: translateY(-1px); border-color: rgba(124,58,237,.42); }
-    .btn:active{ transform: translateY(0px) scale(.99); }
-    .btn.primary{ border-color: rgba(124,58,237,.58); background: rgba(124,58,237,.18); }
-    .btn.ghost{ background: rgba(17,24,39,.35); }
-    .btn.danger{ border-color: rgba(239,68,68,.55); background: rgba(239,68,68,.12); }
-
-    .wrap{ max-width: var(--max); margin:0 auto; padding:14px; }
-    .shell{ display:grid; grid-template-columns: 280px 1fr; gap: var(--gap); align-items:start; padding-top:6px; }
-    @media (max-width: 980px){ .shell{ grid-template-columns: 1fr; } }
-
-    .card{
-      border:1px solid var(--stroke);
-      background: linear-gradient(180deg, var(--panel), var(--panel2));
-      border-radius: var(--r);
-      box-shadow: var(--shadow);
-      overflow:hidden;
+    textarea{min-height:110px; resize:vertical; font-family:var(--mono); font-size:12.5px}
+    .kpi{
+      display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:10px;
     }
-    .hd{ display:flex; align-items:center; justify-content:space-between; gap:10px;
-      padding: var(--pad); border-bottom:1px solid var(--stroke); }
-    .bd{ padding: var(--pad); }
-    .title{ font-weight:900; }
-    .muted{ color:var(--muted); font-size:13px; }
-    .sep{ height:1px; background: var(--stroke); margin: 12px 0; }
-
-    .field{ display:grid; gap:6px; margin: 10px 0; }
-    input{
-      width:100%; padding: 12px 12px; border-radius: 12px;
-      border: 1px solid var(--stroke);
-      background: rgba(2,6,23,.35);
-      color: var(--text); outline:none;
-      transition: box-shadow .15s ease, border-color .15s ease;
+    @media (max-width: 600px){
+      .kpi{grid-template-columns:1fr}
     }
-    input:focus{ border-color: rgba(124,58,237,.60); box-shadow: 0 0 0 4px rgba(124,58,237,.16); }
-    input[readonly]{ opacity:.85; }
-
-    .side{ position: sticky; top: 68px; }
-    @media (max-width:980px){ .side{ position: static; } }
-
-    .nav{ display:grid; gap:10px; }
-    .navItem{
-      padding: 12px 12px; border-radius: 14px;
-      border: 1px solid var(--stroke);
-      background: rgba(2,6,23,.25);
-      cursor:pointer;
-      transition: transform .15s ease, border-color .15s ease, background .15s ease;
-      display:flex; align-items:center; justify-content:space-between; gap:10px;
+    .kpi .box{
+      border:1px solid var(--border);
+      background:rgba(15,19,24,.6);
+      border-radius:14px;
+      padding:10px;
     }
-    .navItem:hover{ transform: translateY(-2px); border-color: rgba(124,58,237,.42); }
-    .navItem.active{ border-color: rgba(124,58,237,.60); background: rgba(124,58,237,.14); }
-    .kbd{
-      font-size:12px; padding: 4px 8px; border-radius:999px;
-      border:1px solid var(--stroke); color:var(--muted);
-      background: rgba(17,24,39,.5);
+    .kpi .n{font-weight:900; font-size:16px}
+    .kpi .t{font-size:12px; color:var(--muted)}
+    .toast-wrap{
+      position:fixed; right:16px; bottom:16px; z-index:9999;
+      display:flex; flex-direction:column; gap:10px;
+      max-width:min(520px, calc(100vw - 32px));
     }
-
-    .view{ display:none; }
-    .view.active{ display:block; }
-
-    .authWrap{ max-width: 480px; margin: 40px auto; padding: 0 14px; }
-    .authWrap .card{ border-radius: var(--r2); }
-    .hint{ white-space: pre-wrap; font-size: 13px; color: var(--muted); margin-top: 10px; }
-
-    .feedTop{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
-    .search{ flex:1; min-width: 200px; }
-    .grid{ display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
-    @media (max-width:980px){ .grid{ grid-template-columns: repeat(2, minmax(0,1fr)); } }
-    @media (max-width:560px){ .grid{ grid-template-columns: 1fr; } }
-
-    .userCard{
-      border: 1px solid var(--stroke);
-      background: rgba(2,6,23,.28);
-      border-radius: 16px;
-      padding: 12px;
-      transition: transform .15s ease, border-color .15s ease;
-      will-change: transform;
-    }
-    .userCard:hover{ transform: translateY(-3px); border-color: rgba(124,58,237,.55); }
-    .userTop{ display:flex; align-items:center; gap:10px; min-width:0; }
-    .avatar{
-      width: 44px; height: 44px; border-radius: 16px;
-      display:grid; place-items:center;
-      background: rgba(124,58,237,.16);
-      border: 1px solid rgba(124,58,237,.35);
-      font-weight: 900; flex:0 0 auto;
-    }
-    .chips{ display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
-    .chip{
-      font-size: 12px; color: var(--muted);
-      border: 1px solid var(--stroke);
-      background: rgba(17,24,39,.55);
-      padding: 6px 8px; border-radius: 999px;
-      max-width: 100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-    }
-
-    .skeleton{
-      position: relative; overflow:hidden;
-      border-radius: 16px; border:1px solid var(--stroke);
-      background: rgba(2,6,23,.26); height: 118px;
-    }
-    .skeleton::after{
-      content:""; position:absolute; inset:-40%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,.08), transparent);
-      transform: translateX(-40%); animation: shimmer 1.2s infinite;
-    }
-    @keyframes shimmer{ to{ transform: translateX(40%); } }
-    @media (prefers-reduced-motion: reduce){ .skeleton::after{ animation:none; } }
-
-    .bottomNav{
-      position: fixed; left: 14px; right: 14px; bottom: 14px;
-      border: 1px solid var(--stroke);
-      background: rgba(17,24,39,.72);
-      backdrop-filter: blur(var(--blur));
-      border-radius: 18px;
-      padding: 8px;
-      display:none;
-      z-index: 60;
-      box-shadow: var(--shadow);
-    }
-    .bottomNavInner{ display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; }
-    .bItem{
-      padding: 10px 10px; border-radius: 14px;
-      border: 1px solid transparent;
-      background: rgba(2,6,23,.20);
-      cursor:pointer; text-align:center;
-      color: var(--muted); font-weight: 800;
-      transition: transform .15s ease, background .15s ease, color .15s ease, border-color .15s ease;
-    }
-    .bItem.active{
-      color: var(--text);
-      border-color: rgba(124,58,237,.55);
-      background: rgba(124,58,237,.14);
-    }
-    .bItem:hover{ transform: translateY(-1px); }
-    @media (max-width:980px){ .bottomNav{ display:block; } .wrap{ padding-bottom: 92px; } }
-
-    .toasts{ position: fixed; inset: auto 14px 14px auto; display:grid; gap:10px; z-index:100; }
     .toast{
-      width: min(420px, calc(100vw - 28px));
-      border: 1px solid var(--stroke);
-      background: rgba(17,24,39,.92);
-      backdrop-filter: blur(var(--blur));
-      border-radius: 16px;
-      box-shadow: var(--shadow);
-      padding: 12px;
-      transform-origin: 100% 100%;
+      border:1px solid var(--border);
+      background:rgba(16,20,26,.92);
+      border-radius:14px;
+      padding:10px 12px;
+      box-shadow:var(--shadow);
+      display:flex; gap:10px; align-items:flex-start;
     }
-    .toast b{ display:block; margin-bottom:2px; }
-    .toast .small{ color: var(--muted); font-size: 12.5px; white-space: pre-wrap; }
-
-    .netBanner{
-      position: fixed; inset: 0;
-      display:flex; align-items:center; justify-content:center;
-      padding: 16px;
-      background: rgba(0,0,0,.55);
-      backdrop-filter: blur(10px);
-      z-index: 9999;
+    .toast b{display:block; margin-bottom:2px}
+    .tag{font-family:var(--mono); font-size:12px; opacity:.9}
+    .mini{font-size:12px}
+    .list{display:flex; flex-direction:column; gap:10px}
+    .item{
+      border:1px solid var(--border);
+      background:rgba(15,19,24,.6);
+      border-radius:14px;
+      padding:10px;
     }
-    .netBanner.hidden{ display:none; }
-    .netBox{
-      width: min(680px, 100%);
-      border: 1px solid rgba(148,163,184,.18);
-      background: rgba(17,24,39,.92);
-      border-radius: 18px;
-      padding: 14px;
-      box-shadow: var(--shadow);
-    }
-    .netTitle{ font-weight: 1000; font-size: 16px; margin-bottom: 6px; }
-    .netText{ color: #e5e7eb; font-size: 13.5px; white-space: pre-wrap; }
-    .netSmall{ margin-top: 10px; color:#94a3b8; font-size: 12.5px; white-space: pre-wrap; }
-    .netActions{ display:flex; gap:10px; margin-top: 12px; flex-wrap:wrap; }
-    .netBtn{
-      border: 1px solid rgba(148,163,184,.18);
-      background: rgba(2,6,23,.35);
-      color: #e5e7eb;
-      padding: 10px 12px;
-      border-radius: 12px;
-      cursor:pointer;
-    }
-    .netBtn.primary{
-      border-color: rgba(124,58,237,.58);
-      background: rgba(124,58,237,.18);
-    }
-
-    .twoCol{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-    @media (max-width: 740px){
-      .twoCol{ grid-template-columns: 1fr; }
-    }
-
-    ::view-transition-old(root), ::view-transition-new(root){ animation-duration: 260ms; }
+    .item .title{font-weight:800}
+    .item .sub{color:var(--muted); font-size:12px}
+    .split{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+    @media (max-width: 700px){ .split{grid-template-columns:1fr} }
+    .smallnote{font-size:12px; color:var(--muted); line-height:1.35}
   </style>
 </head>
 
 <body>
-  <div id="netBanner" class="netBanner hidden">
-    <div class="netBox">
-      <div class="netTitle">⚠️ Aviso de Conexão</div>
-      <div class="netText" id="netText"></div>
-      <div class="netActions">
-        <button class="netBtn" id="btnHideNet">Entendi</button>
-        <button class="netBtn primary" id="btnCopyApi">Copiar API</button>
-      </div>
-      <div class="netSmall" id="netSmall"></div>
-    </div>
-  </div>
-
-  <header class="topbar">
-    <div class="topbarInner">
-      <div class="brand" style="min-width:0;">
-        <div id="dot" class="dot"></div>
-        <div>NoSense • Social</div>
-        <div id="apiPill" class="pill" title="API Base">API: carregando…</div>
-      </div>
-
-      <div style="display:flex; gap:10px; align-items:center;">
-        <button class="btn ghost" id="btnRefresh">Recarregar</button>
-        <button class="btn" id="btnOpenSettings">Config</button>
-        <button class="btn danger" id="btnLogout" style="display:none;">Sair</button>
-      </div>
-    </div>
-  </header>
-
-  <section id="auth" class="authWrap">
-    <div class="card">
-      <div class="hd">
+<div class="app">
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="dot" id="srvDot"></span>
         <div>
-          <div class="title" id="authTitle">Entrar</div>
-          <div class="muted" id="authSub">Login/Registro + warnings ✅</div>
+          <div>OBEARCO <span class="muted">Web</span></div>
+          <div class="mini muted" id="srvLine">Carregando status…</div>
         </div>
-        <button class="btn" id="btnToggleAuth">Registrar</button>
       </div>
 
-      <div class="bd">
-        <div class="field" id="fieldUsuario" style="display:none;">
-          <div class="muted">Usuário</div>
-          <input id="inpUsuario" placeholder="ex: Guh" autocomplete="username" />
-        </div>
-
-        <div class="field">
-          <div class="muted">Email</div>
-          <input id="inpEmail" placeholder="seu@email.com" autocomplete="email" />
-        </div>
-
-        <div class="field">
-          <div class="muted">Senha</div>
-          <input id="inpSenha" type="password" placeholder="mínimo 6 chars" autocomplete="current-password" />
-        </div>
-
-        <button class="btn primary" id="btnAuthGo" style="width:100%;">Entrar</button>
-        <div class="hint" id="authHint"></div>
+      <div class="nav" id="nav">
+        <!-- preenchido via JS -->
       </div>
-    </div>
-  </section>
-
-  <main id="app" class="wrap" style="display:none;">
-    <div class="shell">
-      <aside class="side">
-        <div class="card">
-          <div class="hd">
-            <div>
-              <div class="title">Menu</div>
-              <div class="muted" id="meMini">—</div>
-            </div>
-          </div>
-          <div class="bd">
-            <nav class="nav">
-              <div class="navItem active" data-route="feed">
-                <div>
-                  <div style="font-weight:1000;">Feed</div>
-                  <div class="muted">Todas as contas</div>
-                </div>
-                <span class="kbd">1</span>
-              </div>
-
-              <div class="navItem" data-route="profile">
-                <div>
-                  <div style="font-weight:1000;">Perfil</div>
-                  <div class="muted">Sua sessão</div>
-                </div>
-                <span class="kbd">2</span>
-              </div>
-
-              <div class="navItem" data-route="settings">
-                <div>
-                  <div style="font-weight:1000;">Config</div>
-                  <div class="muted">API / Conta</div>
-                </div>
-                <span class="kbd">3</span>
-              </div>
-            </nav>
-          </div>
-        </div>
-      </aside>
-
-      <section class="card">
-        <div class="hd">
-          <div>
-            <div class="title" id="viewTitle">Feed</div>
-            <div class="muted" id="viewSub">Carregando…</div>
-          </div>
-          <div style="display:flex; gap:10px; align-items:center;">
-            <button class="btn" id="btnReloadView">Atualizar</button>
-          </div>
-        </div>
-
-        <div class="bd">
-          <div class="view active" id="view_feed">
-            <div class="feedTop">
-              <input class="search" id="search" placeholder="Buscar usuário/email…" />
-              <button class="btn" id="btnFeedRefresh">Atualizar feed</button>
-            </div>
-            <div class="sep"></div>
-            <div id="feedGrid" class="grid"></div>
-            <div class="hint" id="feedHint"></div>
-          </div>
-
-          <div class="view" id="view_profile">
-            <div class="title">Sua sessão</div>
-            <div class="muted">Token salvo no navegador 🙂</div>
-            <div class="sep"></div>
-
-            <div class="twoCol">
-              <div>
-                <div class="muted">Email</div>
-                <div class="pill" id="meEmailPill" style="max-width:100%;">—</div>
-              </div>
-              <div>
-                <div class="muted">Usuário (local)</div>
-                <div class="pill" id="meUserPill" style="max-width:100%;">—</div>
-              </div>
-            </div>
-
-            <div class="sep"></div>
-            <div class="muted">session_token</div>
-            <div class="pill" id="tokenPill" style="max-width:100%;">—</div>
-            <div class="sep"></div>
-            <div style="display:flex; gap:10px; flex-wrap:wrap;">
-              <button class="btn" id="btnCopyToken">Copiar token</button>
-              <button class="btn danger" id="btnClearSession">Limpar sessão</button>
-            </div>
-
-            <div class="hint" id="profileHint">—</div>
-          </div>
-
-          <div class="view" id="view_settings">
-            <div class="title">Configurações</div>
-            <div class="muted">Se a API estiver bloqueada, ajusta aqui 😄</div>
-            <div class="sep"></div>
-
-            <div class="muted">API detectada (server_status.json)</div>
-            <div class="pill" id="detectedPill" style="max-width:100%;">—</div>
-
-            <div class="sep"></div>
-
-            <div class="muted">API override (recomendado HTTPS público)</div>
-            <div class="field">
-              <input id="inpApiOverride" placeholder="https://xxxx.ngrok-free.app" />
-            </div>
-            <div style="display:flex; gap:10px; flex-wrap:wrap;">
-              <button class="btn primary" id="btnSaveApi">Salvar</button>
-              <button class="btn" id="btnClearApi">Limpar</button>
-            </div>
-
-            <div class="sep"></div>
-
-            <div class="muted">Feed endpoint (quando existir no servidor)</div>
-            <div class="field">
-              <input id="inpFeedEp" placeholder="/api/social/users" />
-            </div>
-            <div style="display:flex; gap:10px; flex-wrap:wrap;">
-              <button class="btn primary" id="btnSaveFeed">Salvar</button>
-              <button class="btn" id="btnResetFeed">Reset</button>
-            </div>
-
-            <div class="sep"></div>
-
-            <div class="title">Conta</div>
-            <div class="muted">Trocar username/email/senha (se o servidor suportar) 🔧</div>
-
-            <div class="sep"></div>
-
-            <div class="muted">Endpoint de update (configurável)</div>
-            <div class="field">
-              <input id="inpAccountEp" placeholder="/api/account/update" />
-            </div>
-            <div style="display:flex; gap:10px; flex-wrap:wrap;">
-              <button class="btn primary" id="btnSaveAccountEp">Salvar</button>
-              <button class="btn" id="btnResetAccountEp">Reset</button>
-            </div>
-
-            <div class="sep"></div>
-
-            <div class="twoCol">
-              <div class="field">
-                <div class="muted">Email atual (detectado)</div>
-                <input id="inpCurEmail" readonly />
-              </div>
-              <div class="field">
-                <div class="muted">Usuário atual (local)</div>
-                <input id="inpCurUser" readonly />
-              </div>
-            </div>
-
-            <div class="twoCol">
-              <div class="field">
-                <div class="muted">Novo email</div>
-                <input id="inpNewEmail" placeholder="ex: novo@email.com" autocomplete="email" />
-              </div>
-              <div class="field">
-                <div class="muted">Novo usuário</div>
-                <input id="inpNewUser" placeholder="ex: Guh2" autocomplete="username" />
-              </div>
-            </div>
-
-            <div class="twoCol">
-              <div class="field">
-                <div class="muted">Senha atual (recomendado)</div>
-                <input id="inpOldPass" type="password" placeholder="(se o servidor exigir)" autocomplete="current-password" />
-              </div>
-              <div class="field">
-                <div class="muted">Nova senha</div>
-                <input id="inpNewPass" type="password" placeholder="mínimo 6 chars" autocomplete="new-password" />
-              </div>
-            </div>
-
-            <div class="field">
-              <div class="muted">Confirmar nova senha</div>
-              <input id="inpNewPass2" type="password" placeholder="repete a nova senha" autocomplete="new-password" />
-            </div>
-
-            <div style="display:flex; gap:10px; flex-wrap:wrap;">
-              <button class="btn primary" id="btnSaveAccount">Salvar alterações</button>
-              <button class="btn" id="btnFillFromProfile">Preencher do perfil</button>
-            </div>
-
-            <div class="hint" id="settingsHint"></div>
-          </div>
-        </div>
-      </section>
-    </div>
-  </main>
-
-  <div class="bottomNav" aria-hidden="true">
-    <div class="bottomNavInner">
-      <button class="bItem active" data-route="feed">Feed</button>
-      <button class="bItem" data-route="profile">Perfil</button>
-      <button class="bItem" data-route="settings">Config</button>
     </div>
   </div>
 
-  <div class="toasts" id="toasts"></div>
+  <main class="container" id="app"></main>
+</div>
+
+<div class="toast-wrap" id="toasts"></div>
 
 <script>
-(() => {
-  const $ = (q, el=document) => el.querySelector(q);
-  const $$ = (q, el=document) => Array.from(el.querySelectorAll(q));
-  const escapeHtml = (s) => String(s ?? "")
-    .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;").replaceAll("'","&#039;");
-  const initials = (name) => (String(name || "?").trim()[0] || "?").toUpperCase();
+/* ============================================================
+   CONFIG (GitHub status.json)
+   ============================================================ */
 
-  const LS = {
-    token:"ns_session_token",
-    apiOverride:"ns_api_override",
-    feedEp:"ns_feed_endpoint",
-    accountEp:"ns_account_endpoint",
-    localUser:"ns_local_username"
-  };
+// Você pode deixar o "blob" mesmo que eu converto pra RAW automaticamente 😉
+const STATUS_BLOB_URL = "https://github.com/NoSense-Bot/Servidor/blob/main/server_status.json";
 
-  // ✅ GitHub blob/raw
-  const STATUS_BLOB_RAW = "https://github.com/NoSense-Bot/Servidor/blob/main/server_status.json?raw=1";
-  const STATUS_RAW_FALLBACK = "https://raw.githubusercontent.com/NoSense-Bot/Servidor/main/server_status.json";
+function blobToRaw(url){
+  try{
+    if(url.includes("raw.githubusercontent.com")) return url;
+    // github.com/<u>/<r>/blob/<branch>/<path> -> raw.githubusercontent.com/<u>/<r>/<branch>/<path>
+    return url
+      .replace("https://github.com/", "https://raw.githubusercontent.com/")
+      .replace("/blob/", "/");
+  }catch{ return url; }
+}
 
-  const DEFAULT_FEED_EP = "/api/social/users";
-  const DEFAULT_ACCOUNT_EP = "/api/account/update";
+const LS = {
+  token: "obearco_session_token",
+  apiBase: "obearco_api_base",
+  me: "obearco_me_cache",
+};
 
-  const state = {
-    mode: "login",
-    apiDetected: null,
-    apiBase: null,
-    statusOk: false,
-    token: localStorage.getItem(LS.token) || "",
-    me: null,
-    feed: [],
-    feedEp: localStorage.getItem(LS.feedEp) || DEFAULT_FEED_EP,
-    accountEp: localStorage.getItem(LS.accountEp) || DEFAULT_ACCOUNT_EP,
-    localUser: localStorage.getItem(LS.localUser) || ""
-  };
+const state = {
+  loading: true,
+  status: null,
+  apiBase: localStorage.getItem(LS.apiBase) || "",
+  token: localStorage.getItem(LS.token) || "",
+  me: safeJson(localStorage.getItem(LS.me)) || null,
+  isAdmin: false,
+  route: location.hash || "#/login",
+};
 
-  const el = {
-    dot: $("#dot"),
-    apiPill: $("#apiPill"),
-    btnRefresh: $("#btnRefresh"),
-    btnOpenSettings: $("#btnOpenSettings"),
-    btnLogout: $("#btnLogout"),
+function safeJson(s){
+  try{ return JSON.parse(s); }catch{ return null; }
+}
 
-    auth: $("#auth"),
-    app: $("#app"),
-    authTitle: $("#authTitle"),
-    authSub: $("#authSub"),
-    btnToggleAuth: $("#btnToggleAuth"),
-    btnAuthGo: $("#btnAuthGo"),
-    authHint: $("#authHint"),
-    fieldUsuario: $("#fieldUsuario"),
-    inpUsuario: $("#inpUsuario"),
-    inpEmail: $("#inpEmail"),
-    inpSenha: $("#inpSenha"),
+function toast(title, msg, kind="info"){
+  const wrap = document.getElementById("toasts");
+  const t = document.createElement("div");
+  t.className = "toast";
+  const icon = kind==="ok" ? "✅" : kind==="bad" ? "❌" : kind==="warn" ? "⚠️" : "ℹ️";
+  t.innerHTML = `
+    <div style="font-size:18px;line-height:1">${icon}</div>
+    <div>
+      <b>${escapeHtml(title)}</b>
+      <div class="mini muted">${escapeHtml(msg)}</div>
+    </div>
+  `;
+  wrap.appendChild(t);
+  setTimeout(()=>{ t.style.opacity="0"; t.style.transform="translateY(6px)"; }, 3200);
+  setTimeout(()=>{ t.remove(); }, 3800);
+}
 
-    meMini: $("#meMini"),
-    viewTitle: $("#viewTitle"),
-    viewSub: $("#viewSub"),
-    btnReloadView: $("#btnReloadView"),
+function escapeHtml(s){
+  return String(s ?? "").replace(/[&<>"']/g, m => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+  }[m]));
+}
 
-    feedGrid: $("#feedGrid"),
-    feedHint: $("#feedHint"),
-    btnFeedRefresh: $("#btnFeedRefresh"),
-    search: $("#search"),
+/* ============================================================
+   API helpers
+   ============================================================ */
 
-    tokenPill: $("#tokenPill"),
-    profileHint: $("#profileHint"),
-    meEmailPill: $("#meEmailPill"),
-    meUserPill: $("#meUserPill"),
-    btnCopyToken: $("#btnCopyToken"),
-    btnClearSession: $("#btnClearSession"),
+async function fetchStatus(){
+  const rawUrl = blobToRaw(STATUS_BLOB_URL);
+  const res = await fetch(rawUrl, { cache: "no-store" });
+  if(!res.ok) throw new Error("Não consegui baixar server_status.json");
+  return await res.json();
+}
 
-    detectedPill: $("#detectedPill"),
-    inpApiOverride: $("#inpApiOverride"),
-    btnSaveApi: $("#btnSaveApi"),
-    btnClearApi: $("#btnClearApi"),
-    inpFeedEp: $("#inpFeedEp"),
-    btnSaveFeed: $("#btnSaveFeed"),
-    btnResetFeed: $("#btnResetFeed"),
-    settingsHint: $("#settingsHint"),
+function apiUrl(path){
+  const base = (state.apiBase || "").replace(/\/+$/,"");
+  return base + path;
+}
 
-    inpAccountEp: $("#inpAccountEp"),
-    btnSaveAccountEp: $("#btnSaveAccountEp"),
-    btnResetAccountEp: $("#btnResetAccountEp"),
+async function apiCmd(payload){
+  // principal: /api/v1/cmd
+  const url = apiUrl("/api/v1/cmd");
+  const headers = { "Content-Type":"application/json" };
+  if(state.token) headers["Authorization"] = "Bearer " + state.token;
 
-    inpCurEmail: $("#inpCurEmail"),
-    inpCurUser: $("#inpCurUser"),
-    inpNewEmail: $("#inpNewEmail"),
-    inpNewUser: $("#inpNewUser"),
-    inpOldPass: $("#inpOldPass"),
-    inpNewPass: $("#inpNewPass"),
-    inpNewPass2: $("#inpNewPass2"),
-    btnSaveAccount: $("#btnSaveAccount"),
-    btnFillFromProfile: $("#btnFillFromProfile"),
-
-    toasts: $("#toasts"),
-
-    netBanner: $("#netBanner"),
-    netText: $("#netText"),
-    netSmall: $("#netSmall"),
-    btnHideNet: $("#btnHideNet"),
-    btnCopyApi: $("#btnCopyApi"),
-  };
-
-  function toast(title, msg){
-    const n = document.createElement("div");
-    n.className = "toast";
-    n.innerHTML = `<b>${escapeHtml(title)}</b><div class="small">${escapeHtml(msg)}</div>`;
-    el.toasts.appendChild(n);
-
-    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      try {
-        n.animate(
-          [{ transform:"translateY(8px) scale(.98)", opacity:0 }, { transform:"translateY(0) scale(1)", opacity:1 }],
-          { duration:220, easing:"cubic-bezier(.2,.8,.2,1)" }
-        );
-      } catch {}
+  try{
+    const r = await fetch(url, { method:"POST", headers, body: JSON.stringify(payload) });
+    const j = await r.json().catch(()=> ({}));
+    if(!r.ok || j.ok === false) throw new Error(j.error || "Falha no cmd");
+    return j;
+  }catch(err){
+    // fallback: login/register legacy se for esse caso
+    if(payload?.comando === "/login" || payload?.comando === "/register"){
+      const legacyPath = payload.comando === "/login" ? "/login" : "/register";
+      const rr = await fetch(apiUrl(legacyPath), { method:"POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(payload) });
+      const jj = await rr.json().catch(()=> ({}));
+      if(!rr.ok || jj.ok === false) throw new Error(jj.error || "Falha no login/register");
+      return jj;
     }
-
-    setTimeout(() => {
-      try {
-        const a = n.animate(
-          [{ transform:"translateY(0) scale(1)", opacity:1 }, { transform:"translateY(8px) scale(.98)", opacity:0 }],
-          { duration:220, easing:"cubic-bezier(.2,.8,.2,1)" }
-        );
-        a.onfinish = () => n.remove();
-      } catch { n.remove(); }
-    }, 3200);
+    throw err;
   }
+}
 
-  function viewTransition(updateDOM){
-    if (document.startViewTransition && !matchMedia("(prefers-reduced-motion: reduce)").matches){
-      document.startViewTransition(() => updateDOM());
-    } else updateDOM();
-  }
+function pickId(user){
+  return user?.id ?? user?.user_id ?? user?._id ?? user?.email ?? null;
+}
 
-  async function isBraveBrowser(){
-    try{
-      if (navigator.brave && typeof navigator.brave.isBrave === "function") {
-        return await navigator.brave.isBrave();
-      }
-    } catch {}
-    return /Brave/i.test(navigator.userAgent);
-  }
+function isAdminFromMe(me){
+  // aceite qualquer variação que você quiser no backend
+  return !!(me?.is_admin || me?.admin || me?.role === "admin" || me?.nivel === "admin");
+}
 
-  function isLikelyBlockedFetch(err){
-    const m = String(err?.message || err || "");
-    return m.includes("Failed to fetch") || m.includes("NetworkError") || m.includes("Load failed");
-  }
+/* ============================================================
+   Auth flows
+   ============================================================ */
 
-  function normalizeApi(url){
-    if (!url) return null;
-    url = String(url).trim();
-    if (!/^https?:\/\//i.test(url)) return null;
-    return url.replace(/\/+$/, "");
-  }
+async function doLogin(email, senha){
+  const out = await apiCmd({ comando:"/login", email, senha });
+  const token = out.session_token || out.token || out?.data?.session_token || out?.session?.token;
+  if(!token) throw new Error("Login OK mas não veio session_token");
+  state.token = token;
+  localStorage.setItem(LS.token, token);
+  toast("Login", "Sessão salva ✅", "ok");
+  await loadMe();
+  go("#/feed");
+}
 
-  function isMixedContentRisk(){
-    return location.protocol === "https:" && state.apiBase && state.apiBase.startsWith("http://");
-  }
+async function doRegister(email, senha, extra={}){
+  const out = await apiCmd({ comando:"/register", email, senha, ...extra });
+  toast("Conta criada", "Agora faz login 😉", "ok");
+  go("#/login");
+}
 
-  function showNetBlockBanner({ where, errMsg }){
-    (async () => {
-      const brave = await isBraveBrowser();
-      const mixed = isMixedContentRisk();
+function doLogout(){
+  state.token = "";
+  state.me = null;
+  state.isAdmin = false;
+  localStorage.removeItem(LS.token);
+  localStorage.removeItem(LS.me);
+  toast("Logout", "Sessão removida.", "ok");
+  go("#/login");
+}
 
-      let tips = [];
-      if (brave) tips.push("• Brave: clique no leão 🦁 e coloque Shields DOWN pra este site");
-      tips.push("• Desative AdBlock/uBlock/antivírus web para este site");
-      tips.push("• Teste em aba anônima (sem extensões)");
-      if (mixed) tips.push("• HTTPS site + HTTP API (mixed content) → use API HTTPS pública no override");
+/* ============================================================
+   ME / USER CRUD (normal)
+   - Ajuste os comandos no backend conforme preferir.
+   ============================================================ */
 
-      el.netText.textContent =
-`O navegador bloqueou a conexão com a API.
-
-📌 Onde: ${where}
-🔗 API: ${state.apiBase || "—"}
-
-✅ Como resolver:
-${tips.join("\n")}`;
-
-      el.netSmall.textContent =
-`Detalhe técnico: ${errMsg || "Failed to fetch / ERR_BLOCKED_BY_CLIENT (provável)"}\nObs: o site não consegue desligar Shields por código.`;
-
-      el.netBanner.classList.remove("hidden");
-
-      el.btnHideNet.onclick = () => el.netBanner.classList.add("hidden");
-      el.btnCopyApi.onclick = async () => {
-        try{
-          await navigator.clipboard.writeText(state.apiBase || "");
-          el.netSmall.textContent = "✅ API copiada!";
-        } catch {
-          el.netSmall.textContent = "❌ Não consegui copiar (permite clipboard no navegador).";
-        }
-      };
-    })();
-  }
-
-  function setDot(kind){
-    el.dot.classList.remove("ok","bad");
-    if (kind === "ok") el.dot.classList.add("ok");
-    if (kind === "bad") el.dot.classList.add("bad");
-  }
-
-  function setApiPill(){
-    el.apiPill.textContent = "API: " + (state.apiBase || "—");
-    el.apiPill.title = state.apiBase || "API";
-  }
-
-  function showAuth(){ el.btnLogout.style.display="none"; el.app.style.display="none"; el.auth.style.display=""; }
-  function showApp(){ el.btnLogout.style.display=""; el.auth.style.display="none"; el.app.style.display=""; }
-
-  function setAuthMode(mode){
-    state.mode = mode;
-    const isReg = mode === "register";
-    el.authTitle.textContent = isReg ? "Registrar" : "Entrar";
-    el.authSub.textContent = isReg ? "Registro (bcrypt + validações) 🚀" : "Login (session_token) 😄";
-    el.btnToggleAuth.textContent = isReg ? "Entrar" : "Registrar";
-    el.btnAuthGo.textContent = isReg ? "Registrar" : "Entrar";
-    el.fieldUsuario.style.display = isReg ? "" : "none";
-    el.authHint.textContent = "";
-  }
-
-  async function fetchWithTimeout(url, opts={}, ms=12000){
-    const c = new AbortController();
-    const t = setTimeout(() => c.abort("timeout"), ms);
-    try{ return await fetch(url, { ...opts, signal:c.signal }); }
-    finally{ clearTimeout(t); }
-  }
-
-  async function loadStatusFromGithub(){
-    try{
-      const r = await fetchWithTimeout(STATUS_BLOB_RAW + "&v=" + Date.now(), { cache:"no-store" }, 10000);
-      if (r.ok){
-        const j = await r.json();
-        const api = normalizeApi(j?.url_api_base);
-        if (api) return api;
-      }
-    } catch {}
-
-    const r2 = await fetchWithTimeout(STATUS_RAW_FALLBACK + "?v=" + Date.now(), { cache:"no-store" }, 10000);
-    if (!r2.ok) throw new Error("Falha lendo server_status.json (HTTP " + r2.status + ")");
-    const j2 = await r2.json();
-    const api2 = normalizeApi(j2?.url_api_base);
-    if (!api2) throw new Error("url_api_base não encontrado no server_status.json");
-    return api2;
-  }
-
-  async function apiFetch(path, opts={}){
-    if (!state.apiBase) throw new Error("API não definida");
-    const url = state.apiBase + path;
-
-    const headers = { "Content-Type":"application/json", ...(opts.headers || {}) };
-    const r = await fetchWithTimeout(url, { ...opts, headers }, 12000);
-
-    const ct = r.headers.get("content-type") || "";
-    const body = ct.includes("application/json") ? await r.json().catch(()=>null) : await r.text().catch(()=>null);
-
-    if (!r.ok){
-      const msg = body?.error || ("HTTP " + r.status);
-      const e = new Error(msg);
-      e.status = r.status;
-      e.body = body;
-      throw e;
+async function loadMe(){
+  if(!state.token) return null;
+  // 1) tenta /me/get
+  try{
+    const out = await apiCmd({ comando:"/me/get" });
+    const me = out.me || out.user || out.account || out.data || out;
+    state.me = me;
+    state.isAdmin = isAdminFromMe(me);
+    localStorage.setItem(LS.me, JSON.stringify(me));
+    renderNav();
+    return me;
+  }catch(e1){
+    // 2) fallback: /me
+    const out2 = await apiCmd({ comando:"/me" }).catch(()=> null);
+    if(out2){
+      const me = out2.me || out2.user || out2.account || out2.data || out2;
+      state.me = me;
+      state.isAdmin = isAdminFromMe(me);
+      localStorage.setItem(LS.me, JSON.stringify(me));
+      renderNav();
+      return me;
     }
-    return body;
+    throw e1;
+  }
+}
+
+async function updateMe(patch){
+  const out = await apiCmd({ comando:"/me/update", patch });
+  toast("Conta", "Atualizada ✅", "ok");
+  await loadMe();
+  return out;
+}
+
+async function deleteMe(){
+  await apiCmd({ comando:"/me/delete" });
+  toast("Conta", "Deletada 🗑️", "ok");
+  doLogout();
+}
+
+async function addSkill(skill){
+  await apiCmd({ comando:"/me/skills/add", skill });
+  toast("Skills", "Adicionada ✅", "ok");
+  await loadMe();
+}
+
+async function removeSkill(skill){
+  await apiCmd({ comando:"/me/skills/remove", skill });
+  toast("Skills", "Removida ✅", "ok");
+  await loadMe();
+}
+
+/* ============================================================
+   ADMIN CRUD (tudo)
+   - Ajuste os comandos no backend.
+   ============================================================ */
+
+async function adminListUsers(){
+  const out = await apiCmd({ comando:"/admin/users/list" });
+  return out.users || out.list || out.data || [];
+}
+async function adminGetUser(id){
+  const out = await apiCmd({ comando:"/admin/users/get", id });
+  return out.user || out.data || out;
+}
+async function adminUpdateUser(id, patch){
+  await apiCmd({ comando:"/admin/users/update", id, patch });
+  toast("Admin", "Usuário atualizado ✅", "ok");
+}
+async function adminDeleteUser(id){
+  await apiCmd({ comando:"/admin/users/delete", id });
+  toast("Admin", "Usuário deletado 🗑️", "ok");
+}
+async function adminCreateUser(payload){
+  await apiCmd({ comando:"/admin/users/create", ...payload });
+  toast("Admin", "Usuário criado ✅", "ok");
+}
+
+/* ============================================================
+   Router + Render
+   ============================================================ */
+
+function go(hash){
+  location.hash = hash;
+}
+
+window.addEventListener("hashchange", ()=>{
+  state.route = location.hash || "#/login";
+  render();
+});
+
+function renderNav(){
+  const nav = document.getElementById("nav");
+  const authed = !!state.token;
+
+  nav.innerHTML = "";
+
+  const chip = document.createElement("div");
+  chip.className = "chip";
+  chip.innerHTML = `
+    <span class="tag">API</span>
+    <span class="muted">${escapeHtml(state.apiBase || "—")}</span>
+  `;
+  nav.appendChild(chip);
+
+  if(!authed){
+    nav.appendChild(btn("🔐 Login", ()=>go("#/login"), "primary"));
+    nav.appendChild(btn("🧾 Registrar", ()=>go("#/register")));
+    return;
   }
 
-  async function ping(){
-    try{
-      const r = await fetchWithTimeout(state.apiBase + "/api/status", { cache:"no-store" }, 8000);
-      return r.ok;
-    } catch (e){
-      if (isLikelyBlockedFetch(e)) showNetBlockBanner({ where:"/api/status", errMsg: e?.message });
-      return false;
-    }
+  nav.appendChild(btn("📰 Feed", ()=>go("#/feed"), "primary"));
+  nav.appendChild(btn("⚙️ Config", ()=>go("#/config")));
+  if(state.isAdmin) nav.appendChild(btn("🛡️ Admin", ()=>go("#/admin")));
+  nav.appendChild(btn("🚪 Sair", doLogout, "ghost"));
+}
+
+function btn(label, onClick, cls=""){
+  const b = document.createElement("button");
+  b.className = "btn " + cls;
+  b.textContent = label;
+  b.onclick = onClick;
+  return b;
+}
+
+function setServerBadge(online){
+  const dot = document.getElementById("srvDot");
+  const line = document.getElementById("srvLine");
+  if(online){
+    dot.style.background = "var(--ok)";
+    dot.style.boxShadow = "0 0 0 4px rgba(34,197,94,.12)";
+    line.textContent = "Servidor: Online ✅";
+  }else{
+    dot.style.background = "var(--bad)";
+    dot.style.boxShadow = "0 0 0 4px rgba(239,68,68,.12)";
+    line.textContent = "Servidor: Offline ❌";
+  }
+}
+
+function render(){
+  const app = document.getElementById("app");
+  const r = state.route;
+
+  // guard
+  if(!state.token && (r.startsWith("#/feed") || r.startsWith("#/config") || r.startsWith("#/admin"))){
+    go("#/login");
+    return;
+  }
+  if(state.token && r.startsWith("#/admin") && !state.isAdmin){
+    toast("Sem permissão", "Você não é admin 😅", "warn");
+    go("#/feed");
+    return;
   }
 
-  async function login(email, password){
-    try{
-      return await apiFetch("/api/auth/login", { method:"POST", body: JSON.stringify({ email, password }) });
-    } catch (e){
-      if (e.status === 404){
-        return await apiFetch("/login", { method:"POST", body: JSON.stringify({ email, senha: password, comando:"/login" }) });
-      }
-      throw e;
-    }
-  }
+  if(r.startsWith("#/login")) return renderLogin(app);
+  if(r.startsWith("#/register")) return renderRegister(app);
+  if(r.startsWith("#/feed")) return renderFeed(app);
+  if(r.startsWith("#/config")) return renderConfig(app);
+  if(r.startsWith("#/admin")) return renderAdmin(app);
 
-  async function register(email, password, usuario){
-    try{
-      return await apiFetch("/api/auth/register", { method:"POST", body: JSON.stringify({ email, password, usuario }) });
-    } catch (e){
-      if (e.status === 404){
-        return await apiFetch("/register", { method:"POST", body: JSON.stringify({ email, senha: password, usuario, comando:"/register" }) });
-      }
-      throw e;
-    }
-  }
+  go("#/login");
+}
 
-  async function validate(token){
-    return await apiFetch("/api/auth/validate", { method:"POST", body: JSON.stringify({ session_token: token }) });
-  }
+function renderLogin(app){
+  app.innerHTML = `
+    <div class="grid">
+      <div class="card">
+        <h2>🔐 Login</h2>
+        <div class="muted">Entre com sua conta (usuário normal ou admin).</div>
+        <div class="hr"></div>
 
-  function renderSkeletons(){
-    el.feedGrid.innerHTML = "";
-    for (let i=0; i<9; i++){
-      const s = document.createElement("div");
-      s.className = "skeleton";
-      el.feedGrid.appendChild(s);
-    }
-  }
+        <div class="field">
+          <label>Email</label>
+          <input id="email" placeholder="email@exemplo.com" />
+        </div>
+        <div class="field">
+          <label>Senha</label>
+          <input id="senha" type="password" placeholder="••••••••" />
+        </div>
 
-  function renderFeed(){
-    const q = (el.search.value || "").trim().toLowerCase();
-    const list = state.feed.filter(u => {
-      const usuario = String(u?.usuario || "").toLowerCase();
-      const email = String(u?.email || "").toLowerCase();
-      return !q || usuario.includes(q) || email.includes(q);
-    });
+        <div class="row" style="margin-top:10px">
+          <button class="btn primary" id="btnLogin">Entrar</button>
+          <button class="btn" onclick="location.hash='#/register'">Criar conta</button>
+        </div>
 
-    el.viewSub.textContent = `${list.length} contas 👥`;
-    el.feedGrid.innerHTML = "";
+        <div class="hr"></div>
+        <div class="smallnote">
+          💡 Dica: a base da API vem do <span class="tag">server_status.json</span> (GitHub).<br/>
+          Se o CORS travar, confirme se seu servidor permite <span class="tag">https://nosense-bot.github.io</span>.
+        </div>
+      </div>
 
-    if (!list.length){
-      el.feedHint.textContent = "Nada encontrado 😅";
-      return;
-    }
-
-    list.forEach((u, idx) => {
-      const usuario = String(u?.usuario || "user");
-      const email = String(u?.email || "—");
-      const chars = Array.isArray(u?.personagens) ? u.personagens : [];
-      const names = chars.map(c => c?.nome || c?.nick || c?.name || (typeof c === "string" ? c : "Personagem"));
-
-      const div = document.createElement("div");
-      div.className = "userCard";
-      div.innerHTML = `
-        <div class="userTop">
-          <div class="avatar">${initials(usuario)}</div>
-          <div style="min-width:0;">
-            <div style="font-weight:1000; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(usuario)}</div>
-            <div class="muted" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(email)}</div>
+      <div class="card">
+        <h2>📡 Conexão</h2>
+        <div class="kpi">
+          <div class="box">
+            <div class="n" id="kpiStatus">—</div>
+            <div class="t">status_servidor</div>
+          </div>
+          <div class="box">
+            <div class="n" id="kpiApi">—</div>
+            <div class="t">version_api</div>
+          </div>
+          <div class="box">
+            <div class="n" id="kpiPort">—</div>
+            <div class="t">porta</div>
           </div>
         </div>
-        <div class="chips">
-          <span class="chip">${names.length} personagem(ns)</span>
-          ${names.slice(0,4).map(n => `<span class="chip">${escapeHtml(n)}</span>`).join("")}
-          ${names.length > 4 ? `<span class="chip">+${names.length-4}</span>` : ""}
+        <div class="hr"></div>
+        <div class="muted mini"><span class="tag">url_api_base</span></div>
+        <div class="tag" id="kpiBase">—</div>
+      </div>
+    </div>
+  `;
+
+  const email = app.querySelector("#email");
+  const senha = app.querySelector("#senha");
+  const btnLogin = app.querySelector("#btnLogin");
+
+  btnLogin.onclick = async ()=>{
+    const e = (email.value || "").trim();
+    const s = (senha.value || "");
+    if(!e || !s){ toast("Ops", "Preenche email e senha 😅", "warn"); return; }
+    btnLogin.disabled = true;
+    btnLogin.textContent = "Entrando…";
+    try{
+      await doLogin(e, s);
+    }catch(err){
+      toast("Login falhou", err?.message || String(err), "bad");
+    }finally{
+      btnLogin.disabled = false;
+      btnLogin.textContent = "Entrar";
+    }
+  };
+
+  // KPIs
+  const st = state.status || {};
+  app.querySelector("#kpiStatus").textContent = st.status_servidor ?? "—";
+  app.querySelector("#kpiApi").textContent = st.version_api ?? "—";
+  app.querySelector("#kpiPort").textContent = st.porta ?? "—";
+  app.querySelector("#kpiBase").textContent = st.url_api_base ?? "—";
+}
+
+function renderRegister(app){
+  app.innerHTML = `
+    <div class="grid">
+      <div class="card">
+        <h2>🧾 Registrar</h2>
+        <div class="muted">Cria conta de usuário normal (admin você define no banco/servidor).</div>
+        <div class="hr"></div>
+
+        <div class="field">
+          <label>Email</label>
+          <input id="email" placeholder="email@exemplo.com" />
         </div>
-      `;
-      el.feedGrid.appendChild(div);
+        <div class="field">
+          <label>Senha</label>
+          <input id="senha" type="password" placeholder="••••••••" />
+        </div>
 
-      if (!matchMedia("(prefers-reduced-motion: reduce)").matches){
-        try{
-          div.animate(
-            [{ transform:"translateY(10px) scale(.99)", opacity:0 }, { transform:"translateY(0) scale(1)", opacity:1 }],
-            { duration:260, easing:"cubic-bezier(.2,.8,.2,1)", delay: Math.min(idx*18, 200) }
-          );
-        } catch {}
+        <div class="row" style="margin-top:10px">
+          <button class="btn primary" id="btnReg">Criar</button>
+          <button class="btn" onclick="location.hash='#/login'">Voltar</button>
+        </div>
+
+        <div class="hr"></div>
+        <div class="smallnote">🔧 Backend esperado: comando <span class="tag">/register</span> retornando ok.</div>
+      </div>
+
+      <div class="card">
+        <h2>🧠 Observação</h2>
+        <div class="muted">
+          Esse site salva o token no <span class="tag">localStorage</span> (simples e prático pra dev).<br/>
+          Em produção, o ideal é cookie HttpOnly.
+        </div>
+      </div>
+    </div>
+  `;
+
+  const email = app.querySelector("#email");
+  const senha = app.querySelector("#senha");
+  const btnReg = app.querySelector("#btnReg");
+
+  btnReg.onclick = async ()=>{
+    const e = (email.value || "").trim();
+    const s = (senha.value || "");
+    if(!e || !s){ toast("Ops", "Preenche email e senha 😅", "warn"); return; }
+    btnReg.disabled = true;
+    btnReg.textContent = "Criando…";
+    try{
+      await doRegister(e, s);
+    }catch(err){
+      toast("Registro falhou", err?.message || String(err), "bad");
+    }finally{
+      btnReg.disabled = false;
+      btnReg.textContent = "Criar";
+    }
+  };
+}
+
+function renderFeed(app){
+  const me = state.me || {};
+  const skills = me.skills ?? me.Skills ?? me.habilidades ?? null;
+
+  app.innerHTML = `
+    <div class="grid">
+      <div class="card">
+        <div class="row" style="justify-content:space-between">
+          <div>
+            <h2>📰 Feed</h2>
+            <div class="muted">Seu perfil aparece no topo (skills etc.). Se não tiver, fica <span class="tag">null</span>.</div>
+          </div>
+          <div class="row">
+            ${state.isAdmin ? `<span class="pill ok">🛡️ Admin</span>` : `<span class="pill warn">👤 User</span>`}
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="item">
+          <div class="title">${escapeHtml(me.nome || me.name || me.username || me.email || "—")}</div>
+          <div class="sub">${escapeHtml(me.email || "—")}</div>
+
+          <div class="hr"></div>
+
+          <div class="split">
+            <div>
+              <div class="muted mini">Token</div>
+              <div class="tag">${escapeHtml(state.token ? state.token.slice(0,24)+"…" : "—")}</div>
+            </div>
+            <div>
+              <div class="muted mini">ID</div>
+              <div class="tag">${escapeHtml(pickId(me) || "—")}</div>
+            </div>
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="muted mini">Skills</div>
+          <div class="tag">${escapeHtml(skills === null ? "null" : JSON.stringify(skills))}</div>
+        </div>
+
+        <div class="hr"></div>
+
+        <h3>📌 Seu feed (placeholder)</h3>
+        <div class="muted mini">
+          Aqui você pode listar posts, atividades, quests, etc.<br/>
+          (quando você criar comandos tipo <span class="tag">/feed/list</span>, é só plugar).
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>⚡ Ações rápidas</h2>
+        <div class="row">
+          <button class="btn primary" onclick="location.hash='#/config'">⚙️ Abrir Config</button>
+          ${state.isAdmin ? `<button class="btn" onclick="location.hash='#/admin'">🛡️ Abrir Admin</button>` : ``}
+        </div>
+        <div class="hr"></div>
+        <div class="smallnote">
+          ✅ Conectado como: <span class="tag">${escapeHtml(me.email || "—")}</span><br/>
+          🌐 API: <span class="tag">${escapeHtml(state.apiBase || "—")}</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderConfig(app){
+  const me = state.me || {};
+  const skills = Array.isArray(me.skills) ? me.skills : (Array.isArray(me.Skills) ? me.Skills : []);
+  const skillsJson = JSON.stringify(skills ?? null, null, 2);
+
+  app.innerHTML = `
+    <div class="grid">
+      <div class="card">
+        <h2>⚙️ Config (usuário)</h2>
+        <div class="muted">Seu token + dados da conta com CRUD.</div>
+
+        <div class="hr"></div>
+
+        <div class="field">
+          <label>Session token</label>
+          <input value="${escapeHtml(state.token || "")}" readonly />
+        </div>
+
+        <div class="split">
+          <div class="field">
+            <label>Nome / Username</label>
+            <input id="fName" value="${escapeHtml(me.nome || me.name || me.username || "")}" placeholder="Seu nome" />
+          </div>
+          <div class="field">
+            <label>Email</label>
+            <input id="fEmail" value="${escapeHtml(me.email || "")}" placeholder="email@exemplo.com" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Bio (opcional)</label>
+          <input id="fBio" value="${escapeHtml(me.bio || me.about || "")}" placeholder="Uma descrição…" />
+        </div>
+
+        <div class="field">
+          <label>Skills (JSON)</label>
+          <textarea id="fSkills">${escapeHtml(skillsJson === "null" ? "null" : skillsJson)}</textarea>
+          <div class="smallnote">💡 Se não tiver skills ainda, deixa <span class="tag">null</span> ou <span class="tag">[]</span>.</div>
+        </div>
+
+        <div class="row" style="margin-top:10px">
+          <button class="btn primary" id="btnSave">💾 Salvar</button>
+          <button class="btn" id="btnReload">🔄 Recarregar</button>
+          <button class="btn danger" id="btnDelete">🗑️ Deletar conta</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>🧩 Skills rápidas</h2>
+        <div class="muted">Adicionar/remover skill (via comandos dedicados).</div>
+
+        <div class="hr"></div>
+
+        <div class="field">
+          <label>Skill</label>
+          <input id="skillName" placeholder="ex: espada, alquimia…" />
+        </div>
+        <div class="row">
+          <button class="btn primary" id="btnAddSkill">➕ Add</button>
+          <button class="btn" id="btnRemSkill">➖ Remover</button>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="smallnote">
+          Backend esperado:<br/>
+          <span class="tag">/me/update</span>, <span class="tag">/me/delete</span>, <span class="tag">/me/skills/add</span>, <span class="tag">/me/skills/remove</span>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const fName = app.querySelector("#fName");
+  const fEmail = app.querySelector("#fEmail");
+  const fBio = app.querySelector("#fBio");
+  const fSkills = app.querySelector("#fSkills");
+  const btnSave = app.querySelector("#btnSave");
+  const btnReload = app.querySelector("#btnReload");
+  const btnDelete = app.querySelector("#btnDelete");
+  const skillName = app.querySelector("#skillName");
+  const btnAddSkill = app.querySelector("#btnAddSkill");
+  const btnRemSkill = app.querySelector("#btnRemSkill");
+
+  btnReload.onclick = async ()=>{
+    try{ await loadMe(); render(); toast("OK", "Recarregado ✅", "ok"); }
+    catch(err){ toast("Falhou", err?.message || String(err), "bad"); }
+  };
+
+  btnSave.onclick = async ()=>{
+    btnSave.disabled = true;
+    btnSave.textContent = "Salvando…";
+    try{
+      let skillsVal = null;
+      const raw = (fSkills.value || "").trim();
+      if(raw !== ""){
+        skillsVal = JSON.parse(raw);
       }
-    });
-  }
 
-  async function refreshFeed(){
-    el.feedHint.textContent = "";
-    renderSkeletons();
-
-    try{
-      try{
-        const r = await apiFetch(state.feedEp, { method:"GET" });
-        const users = r?.users ?? r?.result ?? (Array.isArray(r) ? r : []);
-        if (Array.isArray(users)) {
-          state.feed = users;
-          el.feedHint.textContent = "";
-          renderFeed();
-          toast("Feed", "Atualizado ✅");
-          return;
-        }
-      } catch {}
-
-      state.feed = [];
-      el.feedGrid.innerHTML = "";
-      el.feedHint.textContent =
-"⚠️ O servidor ainda NÃO expõe um endpoint de FEED.\n\n" +
-"✅ Quando você criar algo tipo GET /api/social/users retornando [{email, usuario, personagens}], aqui fica automático.\n" +
-"👉 Por enquanto o site continua OK (login/config/sessão) 😉";
-      toast("Feed", "Sem endpoint de listagem no servidor 😅");
-
-    } catch (e){
-      const msg = isLikelyBlockedFetch(e)
-        ? "Bloqueado pelo navegador/extensão (ou mixed content) 😵‍💫"
-        : (e.message || "Erro no feed");
-      el.feedGrid.innerHTML = "";
-      el.feedHint.textContent = "❌ " + msg + "\n👉 Abre Config e ajusta a API (de preferência HTTPS público).";
-      toast("Erro", msg);
-      if (isLikelyBlockedFetch(e)) showNetBlockBanner({ where:"Feed", errMsg: e?.message });
-    }
-  }
-
-  function setRoute(route){
-    const routes = ["feed","profile","settings"];
-    if (!routes.includes(route)) route = "feed";
-    viewTransition(() => {
-      $$(".navItem").forEach(x => x.classList.toggle("active", x.dataset.route === route));
-      $$(".bItem").forEach(x => x.classList.toggle("active", x.dataset.route === route));
-      $$(".view").forEach(v => v.classList.remove("active"));
-      $("#view_" + route).classList.add("active");
-
-      if (route === "feed"){ el.viewTitle.textContent="Feed"; el.btnReloadView.onclick = refreshFeed; }
-      if (route === "profile"){ el.viewTitle.textContent="Perfil"; el.btnReloadView.onclick = bootSessionOnly; }
-      if (route === "settings"){ el.viewTitle.textContent="Config"; el.btnReloadView.onclick = boot; }
-    });
-    history.replaceState({}, "", "#"+route);
-  }
-
-  function fillAccountUI(){
-    const email = state.me?.email || "";
-    const localUser = state.me?.usuario || state.localUser || "";
-
-    el.inpCurEmail.value = email || "";
-    el.inpCurUser.value = localUser || "";
-
-    el.meEmailPill.textContent = email || "—";
-    el.meUserPill.textContent = localUser ? ("@" + localUser) : "—";
-
-    el.inpAccountEp.value = state.accountEp || DEFAULT_ACCOUNT_EP;
-    el.inpFeedEp.value = state.feedEp;
-
-    el.tokenPill.textContent = state.token || "—";
-  }
-
-  async function bootSessionOnly(){
-    try{
-      const v = await validate(state.token);
-      const email = v?.user_id || "";
-
-      // username: o servidor não devolve no validate() -> usamos local/email prefix
-      const guess = email.includes("@") ? email.split("@")[0] : "user";
-      const usuario = (state.localUser || guess || "user").trim();
-
-      state.me = { email, usuario };
-
-      el.meMini.textContent = state.me.email ? `@${state.me.usuario} • ${state.me.email}` : `@${state.me.usuario}`;
-      fillAccountUI();
-
-      el.profileHint.textContent = state.statusOk ? "✅ sessão ok • servidor online" : "⚠️ sessão ok • sem ping";
-    } catch (e){
-      state.token = "";
-      localStorage.removeItem(LS.token);
-      state.me = null;
-      showAuth();
-      toast("Sessão", "Sessão inválida, loga de novo 🙏");
-    }
-  }
-
-  // ===== Conta: tentativa de update (sem mexer no servidor) =====
-  function isValidEmail(email){
-    return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(email||"").trim());
-  }
-
-  async function updateAccountAttempt({ new_email, new_usuario, old_password, new_password }){
-    // 1) tenta endpoint configurado
-    try{
-      const payload = {
-        session_token: state.token,
-        new_email: new_email || "",
-        new_usuario: new_usuario || "",
-        old_password: old_password || "",
-        new_password: new_password || "",
+      const patch = {
+        name: (fName.value || "").trim(),
+        email: (fEmail.value || "").trim(),
+        bio: (fBio.value || "").trim(),
+        skills: skillsVal,
       };
-      const r = await apiFetch(state.accountEp, { method:"POST", body: JSON.stringify(payload) });
-      return r;
-    } catch (e){
-      // 2) fallback via /api/cmd (se você criar comando depois)
-      if (e.status === 404 || e.status === 405){
-        const cmdPayload = {
-          comando: "/account/update",
-          session_token: state.token,
-          new_email: new_email || "",
-          new_usuario: new_usuario || "",
-          old_password: old_password || "",
-          new_password: new_password || "",
-        };
-        return await apiFetch("/api/cmd", { method:"POST", body: JSON.stringify(cmdPayload) });
-      }
-      throw e;
-    }
-  }
 
-  async function handleSaveAccount(){
-    el.settingsHint.textContent = "";
-    if (!state.token){
-      el.settingsHint.textContent = "⚠️ você precisa estar logado pra alterar a conta.";
-      toast("Conta", "Sem sessão 😅");
+      await updateMe(patch);
+      render();
+    }catch(err){
+      toast("Salvar falhou", err?.message || String(err), "bad");
+    }finally{
+      btnSave.disabled = false;
+      btnSave.textContent = "💾 Salvar";
+    }
+  };
+
+  btnDelete.onclick = async ()=>{
+    if(!confirm("Tem certeza que quer deletar sua conta?")) return;
+    btnDelete.disabled = true;
+    try{ await deleteMe(); }
+    catch(err){ toast("Delete falhou", err?.message || String(err), "bad"); btnDelete.disabled = false; }
+  };
+
+  btnAddSkill.onclick = async ()=>{
+    const sk = (skillName.value||"").trim();
+    if(!sk){ toast("Ops", "Digita uma skill 😅", "warn"); return; }
+    try{ await addSkill(sk); render(); }
+    catch(err){ toast("Falhou", err?.message || String(err), "bad"); }
+  };
+
+  btnRemSkill.onclick = async ()=>{
+    const sk = (skillName.value||"").trim();
+    if(!sk){ toast("Ops", "Digita uma skill 😅", "warn"); return; }
+    try{ await removeSkill(sk); render(); }
+    catch(err){ toast("Falhou", err?.message || String(err), "bad"); }
+  };
+}
+
+function renderAdmin(app){
+  app.innerHTML = `
+    <div class="grid">
+      <div class="card">
+        <div class="row" style="justify-content:space-between">
+          <div>
+            <h2>🛡️ Admin</h2>
+            <div class="muted">Ver todas as contas + CRUD total.</div>
+          </div>
+          <span class="pill ok">Admin mode</span>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="split">
+          <div class="field">
+            <label>Buscar (email/id)</label>
+            <input id="q" placeholder="ex: user@gmail.com" />
+          </div>
+          <div class="row" style="align-items:flex-end">
+            <button class="btn primary" id="btnLoad">📥 Carregar lista</button>
+            <button class="btn" id="btnNew">➕ Novo usuário</button>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+        <div class="list" id="usersList"></div>
+      </div>
+
+      <div class="card">
+        <h2>✍️ Editor</h2>
+        <div class="muted">Selecione um usuário na lista pra editar.</div>
+
+        <div class="hr"></div>
+
+        <div class="field">
+          <label>ID selecionado</label>
+          <input id="selId" readonly />
+        </div>
+
+        <div class="field">
+          <label>JSON (patch)</label>
+          <textarea id="patch" placeholder='{"bio":"novo","skills":["a","b"],"is_admin":false}'></textarea>
+          <div class="smallnote">🔧 Isso envia <span class="tag">patch</span> pro comando <span class="tag">/admin/users/update</span></div>
+        </div>
+
+        <div class="row">
+          <button class="btn primary" id="btnSaveUser">💾 Atualizar</button>
+          <button class="btn danger" id="btnDelUser">🗑️ Deletar</button>
+          <button class="btn" id="btnGetUser">🔎 Ver detalhes</button>
+        </div>
+
+        <div class="hr"></div>
+        <div class="field">
+          <label>Detalhes (read-only)</label>
+          <textarea id="details" readonly></textarea>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const q = app.querySelector("#q");
+  const btnLoad = app.querySelector("#btnLoad");
+  const btnNew = app.querySelector("#btnNew");
+  const usersList = app.querySelector("#usersList");
+  const selId = app.querySelector("#selId");
+  const patch = app.querySelector("#patch");
+  const details = app.querySelector("#details");
+  const btnSaveUser = app.querySelector("#btnSaveUser");
+  const btnDelUser = app.querySelector("#btnDelUser");
+  const btnGetUser = app.querySelector("#btnGetUser");
+
+  let usersCache = [];
+
+  function renderUsers(list){
+    usersList.innerHTML = "";
+    if(!list.length){
+      usersList.innerHTML = `<div class="muted">Nenhuma conta encontrada.</div>`;
       return;
     }
-
-    const newEmail = (el.inpNewEmail.value || "").trim();
-    const newUser  = (el.inpNewUser.value || "").trim();
-    const oldPass  = (el.inpOldPass.value || "").trim();
-    const newPass  = (el.inpNewPass.value || "").trim();
-    const newPass2 = (el.inpNewPass2.value || "").trim();
-
-    const hasChange = Boolean(newEmail || newUser || newPass);
-    if (!hasChange){
-      el.settingsHint.textContent = "⚠️ nada pra salvar (preenche novo email/usuário/senha).";
-      return;
-    }
-
-    if (newEmail && !isValidEmail(newEmail)){
-      el.settingsHint.textContent = "❌ email inválido.";
-      return;
-    }
-
-    if (newPass){
-      if (newPass.length < 6){
-        el.settingsHint.textContent = "❌ nova senha muito curta (mínimo 6).";
-        return;
-      }
-      if (newPass !== newPass2){
-        el.settingsHint.textContent = "❌ confirmação da senha não bate.";
-        return;
-      }
-    }
-
-    el.btnSaveAccount.disabled = true;
-    el.btnSaveAccount.textContent = "Salvando…";
-
-    try{
-      const res = await updateAccountAttempt({
-        new_email: newEmail,
-        new_usuario: newUser,
-        old_password: oldPass,
-        new_password: newPass
-      });
-
-      // padrão esperado: {ok:true,...}
-      const ok = res?.ok !== false; // se não vier ok, assume ok (mas avisa)
-      if (!ok) throw new Error(res?.error || "Falha ao atualizar");
-
-      // Atualiza UI local (sem depender do servidor)
-      if (newUser){
-        state.localUser = newUser;
-        localStorage.setItem(LS.localUser, state.localUser);
-      }
-      if (newEmail){
-        // ⚠️ o token atual provavelmente continua ligado ao email antigo no server.
-        // então a gente avisa pra relogar caso necessário.
-        el.settingsHint.textContent =
-"✅ Alterações enviadas!\n\n" +
-"⚠️ Se o servidor trocar o email de verdade, pode precisar sair e logar de novo.";
-      } else {
-        el.settingsHint.textContent = "✅ Alterações enviadas!";
-      }
-
-      toast("Conta", "Atualização enviada ✅");
-      el.inpOldPass.value = "";
-      el.inpNewPass.value = "";
-      el.inpNewPass2.value = "";
-      await bootSessionOnly();
-
-    } catch (e){
-      const msg = isLikelyBlockedFetch(e)
-        ? "Failed to fetch (bloqueio/extensão ou mixed content)"
-        : (e.message || "Erro ao atualizar");
-
-      // comando desconhecido -> aviso bem direto
-      const bodyText = String(e?.body?.error || e?.body?.detail || "");
-      const unknownCmd = bodyText.includes("Comando desconhecido") || msg.includes("Comando desconhecido");
-
-      el.settingsHint.textContent =
-unknownCmd
-? "⚠️ Seu servidor ainda não tem endpoint/comando pra atualizar conta.\n\n" +
-  "✅ O site já está pronto.\n👉 Quando você criar no backend (ex: POST /api/account/update ou comando /account/update), funciona automático."
-: ("❌ " + msg);
-
-      toast("Conta", msg);
-      if (isLikelyBlockedFetch(e)) showNetBlockBanner({ where:"Conta/update", errMsg: e?.message });
-    } finally {
-      el.btnSaveAccount.disabled = false;
-      el.btnSaveAccount.textContent = "Salvar alterações";
-    }
+    list.forEach(u=>{
+      const id = pickId(u);
+      const name = u.nome || u.name || u.username || u.email || "—";
+      const role = (u.is_admin || u.admin || u.role==="admin") ? "admin" : "user";
+      const el = document.createElement("div");
+      el.className = "item";
+      el.innerHTML = `
+        <div class="row" style="justify-content:space-between">
+          <div>
+            <div class="title">${escapeHtml(name)}</div>
+            <div class="sub">${escapeHtml(u.email || "")}</div>
+          </div>
+          <span class="pill ${role==="admin" ? "ok":"warn"}">${role==="admin" ? "🛡️ admin":"👤 user"}</span>
+        </div>
+        <div class="hr"></div>
+        <div class="tag">${escapeHtml(id || "—")}</div>
+      `;
+      el.onclick = ()=>{
+        selId.value = id || "";
+        details.value = JSON.stringify(u, null, 2);
+        patch.value = "{}";
+      };
+      usersList.appendChild(el);
+    });
   }
 
-  async function boot(){
-    el.authHint.textContent = "";
-    el.settingsHint.textContent = "";
-    el.profileHint.textContent = "—";
-
-    el.apiPill.textContent = "API: carregando…";
-    setDot("warn");
-
+  btnLoad.onclick = async ()=>{
+    btnLoad.disabled = true;
+    btnLoad.textContent = "Carregando…";
     try{
-      const api = await loadStatusFromGithub();
-      state.apiDetected = api;
-
-      const override = normalizeApi(localStorage.getItem(LS.apiOverride));
-      state.apiBase = override || state.apiDetected;
-
-      setApiPill();
-      el.detectedPill.textContent = state.apiDetected || "—";
-      el.inpApiOverride.value = override || "";
-      el.inpFeedEp.value = state.feedEp;
-      el.inpAccountEp.value = state.accountEp;
-
-      if (isMixedContentRisk()){
-        el.settingsHint.textContent =
-"⚠️ HTTPS site + HTTP API (mixed content) pode ser bloqueado.\n" +
-"✅ Use uma API HTTPS pública e coloque no override.";
-        setDot("bad");
-      }
-
-      const ok = await ping();
-      state.statusOk = ok;
-      setDot(ok ? "ok" : "bad");
-
-      if (!ok){
-        el.settingsHint.textContent =
-(el.settingsHint.textContent ? el.settingsHint.textContent + "\n\n" : "") +
-"⚠️ Não consegui pingar /api/status.\nSe aparecer ERR_BLOCKED_BY_CLIENT é Brave/Adblock bloqueando.";
-      }
-
-      if (state.token){
-        await bootSessionOnly();
-        showApp();
-        setRoute(location.hash.replace("#","") || "feed");
-        await refreshFeed();
-      } else {
-        showAuth();
-      }
-
-    } catch (e){
-      setDot("bad");
-      showAuth();
-
-      const msg = isLikelyBlockedFetch(e)
-        ? "Falha de rede/bloqueio ao buscar server_status.json 😵‍💫"
-        : (e.message || "Erro no boot");
-
-      el.authHint.textContent =
-"❌ " + msg +
-"\n\n✅ Dicas:\n- Brave: Shields DOWN 🦁\n- Desliga AdBlock/uBlock/antivírus web\n- Testa aba anônima";
-
-      toast("Boot", msg);
-      if (isLikelyBlockedFetch(e)) showNetBlockBanner({ where:"server_status.json", errMsg: e?.message });
+      const list = await adminListUsers();
+      usersCache = Array.isArray(list) ? list : [];
+      const term = (q.value||"").trim().toLowerCase();
+      const filtered = term
+        ? usersCache.filter(u => JSON.stringify(u).toLowerCase().includes(term))
+        : usersCache;
+      renderUsers(filtered);
+      toast("Admin", "Lista carregada ✅", "ok");
+    }catch(err){
+      toast("Admin falhou", err?.message || String(err), "bad");
+    }finally{
+      btnLoad.disabled = false;
+      btnLoad.textContent = "📥 Carregar lista";
     }
+  };
+
+  btnNew.onclick = async ()=>{
+    const email = prompt("Email do novo usuário:");
+    if(!email) return;
+    const senha = prompt("Senha:");
+    if(!senha) return;
+    const isAdmin = confirm("Esse usuário é ADMIN?");
+    try{
+      await adminCreateUser({ email, senha, is_admin: isAdmin });
+      await btnLoad.onclick();
+    }catch(err){
+      toast("Criar falhou", err?.message || String(err), "bad");
+    }
+  };
+
+  btnGetUser.onclick = async ()=>{
+    const id = (selId.value||"").trim();
+    if(!id){ toast("Ops", "Seleciona um usuário 😅", "warn"); return; }
+    try{
+      const u = await adminGetUser(id);
+      details.value = JSON.stringify(u, null, 2);
+      toast("OK", "Detalhes carregados ✅", "ok");
+    }catch(err){
+      toast("Falhou", err?.message || String(err), "bad");
+    }
+  };
+
+  btnSaveUser.onclick = async ()=>{
+    const id = (selId.value||"").trim();
+    if(!id){ toast("Ops", "Seleciona um usuário 😅", "warn"); return; }
+    let p = {};
+    try{ p = JSON.parse((patch.value||"{}") || "{}"); }
+    catch{ toast("JSON inválido", "Corrige o patch 😅", "warn"); return; }
+
+    btnSaveUser.disabled = true;
+    try{
+      await adminUpdateUser(id, p);
+      await btnLoad.onclick();
+    }catch(err){
+      toast("Update falhou", err?.message || String(err), "bad");
+    }finally{
+      btnSaveUser.disabled = false;
+    }
+  };
+
+  btnDelUser.onclick = async ()=>{
+    const id = (selId.value||"").trim();
+    if(!id){ toast("Ops", "Seleciona um usuário 😅", "warn"); return; }
+    if(!confirm("Deletar esse usuário?")) return;
+    btnDelUser.disabled = true;
+    try{
+      await adminDeleteUser(id);
+      selId.value = "";
+      details.value = "";
+      patch.value = "{}";
+      await btnLoad.onclick();
+    }catch(err){
+      toast("Delete falhou", err?.message || String(err), "bad");
+    }finally{
+      btnDelUser.disabled = false;
+    }
+  };
+}
+
+/* ============================================================
+   Boot
+   ============================================================ */
+
+async function boot(){
+  try{
+    state.loading = true;
+    renderNav();
+
+    const st = await fetchStatus();
+    state.status = st;
+
+    // seta API base do status.json
+    const base = (st?.url_api_base || "").trim();
+    if(base){
+      state.apiBase = base.replace(/\/+$/,"");
+      localStorage.setItem(LS.apiBase, state.apiBase);
+    }
+
+    // UI server badge
+    const online = String(st?.status_servidor || "").toLowerCase().includes("online");
+    setServerBadge(online);
+
+    // se já tiver token, tenta carregar /me
+    if(state.token){
+      try{ await loadMe(); }
+      catch(e){ toast("Sessão", "Token inválido/expirado. Faz login de novo 😉", "warn"); doLogout(); }
+    }
+
+    renderNav();
+    render();
+  }catch(err){
+    setServerBadge(false);
+    toast("Boot falhou", err?.message || String(err), "bad");
+    renderNav();
+    render();
+  }finally{
+    state.loading = false;
   }
+}
 
-  // ====== Eventos ======
-  el.btnRefresh.onclick = boot;
-  el.btnOpenSettings.onclick = () => setRoute("settings");
-
-  el.btnLogout.onclick = () => {
-    state.token = "";
-    localStorage.removeItem(LS.token);
-    state.me = null;
-    toast("Logout", "Saiu ✅");
-    viewTransition(() => showAuth());
-    setAuthMode("login");
-  };
-
-  el.btnToggleAuth.onclick = () => setAuthMode(state.mode === "login" ? "register" : "login");
-
-  el.btnAuthGo.onclick = async () => {
-    const email = (el.inpEmail.value || "").trim();
-    const password = (el.inpSenha.value || "").trim();
-    const usuario = (el.inpUsuario.value || "").trim();
-
-    if (!email || !password){ el.authHint.textContent = "⚠️ Preenche email e senha"; return; }
-    if (state.mode === "register" && !usuario){ el.authHint.textContent = "⚠️ Preenche usuário"; return; }
-
-    try{
-      el.authHint.textContent = "⏳ enviando…";
-      const res = state.mode === "register"
-        ? await register(email, password, usuario)
-        : await login(email, password);
-
-      const token = res?.session_token;
-      if (!token) throw new Error("API não retornou session_token");
-
-      state.token = token;
-      localStorage.setItem(LS.token, state.token);
-
-      // salva username local (no login, usa email prefix)
-      if (state.mode === "register" && usuario){
-        state.localUser = usuario;
-        localStorage.setItem(LS.localUser, state.localUser);
-      } else {
-        const guess = email.includes("@") ? email.split("@")[0] : "user";
-        if (!state.localUser) {
-          state.localUser = guess;
-          localStorage.setItem(LS.localUser, state.localUser);
-        }
-      }
-
-      toast(state.mode === "register" ? "Registro" : "Login", "Sucesso ✅");
-      viewTransition(() => showApp());
-      await bootSessionOnly();
-      setRoute("feed");
-      await refreshFeed();
-
-    } catch (e){
-      const msg = isLikelyBlockedFetch(e)
-        ? "Failed to fetch (bloqueio/extensão ou mixed content)"
-        : (e.message || "Erro no auth");
-      el.authHint.textContent = "❌ " + msg;
-      toast("Auth", msg);
-      if (isLikelyBlockedFetch(e)) showNetBlockBanner({ where: state.mode === "register" ? "register" : "login", errMsg: e?.message });
-    }
-  };
-
-  el.btnFeedRefresh.onclick = refreshFeed;
-  el.search.addEventListener("input", () => renderFeed());
-
-  $$(".navItem").forEach(n => n.addEventListener("click", () => setRoute(n.dataset.route)));
-  $$(".bItem").forEach(n => n.addEventListener("click", () => setRoute(n.dataset.route)));
-
-  el.btnSaveApi.onclick = () => {
-    const v = normalizeApi(el.inpApiOverride.value);
-    if (!v){ el.settingsHint.textContent = "❌ URL inválida. Ex: https://xxxx.ngrok-free.app"; toast("Config","URL inválida"); return; }
-    localStorage.setItem(LS.apiOverride, v);
-    el.settingsHint.textContent = "✅ Salvo! Clica Recarregar.";
-    toast("Config","API override salva ✅");
-  };
-
-  el.btnClearApi.onclick = () => {
-    localStorage.removeItem(LS.apiOverride);
-    el.inpApiOverride.value = "";
-    el.settingsHint.textContent = "✅ Override removido! Clica Recarregar.";
-    toast("Config","Override removido ✅");
-  };
-
-  el.btnSaveFeed.onclick = () => {
-    const v = (el.inpFeedEp.value || "").trim();
-    if (!v.startsWith("/")){ el.settingsHint.textContent = "❌ Endpoint precisa começar com /"; toast("Config","Endpoint inválido"); return; }
-    state.feedEp = v;
-    localStorage.setItem(LS.feedEp, state.feedEp);
-    el.settingsHint.textContent = "✅ Feed endpoint salvo! Vai em Feed e Atualiza.";
-    toast("Config","Feed endpoint salvo ✅");
-  };
-
-  el.btnResetFeed.onclick = () => {
-    state.feedEp = DEFAULT_FEED_EP;
-    localStorage.setItem(LS.feedEp, state.feedEp);
-    el.inpFeedEp.value = state.feedEp;
-    el.settingsHint.textContent = "✅ Resetado pro padrão.";
-    toast("Config","Reset ✅");
-  };
-
-  el.btnSaveAccountEp.onclick = () => {
-    const v = (el.inpAccountEp.value || "").trim();
-    if (!v.startsWith("/")){ el.settingsHint.textContent = "❌ Endpoint precisa começar com /"; toast("Config","Endpoint inválido"); return; }
-    state.accountEp = v;
-    localStorage.setItem(LS.accountEp, state.accountEp);
-    el.settingsHint.textContent = "✅ Account endpoint salvo!";
-    toast("Config","Endpoint da conta salvo ✅");
-  };
-
-  el.btnResetAccountEp.onclick = () => {
-    state.accountEp = DEFAULT_ACCOUNT_EP;
-    localStorage.setItem(LS.accountEp, state.accountEp);
-    el.inpAccountEp.value = state.accountEp;
-    el.settingsHint.textContent = "✅ Resetado pro padrão.";
-    toast("Config","Reset ✅");
-  };
-
-  el.btnSaveAccount.onclick = handleSaveAccount;
-
-  el.btnFillFromProfile.onclick = () => {
-    el.inpNewEmail.value = state.me?.email || "";
-    el.inpNewUser.value = state.me?.usuario || state.localUser || "";
-    toast("Conta", "Preenchido ✅");
-  };
-
-  el.btnCopyToken.onclick = async () => {
-    try{
-      await navigator.clipboard.writeText(state.token || "");
-      toast("Token", "Copiado ✅");
-    } catch {
-      toast("Token", "Falhou copiar 😅");
-    }
-  };
-
-  el.btnClearSession.onclick = () => {
-    state.token = "";
-    localStorage.removeItem(LS.token);
-    state.me = null;
-    toast("Sessão", "Sessão limpa ✅");
-    viewTransition(() => showAuth());
-  };
-
-  window.addEventListener("keydown", (e) => {
-    if (e.target && ["INPUT","TEXTAREA"].includes(e.target.tagName)) return;
-    if (e.key === "1") setRoute("feed");
-    if (e.key === "2") setRoute("profile");
-    if (e.key === "3") setRoute("settings");
-  });
-
-  window.addEventListener("online", () => toast("Rede", "Voltou ✅"));
-  window.addEventListener("offline", () => toast("Rede", "Offline ⚠️"));
-
-  window.addEventListener("error", (ev) => {
-    const msg = ev?.message || "Erro desconhecido";
-    toast("Erro", msg);
-  });
-  window.addEventListener("unhandledrejection", (ev) => {
-    const msg = String(ev?.reason?.message || ev?.reason || "Promise rejeitada");
-    toast("Erro", msg);
-    if (isLikelyBlockedFetch(ev?.reason)) showNetBlockBanner({ where:"Promise", errMsg: msg });
-  });
-
-  setAuthMode("login");
-  boot();
-})();
+boot();
 </script>
 </body>
 </html>
