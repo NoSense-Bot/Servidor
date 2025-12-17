@@ -198,6 +198,10 @@ const LS = {
   me: "obearco_me_cache",
 };
 
+function safeJson(s){
+  try{ return JSON.parse(s); }catch{ return null; }
+}
+
 const state = {
   loading: true,
   status: null,
@@ -207,10 +211,6 @@ const state = {
   isAdmin: false,
   route: location.hash || "#/login",
 };
-
-function safeJson(s){
-  try{ return JSON.parse(s); }catch{ return null; }
-}
 
 function toast(title, msg, kind="info"){
   const wrap = document.getElementById("toasts");
@@ -296,9 +296,9 @@ async function doLogin(email, senha){
   go("#/feed");
 }
 
-/* AQUI: agora enviando também `usuario` para o backend */
-async function doRegister(email, senha, usuario, extra={}){
-  const out = await apiCmd({ comando:"/register", email, senha, usuario, ...extra });
+async function doRegister(email, senha, extra={}){
+  // AGORA ENVIA usuario TAMBÉM (backend exige email, senha, usuario)
+  const out = await apiCmd({ comando:"/register", email, senha, ...extra });
   toast("Conta criada", "Agora faz login 😉", "ok");
   go("#/login");
 }
@@ -367,7 +367,7 @@ async function removeSkill(skill){
 }
 
 /* ============================================================
-   ADMIN CRUD
+   ADMIN CRUD (tudo)
    ============================================================ */
 
 async function adminListUsers(){
@@ -563,12 +563,12 @@ function renderRegister(app){
         <div class="hr"></div>
 
         <div class="field">
-          <label>Email</label>
-          <input id="email" placeholder="email@exemplo.com" />
+          <label>Usuário</label>
+          <input id="usuario" placeholder="seu nick" />
         </div>
         <div class="field">
-          <label>Usuário</label>
-          <input id="usuario" placeholder="seu_usuario" />
+          <label>Email</label>
+          <input id="email" placeholder="email@exemplo.com" />
         </div>
         <div class="field">
           <label>Senha</label>
@@ -581,7 +581,7 @@ function renderRegister(app){
         </div>
 
         <div class="hr"></div>
-        <div class="smallnote">🔧 Backend esperado: comando <span class="tag">/register</span> retornando ok.</div>
+        <div class="smallnote">🔧 Backend esperado: comando <span class="tag">/register</span> retornando ok (requer email, senha, usuario).</div>
       </div>
 
       <div class="card">
@@ -594,23 +594,23 @@ function renderRegister(app){
     </div>
   `;
 
-  const email = app.querySelector("#email");
   const usuario = app.querySelector("#usuario");
+  const email = app.querySelector("#email");
   const senha = app.querySelector("#senha");
   const btnReg = app.querySelector("#btnReg");
 
   btnReg.onclick = async ()=>{
-    const e = (email.value || "").trim();
     const u = (usuario.value || "").trim();
+    const e = (email.value || "").trim();
     const s = (senha.value || "");
-    if(!e || !u || !s){
-      toast("Ops", "Preenche email, usuário e senha 😅", "warn");
+    if(!u || !e || !s){
+      toast("Ops", "Preenche usuário, email e senha 😅", "warn");
       return;
     }
     btnReg.disabled = true;
     btnReg.textContent = "Criando…";
     try{
-      await doRegister(e, s, u);
+      await doRegister(e, s, { usuario: u }); // envia usuario pro backend
     }catch(err){
       toast("Registro falhou", err?.message || String(err), "bad");
     }finally{
@@ -640,7 +640,7 @@ function renderFeed(app){
         <div class="hr"></div>
 
         <div class="item">
-          <div class="title">${escapeHtml(me.nome || me.name || me.username || me.email || "—")}</div>
+          <div class="title">${escapeHtml(me.usuario || me.nome || me.name || me.username || me.email || "—")}</div>
           <div class="sub">${escapeHtml(me.email || "—")}</div>
 
           <div class="hr"></div>
@@ -707,13 +707,18 @@ function renderConfig(app){
 
         <div class="split">
           <div class="field">
-            <label>Nome / Username</label>
-            <input id="fName" value="${escapeHtml(me.nome || me.name || me.username || "")}" placeholder="Seu nome" />
+            <label>Usuário</label>
+            <input id="fUsuario" value="${escapeHtml(me.usuario || "")}" placeholder="seu nick" />
           </div>
           <div class="field">
             <label>Email</label>
             <input id="fEmail" value="${escapeHtml(me.email || "")}" placeholder="email@exemplo.com" />
           </div>
+        </div>
+
+        <div class="field">
+          <label>Nome (opcional)</label>
+          <input id="fName" value="${escapeHtml(me.nome || me.name || "")}" placeholder="Seu nome" />
         </div>
 
         <div class="field">
@@ -759,6 +764,7 @@ function renderConfig(app){
     </div>
   `;
 
+  const fUsuario = app.querySelector("#fUsuario");
   const fName = app.querySelector("#fName");
   const fEmail = app.querySelector("#fEmail");
   const fBio = app.querySelector("#fBio");
@@ -786,6 +792,7 @@ function renderConfig(app){
       }
 
       const patch = {
+        usuario: (fUsuario.value || "").trim(),
         name: (fName.value || "").trim(),
         email: (fEmail.value || "").trim(),
         bio: (fBio.value || "").trim(),
@@ -906,7 +913,7 @@ function renderAdmin(app){
     }
     list.forEach(u=>{
       const id = pickId(u);
-      const name = u.nome || u.name || u.username || u.email || "—";
+      const name = u.usuario || u.nome || u.name || u.username || u.email || "—";
       const role = (u.is_admin || u.admin || u.role==="admin") ? "admin" : "user";
       const el = document.createElement("div");
       el.className = "item";
@@ -951,15 +958,15 @@ function renderAdmin(app){
   };
 
   btnNew.onclick = async ()=>{
+    const usuario = prompt("Usuário (nick):");
+    if(!usuario) return;
     const email = prompt("Email do novo usuário:");
     if(!email) return;
-    const usuario = prompt("Usuário (nick) do novo usuário:");
-    if(!usuario) return;
     const senha = prompt("Senha:");
     if(!senha) return;
     const isAdmin = confirm("Esse usuário é ADMIN?");
     try{
-      await adminCreateUser({ email, senha, usuario, is_admin: isAdmin });
+      await adminCreateUser({ usuario, email, senha, is_admin: isAdmin });
       await btnLoad.onclick();
     }catch(err){
       toast("Criar falhou", err?.message || String(err), "bad");
