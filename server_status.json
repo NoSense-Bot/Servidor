@@ -1,8 +1,8 @@
 {
-    "url_api_base": "https://darell-unstethoscoped-nonperversely.ngrok-free.dev",
-    "porta": 5000,
+    "url_api_base": "http://127.0.0.1:7776",
+    "porta": 7776,
     "status_servidor": "Online",
-    "version_api": "0.0.0.1",
+    "version_api": "1.0.0",
     "LAUCHER": {
         "current_version": "0.0.2",
         "update_zip_name": "OBEARCO-Launcher.zip"
