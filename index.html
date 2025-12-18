@@ -10,8 +10,6 @@
     :root{
       --bg:#07090c;
       --panel: rgba(16,20,26,.72);
-      --panel2: rgba(12,16,21,.58);
-      --glass: rgba(255,255,255,.06);
       --text:#eaf2ff;
       --muted:#a7b4c7;
       --border: rgba(180,210,255,.12);
@@ -39,7 +37,6 @@
     }
     a{color:inherit; text-decoration:none}
 
-    /* ===== Background animado ===== */
     #bg{
       position:fixed;
       inset:0;
@@ -56,7 +53,6 @@
                   linear-gradient(to bottom, rgba(0,0,0,.55), transparent 30%, rgba(0,0,0,.65));
     }
 
-    /* ===== App ===== */
     .app{min-height:100vh; display:flex; flex-direction:column}
     .topbar{
       position:sticky; top:0; z-index:50;
@@ -105,7 +101,6 @@
       user-select:none;
     }
     .btn:hover{transform:translateY(-1px); filter:brightness(1.06); border-color: rgba(180,210,255,.22)}
-    .btn:active{transform:translateY(0px); filter:brightness(1.02)}
     .btn.primary{
       border-color: rgba(90,166,255,.32);
       background: linear-gradient(180deg, rgba(90,166,255,.22), rgba(90,166,255,.10));
@@ -152,14 +147,11 @@
     }
     .card > *{position:relative}
     .card h2{margin:0 0 8px; font-size:18px}
-    .card h3{margin:0 0 8px; font-size:14px; color:var(--muted); font-weight:900; letter-spacing:.3px}
     .muted{color:var(--muted)}
     .mini{font-size:12px}
     .tag{font-family:var(--mono); font-size:12px; opacity:.92}
 
     .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
-    .col{display:flex; flex-direction:column; gap:10px}
-
     .pill{
       display:inline-flex; align-items:center; gap:8px;
       padding:7px 10px; border-radius:999px; font-size:12px;
@@ -175,7 +167,9 @@
     .hr{height:1px; background:var(--border); margin:12px 0}
     .field{display:flex; flex-direction:column; gap:7px}
     .field label{font-size:12px; color:var(--muted); font-weight:800; letter-spacing:.2px}
-    input, textarea, select{
+    input, textarea
+
+textarea{
       width:100%;
       padding:11px 12px;
       border-radius:14px;
@@ -184,7 +178,6 @@
       color:var(--text);
       outline:none;
     }
-    textarea{min-height:120px; resize:vertical; font-family:var(--mono); font-size:12.5px}
     input:focus, textarea:focus{border-color: rgba(90,166,255,.32); box-shadow: 0 0 0 4px rgba(90,166,255,.10)}
 
     .kpi{
@@ -200,24 +193,6 @@
     .kpi .n{font-weight:950; font-size:16px}
     .kpi .t{font-size:12px; color:var(--muted); font-weight:800}
 
-    .list{display:flex; flex-direction:column; gap:10px}
-    .item{
-      border:1px solid var(--border);
-      background: rgba(0,0,0,.18);
-      border-radius:16px;
-      padding:12px;
-      transition: transform .12s ease, border-color .12s ease, filter .12s ease;
-    }
-    .item:hover{transform: translateY(-1px); border-color: rgba(180,210,255,.20); filter:brightness(1.04)}
-    .item .title{font-weight:950}
-    .item .sub{color:var(--muted); font-size:12px; font-weight:800}
-
-    .split{display:grid; grid-template-columns:1fr 1fr; gap:12px}
-    @media (max-width: 760px){ .split{grid-template-columns:1fr} }
-
-    .smallnote{font-size:12px; color:var(--muted); line-height:1.45}
-
-    /* ===== Toast ===== */
     .toast-wrap{
       position:fixed; right:16px; bottom:16px; z-index:9999;
       display:flex; flex-direction:column; gap:10px;
@@ -237,26 +212,6 @@
     @keyframes toastIn{from{opacity:0; transform: translateY(8px)} to{opacity:1; transform: translateY(0)}}
     @keyframes fadeUp{from{opacity:0; transform: translateY(6px)} to{opacity:1; transform: translateY(0)}}
 
-    /* ===== Skeleton ===== */
-    .skeleton{
-      position:relative;
-      overflow:hidden;
-      background: rgba(255,255,255,.06);
-      border:1px solid var(--border);
-      border-radius:16px;
-      min-height: 90px;
-    }
-    .skeleton:after{
-      content:"";
-      position:absolute;
-      inset:0;
-      transform: translateX(-60%);
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,.10), transparent);
-      animation: shimmer 1.2s ease infinite;
-    }
-    @keyframes shimmer{to{transform: translateX(60%)}}
-
-    /* ===== Footer ===== */
     .footer{
       max-width:1120px;
       margin:0 auto 24px;
@@ -305,8 +260,6 @@
 /* ============================================================
    CONFIG — SEMPRE BUSCAR API NO server_status.json DO GITHUB
    ============================================================ */
-
-// URL que você mandou (corrigindo o .jsonn quando aparecer errado)
 const STATUS_GITHUB_URL = "https://github.com/NoSense-Bot/Servidor/blob/main/server_status.json";
 
 function githubBlobToRaw(url){
@@ -321,26 +274,18 @@ function githubBlobToRaw(url){
 
 const LS = {
   token: "obearco_session_token",
-  apiBase: "obearco_api_base",
   me: "obearco_me_cache",
-  updatesLocal: "obearco_updates_local_v1",
 };
 
-// Estado global
 const state = {
-  loading: true,
   status: null,
-  apiBase: "", // NUNCA mostramos na UI
+  apiBase: "",         // não exibimos
   token: localStorage.getItem(LS.token) || "",
   me: safeJson(localStorage.getItem(LS.me)) || null,
   isAdmin: false,
   route: location.hash || "#/login",
-  updates: [], // feed público de updates
 };
 
-/* ============================================================
-   Utils
-   ============================================================ */
 function safeJson(s){ try{ return JSON.parse(s); }catch{ return null; } }
 
 function escapeHtml(s){
@@ -368,10 +313,6 @@ function toast(title, msg, kind="info"){
 
 function go(hash){ location.hash = hash; }
 
-function pickId(user){
-  return user?.id ?? user?.user_id ?? user?._id ?? user?.email ?? null;
-}
-
 function isAdminFromMe(me){
   return !!(me?.is_admin || me?.admin || me?.role === "admin" || me?.nivel === "admin");
 }
@@ -380,18 +321,10 @@ function isAdminFromMe(me){
    Status + API base
    ============================================================ */
 async function fetchStatusAlways(){
-  // Sempre busca do GitHub ao abrir (no-store), e tenta 2x se falhar
   const rawUrl = githubBlobToRaw(STATUS_GITHUB_URL);
-  for(let attempt=1; attempt<=2; attempt++){
-    try{
-      const res = await fetch(rawUrl, { cache:"no-store" });
-      if(!res.ok) throw new Error("Não consegui baixar server_status.json");
-      return await res.json();
-    }catch(err){
-      if(attempt===2) throw err;
-      await sleep(500);
-    }
-  }
+  const res = await fetch(rawUrl, { cache:"no-store" });
+  if(!res.ok) throw new Error("Não consegui baixar server_status.json");
+  return await res.json();
 }
 
 function setServerBadge(online){
@@ -414,56 +347,71 @@ function apiUrl(path){
 }
 
 async function apiCmd(payload){
-  // Mantém seu padrão: /api/v1/cmd com fallback legacy (/login, /register)
   const url = apiUrl("/api/v1/cmd");
   const headers = { "Content-Type":"application/json" };
   if(state.token) headers["Authorization"] = "Bearer " + state.token;
 
+  // 1) tenta /api/v1/cmd
   try{
     const r = await fetch(url, { method:"POST", headers, body: JSON.stringify(payload) });
     const j = await r.json().catch(()=> ({}));
     if(!r.ok || j.ok === false) throw new Error(j.error || "Falha no cmd");
     return j;
   }catch(err){
-    if(payload?.comando === "/login" || payload?.comando === "/register"){
-      const legacyPath = payload.comando === "/login" ? "/login" : "/register";
-      const rr = await fetch(apiUrl(legacyPath), {
+    // 2) fallback legacy /login e /register (body sem "comando")
+    if(payload?.comando === "/login"){
+      const rr = await fetch(apiUrl("/login"), {
         method:"POST",
         headers: {"Content-Type":"application/json"},
-        body: JSON.stringify(payload)
+        body: JSON.stringify({
+          login: payload.login || payload.email || payload.username || "",
+          senha: payload.senha || ""
+        })
       });
       const jj = await rr.json().catch(()=> ({}));
-      if(!rr.ok || jj.ok === false) throw new Error(jj.error || "Falha no login/register");
+      if(!rr.ok || jj.ok === false) throw new Error(jj.error || "Falha no login");
       return jj;
     }
+
+    if(payload?.comando === "/register"){
+      const rr = await fetch(apiUrl("/register"), {
+        method:"POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({
+          username: payload.username || "",
+          email: payload.email || "",
+          senha: payload.senha || ""
+        })
+      });
+      const jj = await rr.json().catch(()=> ({}));
+      if(!rr.ok || jj.ok === false) throw new Error(jj.error || "Falha no register");
+      return jj;
+    }
+
     throw err;
   }
 }
-
-function sleep(ms){ return new Promise(r=>setTimeout(r, ms)); }
 
 /* ============================================================
    Auth
    ============================================================ */
 async function doLogin(email, senha){
-  const out = await apiCmd({ comando:"/login", email, senha });
+  const out = await apiCmd({ comando:"/login", login: email, senha });
   const token = out.session_token || out.token || out?.data?.session_token || out?.session?.token;
   if(!token) throw new Error("Login OK mas não veio session_token");
   state.token = token;
   localStorage.setItem(LS.token, token);
   toast("Login", "Sessão salva ✅", "ok");
   await loadMe();
-  await loadUpdates(); // carrega feed junto
   go("#/feed");
 }
 
 async function doRegister(username, email, senha){
-  // manda exatamente o que o backend espera
+  // ✅ CORRETO: backend espera "username"
   await apiCmd({ comando:"/register", username, email, senha });
   toast("Conta criada", "Agora faz login 😉", "ok");
   go("#/login");
 }
-
 
 function doLogout(){
   state.token = "";
@@ -480,132 +428,13 @@ function doLogout(){
    ============================================================ */
 async function loadMe(){
   if(!state.token) return null;
-  try{
-    const out = await apiCmd({ comando:"/me/get" });
-    const me = out.me || out.user || out.account || out.data || out;
-    state.me = me;
-    state.isAdmin = isAdminFromMe(me);
-    localStorage.setItem(LS.me, JSON.stringify(me));
-    renderNav();
-    return me;
-  }catch(e1){
-    const out2 = await apiCmd({ comando:"/me" }).catch(()=> null);
-    if(out2){
-      const me = out2.me || out2.user || out2.account || out2.data || out2;
-      state.me = me;
-      state.isAdmin = isAdminFromMe(me);
-      localStorage.setItem(LS.me, JSON.stringify(me));
-      renderNav();
-      return me;
-    }
-    throw e1;
-  }
-}
-
-async function updateMe(patch){
-  await apiCmd({ comando:"/me/update", patch });
-  toast("Conta", "Atualizada ✅", "ok");
-  await loadMe();
-}
-
-async function deleteMe(){
-  await apiCmd({ comando:"/me/delete" });
-  toast("Conta", "Deletada 🗑️", "ok");
-  doLogout();
-}
-
-async function addSkill(skill){
-  await apiCmd({ comando:"/me/skills/add", skill });
-  toast("Skills", "Adicionada ✅", "ok");
-  await loadMe();
-}
-
-async function removeSkill(skill){
-  await apiCmd({ comando:"/me/skills/remove", skill });
-  toast("Skills", "Removida ✅", "ok");
-  await loadMe();
-}
-
-/* ============================================================
-   Admin (CRUD usuários)
-   ============================================================ */
-async function adminListUsers(){
-  const out = await apiCmd({ comando:"/admin/users/list" });
-  return out.users || out.list || out.data || [];
-}
-async function adminGetUser(id){
-  const out = await apiCmd({ comando:"/admin/users/get", id });
-  return out.user || out.data || out;
-}
-async function adminUpdateUser(id, patch){
-  await apiCmd({ comando:"/admin/users/update", id, patch });
-  toast("Admin", "Usuário atualizado ✅", "ok");
-}
-async function adminDeleteUser(id){
-  await apiCmd({ comando:"/admin/users/delete", id });
-  toast("Admin", "Usuário deletado 🗑️", "ok");
-}
-async function adminCreateUser(payload){
-  await apiCmd({ comando:"/admin/users/create", ...payload });
-  toast("Admin", "Usuário criado ✅", "ok");
-}
-
-/* ============================================================
-   Updates (Público + Editor Admin)
-   ============================================================ */
-/*
-  ✅ Profissional: tenta buscar/salvar por API
-  - Lista pública:  comando "/updates/list"
-  - Criar update (admin): "/admin/updates/create"
-  - (opcional) deletar: "/admin/updates/delete"
-
-  🔁 Fallback: localStorage (para não “quebrar” se backend ainda não existe)
-*/
-function getLocalUpdates(){
-  const arr = safeJson(localStorage.getItem(LS.updatesLocal)) || [];
-  return Array.isArray(arr) ? arr : [];
-}
-function setLocalUpdates(list){
-  localStorage.setItem(LS.updatesLocal, JSON.stringify(list));
-}
-
-async function loadUpdates(){
-  // tenta API primeiro
-  try{
-    const out = await apiCmd({ comando:"/updates/list" });
-    const list = out.updates || out.list || out.data || [];
-    state.updates = Array.isArray(list) ? list : [];
-    return state.updates;
-  }catch{
-    // fallback local
-    state.updates = getLocalUpdates();
-    return state.updates;
-  }
-}
-
-async function createUpdate({ title, body, tags=[] }){
-  const payload = {
-    title: String(title||"").trim(),
-    body: String(body||"").trim(),
-    tags: Array.isArray(tags) ? tags : [],
-    ts: Date.now()
-  };
-  if(!payload.title || !payload.body) throw new Error("Título e texto são obrigatórios.");
-
-  // tenta API
-  try{
-    await apiCmd({ comando:"/admin/updates/create", update: payload });
-    toast("Updates", "Publicado ✅", "ok");
-    await loadUpdates();
-    return;
-  }catch{
-    // fallback local
-    const list = getLocalUpdates();
-    list.unshift({ ...payload, id: "local_" + payload.ts });
-    setLocalUpdates(list);
-    toast("Updates", "Publicado (local) ✅", "ok");
-    await loadUpdates();
-  }
+  const out = await apiCmd({ comando:"/whoami" }); // se seu Server.py monta payload["session"], use /whoami
+  const me = out.me || out.user || out.account || out.data || out.session || out;
+  state.me = me;
+  state.isAdmin = isAdminFromMe(me);
+  localStorage.setItem(LS.me, JSON.stringify(me));
+  renderNav();
+  return me;
 }
 
 /* ============================================================
@@ -628,9 +457,6 @@ function renderNav(){
   }
 
   nav.appendChild(btn("📰 Feed", ()=>go("#/feed"), "primary"));
-  nav.appendChild(btn("📢 Updates", ()=>go("#/updates")));
-  nav.appendChild(btn("⚙️ Config", ()=>go("#/config")));
-  if(state.isAdmin) nav.appendChild(btn("🛡️ Admin", ()=>go("#/admin")));
   nav.appendChild(btn("🚪 Sair", doLogout, "ghost"));
 }
 
@@ -644,13 +470,8 @@ function btn(label, onClick, cls=""){
 
 function guardRoute(){
   const r = state.route;
-  if(!state.token && (r.startsWith("#/feed") || r.startsWith("#/config") || r.startsWith("#/admin") || r.startsWith("#/updates"))){
+  if(!state.token && (r.startsWith("#/feed"))){
     go("#/login");
-    return false;
-  }
-  if(state.token && r.startsWith("#/admin") && !state.isAdmin){
-    toast("Sem permissão", "Você não é admin 😅", "warn");
-    go("#/feed");
     return false;
   }
   return true;
@@ -665,9 +486,6 @@ function render(){
   if(r.startsWith("#/login")) return renderLogin(app);
   if(r.startsWith("#/register")) return renderRegister(app);
   if(r.startsWith("#/feed")) return renderFeed(app);
-  if(r.startsWith("#/updates")) return renderUpdates(app);
-  if(r.startsWith("#/config")) return renderConfig(app);
-  if(r.startsWith("#/admin")) return renderAdmin(app);
 
   go("#/login");
 }
@@ -681,11 +499,11 @@ function renderLogin(app){
     <div class="grid">
       <div class="card">
         <h2>🔐 Login</h2>
-        <div class="muted">Entre com sua conta (usuário normal ou admin).</div>
+        <div class="muted">Entre com sua conta.</div>
         <div class="hr"></div>
 
         <div class="field">
-          <label>Email</label>
+          <label>Email ou Username</label>
           <input id="email" placeholder="email@exemplo.com" autocomplete="username" />
         </div>
         <div class="field">
@@ -699,9 +517,8 @@ function renderLogin(app){
         </div>
 
         <div class="hr"></div>
-        <div class="smallnote">
-          💡 A base da API é carregada automaticamente do <span class="tag">server_status.json</span> no GitHub, sempre que você abre o site.<br/>
-          ✅ As URLs e chamadas ficam “escondidas” da UI (pra ficar mais público/profissional).
+        <div class="mini muted">
+          Base da API vem do <span class="tag">server_status.json</span> no GitHub a cada carregamento.
         </div>
       </div>
 
@@ -721,12 +538,6 @@ function renderLogin(app){
             <div class="t">porta</div>
           </div>
         </div>
-        <div class="hr"></div>
-        <div class="smallnote">
-          <b>Conectividade:</b><br/>
-          - Se estiver Offline, o login vai falhar.<br/>
-          - Se CORS travar, libere o domínio do seu GitHub Pages no servidor.
-        </div>
       </div>
     </div>
   `;
@@ -738,7 +549,7 @@ function renderLogin(app){
   btnLogin.onclick = async ()=>{
     const e = (email.value || "").trim();
     const s = (senha.value || "");
-    if(!e || !s){ toast("Ops", "Preenche email e senha 😅", "warn"); return; }
+    if(!e || !s){ toast("Ops", "Preenche login e senha 😅", "warn"); return; }
     btnLogin.disabled = true; btnLogin.textContent = "Entrando…";
     try{ await doLogin(e, s); }
     catch(err){ toast("Login falhou", err?.message || String(err), "bad"); }
@@ -755,8 +566,9 @@ function renderRegister(app){
         <div class="hr"></div>
 
         <div class="field">
-          <label>Usuário</label>
-          <input id="usuario" placeholder="seu nick" autocomplete="nickname" />
+          <label>Usuário (username)</label>
+          <input id="username" placeholder="Ex: Gustavo Azevedo" autocomplete="nickname" />
+          <div class="mini muted">Permitido: letras/números/espaço/_/./- (sem @#!).</div>
         </div>
         <div class="field">
           <label>Email</label>
@@ -771,611 +583,88 @@ function renderRegister(app){
           <button class="btn primary" id="btnReg">Criar</button>
           <button class="btn" onclick="location.hash='#/login'">Voltar</button>
         </div>
-
-        <div class="hr"></div>
-        <div class="smallnote">Backend esperado: comando <span class="tag">/register</span> (requer email, senha, usuario).</div>
       </div>
 
       <div class="card">
         <h2>🧠 Segurança</h2>
         <div class="muted">
-          O token fica no <span class="tag">localStorage</span> (bom pra dev, simples).<br/>
-          Em produção “real”, o ideal é usar cookie HttpOnly.
+          Token fica no <span class="tag">localStorage</span> (bom pra dev).<br/>
+          Em produção, prefira cookie HttpOnly.
         </div>
       </div>
     </div>
   `;
 
-  const usuario = app.querySelector("#usuario");
+  const username = app.querySelector("#username");
   const email = app.querySelector("#email");
   const senha = app.querySelector("#senha");
   const btnReg = app.querySelector("#btnReg");
 
   btnReg.onclick = async ()=>{
-    const u = (usuario.value || "").trim();
+    const u = (username.value || "").trim();
     const e = (email.value || "").trim();
     const s = (senha.value || "");
     if(!u || !e || !s){
       toast("Ops", "Preenche usuário, email e senha 😅", "warn");
       return;
     }
-    btnReg.disabled = true;
-    btnReg.textContent = "Criando…";
-    try{
-     await doRegister(u, e, s);
-    }catch(err){
-      toast("Registro falhou", err?.message || String(err), "bad");
-    }finally{
-      btnReg.disabled = false;
-      btnReg.textContent = "Criar";
-    }
+    btnReg.disabled = true; btnReg.textContent = "Criando…";
+    try{ await doRegister(u, e, s); }
+    catch(err){ toast("Registro falhou", err?.message || String(err), "bad"); }
+    finally{ btnReg.disabled = false; btnReg.textContent = "Criar"; }
   };
 }
 
 function renderFeed(app){
   const me = state.me || {};
-  const skills = me.skills ?? me.Skills ?? me.habilidades ?? null;
-
   app.innerHTML = `
     <div class="grid">
       <div class="card">
+        <h2>📰 Feed</h2>
+        <div class="muted">Você está logado.</div>
+        <div class="hr"></div>
+
         <div class="row" style="justify-content:space-between">
           <div>
-            <h2>📰 Feed</h2>
-            <div class="muted">Hub do jogador (perfil + atualizações públicas).</div>
+            <div><b>Username:</b> ${escapeHtml(me.username || me.usuario || "—")}</div>
+            <div class="mini muted"><b>Email:</b> ${escapeHtml(me.email || "—")}</div>
           </div>
-          <div class="row">
-            ${state.isAdmin ? `<span class="pill ok">🛡️ Admin</span>` : `<span class="pill warn">👤 User</span>`}
-          </div>
+          <span class="pill ${state.isAdmin ? "ok" : "warn"}">${state.isAdmin ? "🛡️ admin" : "👤 user"}</span>
         </div>
-
-        <div class="hr"></div>
-
-        <div class="item">
-          <div class="title">${escapeHtml(me.usuario || me.nome || me.name || me.username || me.email || "—")}</div>
-          <div class="sub">${escapeHtml(me.email || "—")}</div>
-
-          <div class="hr"></div>
-
-          <div class="split">
-            <div>
-              <div class="muted mini">Token</div>
-              <div class="tag">${escapeHtml(state.token ? state.token.slice(0,24)+"…" : "—")}</div>
-            </div>
-            <div>
-              <div class="muted mini">ID</div>
-              <div class="tag">${escapeHtml(pickId(me) || "—")}</div>
-            </div>
-          </div>
-
-          <div class="hr"></div>
-
-          <div class="muted mini">Skills</div>
-          <div class="tag">${escapeHtml(skills === null ? "null" : JSON.stringify(skills))}</div>
-        </div>
-
-        <div class="hr"></div>
-
-        <h3>📢 Últimos updates</h3>
-        <div id="updatesPreview" class="list"></div>
       </div>
 
       <div class="card">
-        <h2>⚡ Ações rápidas</h2>
+        <h2>⚡ Ações</h2>
         <div class="row">
-          <button class="btn primary" onclick="location.hash='#/updates'">📢 Ver Updates</button>
-          <button class="btn" onclick="location.hash='#/config'">⚙️ Config</button>
-          ${state.isAdmin ? `<button class="btn" onclick="location.hash='#/admin'">🛡️ Admin</button>` : ``}
-        </div>
-        <div class="hr"></div>
-        <div class="smallnote">
-          🎲 Dica: use a aba <b>Updates</b> como “patch notes” do seu RPG (mudanças, eventos, temporadas).
+          <button class="btn danger" onclick="(${doLogout.toString()})()">🚪 Sair</button>
         </div>
       </div>
     </div>
   `;
-
-  renderUpdatesPreview(app.querySelector("#updatesPreview"));
-}
-
-function renderUpdatesPreview(el){
-  const list = Array.isArray(state.updates) ? state.updates.slice(0,4) : [];
-  if(!list.length){
-    el.innerHTML = `<div class="muted mini">Ainda não há updates publicados.</div>`;
-    return;
-  }
-  el.innerHTML = list.map(u=>{
-    const title = u.title || u.titulo || "Update";
-    const body = u.body || u.texto || u.msg || "";
-    const ts = u.ts || u.created_at || u.time || null;
-    const when = ts ? new Date(Number(ts)).toLocaleString() : "";
-    return `
-      <div class="item">
-        <div class="row" style="justify-content:space-between">
-          <div class="title">${escapeHtml(title)}</div>
-          <span class="pill ok">📌</span>
-        </div>
-        <div class="sub">${escapeHtml(when)}</div>
-        <div class="hr"></div>
-        <div class="mini muted">${escapeHtml(String(body).slice(0,180))}${String(body).length>180 ? "…" : ""}</div>
-      </div>
-    `;
-  }).join("");
-}
-
-function renderUpdates(app){
-  const canPost = !!state.isAdmin;
-
-  app.innerHTML = `
-    <div class="grid">
-      <div class="card">
-        <div class="row" style="justify-content:space-between">
-          <div>
-            <h2>📢 Updates</h2>
-            <div class="muted">Patch notes, eventos, anúncios (público).</div>
-          </div>
-          ${canPost ? `<span class="pill ok">Editor (Admin)</span>` : `<span class="pill warn">Leitor</span>`}
-        </div>
-
-        <div class="hr"></div>
-        <div class="list" id="updatesList">
-          <div class="skeleton"></div>
-        </div>
-      </div>
-
-      <div class="card">
-        <h2>✍️ Publicar</h2>
-        <div class="muted">${canPost ? "Somente admin publica." : "Você não é admin."}</div>
-        <div class="hr"></div>
-
-        <div class="field">
-          <label>Título</label>
-          <input id="uTitle" placeholder="Ex: Update 1.0.2 — Balanceamento" ${canPost ? "" : "disabled"} />
-        </div>
-
-        <div class="field">
-          <label>Texto</label>
-          <textarea id="uBody" placeholder="Escreva o update… (markdown simples ok)" ${canPost ? "" : "disabled"}></textarea>
-        </div>
-
-        <div class="field">
-          <label>Tags (separadas por vírgula)</label>
-          <input id="uTags" placeholder="evento, patch, balance" ${canPost ? "" : "disabled"} />
-        </div>
-
-        <div class="row">
-          <button class="btn primary" id="btnPub" ${canPost ? "" : "disabled"}>📌 Publicar</button>
-          <button class="btn" id="btnReload">🔄 Recarregar</button>
-        </div>
-
-        <div class="hr"></div>
-        <div class="smallnote">
-          ✅ O site tenta salvar via API (<span class="tag">/admin/updates/create</span>) e listar via (<span class="tag">/updates/list</span>).<br/>
-          🔁 Se não existir no backend ainda, cai em <span class="tag">localStorage</span>.
-        </div>
-      </div>
-    </div>
-  `;
-
-  const listEl = app.querySelector("#updatesList");
-  const btnReload = app.querySelector("#btnReload");
-  const btnPub = app.querySelector("#btnPub");
-
-  btnReload.onclick = async ()=>{
-    btnReload.disabled = true;
-    try{
-      await loadUpdates();
-      paintUpdates(listEl);
-      toast("Updates", "Recarregado ✅", "ok");
-    }catch(err){
-      toast("Updates", err?.message || String(err), "bad");
-    }finally{
-      btnReload.disabled = false;
-    }
-  };
-
-  if(btnPub){
-    btnPub.onclick = async ()=>{
-      const title = (app.querySelector("#uTitle").value || "").trim();
-      const body = (app.querySelector("#uBody").value || "").trim();
-      const tagsRaw = (app.querySelector("#uTags").value || "").trim();
-      const tags = tagsRaw ? tagsRaw.split(",").map(s=>s.trim()).filter(Boolean) : [];
-      btnPub.disabled = true; btnPub.textContent = "Publicando…";
-      try{
-        await createUpdate({ title, body, tags });
-        paintUpdates(listEl);
-        app.querySelector("#uTitle").value = "";
-        app.querySelector("#uBody").value = "";
-        app.querySelector("#uTags").value = "";
-      }catch(err){
-        toast("Publicar falhou", err?.message || String(err), "bad");
-      }finally{
-        btnPub.disabled = false; btnPub.textContent = "📌 Publicar";
-      }
-    };
-  }
-
-  paintUpdates(listEl);
-}
-
-function paintUpdates(listEl){
-  const list = Array.isArray(state.updates) ? state.updates : [];
-  if(!list.length){
-    listEl.innerHTML = `<div class="muted mini">Nenhum update ainda.</div>`;
-    return;
-  }
-  listEl.innerHTML = list.map(u=>{
-    const title = u.title || u.titulo || "Update";
-    const body = u.body || u.texto || u.msg || "";
-    const tags = u.tags || u.etiquetas || [];
-    const ts = u.ts || u.created_at || u.time || null;
-    const when = ts ? new Date(Number(ts)).toLocaleString() : "";
-    const tagsView = Array.isArray(tags) && tags.length
-      ? `<div class="row" style="margin-top:10px">${tags.slice(0,6).map(t=>`<span class="pill">${escapeHtml(t)}</span>`).join("")}</div>`
-      : "";
-    return `
-      <div class="item">
-        <div class="row" style="justify-content:space-between">
-          <div class="title">${escapeHtml(title)}</div>
-          <span class="pill ok">📢</span>
-        </div>
-        <div class="sub">${escapeHtml(when)}</div>
-        <div class="hr"></div>
-        <div class="mini muted" style="white-space:pre-wrap">${escapeHtml(body)}</div>
-        ${tagsView}
-      </div>
-    `;
-  }).join("");
-}
-
-function renderConfig(app){
-  const me = state.me || {};
-  const skills = Array.isArray(me.skills) ? me.skills : (Array.isArray(me.Skills) ? me.Skills : []);
-  const skillsJson = JSON.stringify(skills ?? null, null, 2);
-
-  app.innerHTML = `
-    <div class="grid">
-      <div class="card">
-        <h2>⚙️ Config (usuário)</h2>
-        <div class="muted">Token + dados da conta + CRUD.</div>
-
-        <div class="hr"></div>
-
-        <div class="field">
-          <label>Session token</label>
-          <input value="${escapeHtml(state.token || "")}" readonly />
-        </div>
-
-        <div class="split">
-          <div class="field">
-            <label>Usuário</label>
-            <input id="fUsuario" value="${escapeHtml(me.usuario || "")}" placeholder="seu nick" />
-          </div>
-          <div class="field">
-            <label>Email</label>
-            <input id="fEmail" value="${escapeHtml(me.email || "")}" placeholder="email@exemplo.com" />
-          </div>
-        </div>
-
-        <div class="field">
-          <label>Nome (opcional)</label>
-          <input id="fName" value="${escapeHtml(me.nome || me.name || "")}" placeholder="Seu nome" />
-        </div>
-
-        <div class="field">
-          <label>Bio (opcional)</label>
-          <input id="fBio" value="${escapeHtml(me.bio || me.about || "")}" placeholder="Uma descrição…" />
-        </div>
-
-        <div class="field">
-          <label>Skills (JSON)</label>
-          <textarea id="fSkills">${escapeHtml(skillsJson === "null" ? "null" : skillsJson)}</textarea>
-          <div class="smallnote">💡 Se não tiver skills ainda, deixa <span class="tag">null</span> ou <span class="tag">[]</span>.</div>
-        </div>
-
-        <div class="row" style="margin-top:10px">
-          <button class="btn primary" id="btnSave">💾 Salvar</button>
-          <button class="btn" id="btnReload">🔄 Recarregar</button>
-          <button class="btn danger" id="btnDelete">🗑️ Deletar conta</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <h2>🧩 Skills rápidas</h2>
-        <div class="muted">Adicionar/remover skill (comandos dedicados).</div>
-
-        <div class="hr"></div>
-
-        <div class="field">
-          <label>Skill</label>
-          <input id="skillName" placeholder="ex: espada, alquimia…" />
-        </div>
-        <div class="row">
-          <button class="btn primary" id="btnAddSkill">➕ Add</button>
-          <button class="btn" id="btnRemSkill">➖ Remover</button>
-        </div>
-      </div>
-    </div>
-  `;
-
-  const fUsuario = app.querySelector("#fUsuario");
-  const fName = app.querySelector("#fName");
-  const fEmail = app.querySelector("#fEmail");
-  const fBio = app.querySelector("#fBio");
-  const fSkills = app.querySelector("#fSkills");
-  const btnSave = app.querySelector("#btnSave");
-  const btnReload = app.querySelector("#btnReload");
-  const btnDelete = app.querySelector("#btnDelete");
-  const skillName = app.querySelector("#skillName");
-  const btnAddSkill = app.querySelector("#btnAddSkill");
-  const btnRemSkill = app.querySelector("#btnRemSkill");
-
-  btnReload.onclick = async ()=>{
-    try{ await loadMe(); render(); toast("OK", "Recarregado ✅", "ok"); }
-    catch(err){ toast("Falhou", err?.message || String(err), "bad"); }
-  };
-
-  btnSave.onclick = async ()=>{
-    btnSave.disabled = true; btnSave.textContent = "Salvando…";
-    try{
-      let skillsVal = null;
-      const raw = (fSkills.value || "").trim();
-      if(raw !== "") skillsVal = JSON.parse(raw);
-
-      const patch = {
-        usuario: (fUsuario.value || "").trim(),
-        name: (fName.value || "").trim(),
-        email: (fEmail.value || "").trim(),
-        bio: (fBio.value || "").trim(),
-        skills: skillsVal,
-      };
-      await updateMe(patch);
-      render();
-    }catch(err){
-      toast("Salvar falhou", err?.message || String(err), "bad");
-    }finally{
-      btnSave.disabled = false; btnSave.textContent = "💾 Salvar";
-    }
-  };
-
-  btnDelete.onclick = async ()=>{
-    if(!confirm("Tem certeza que quer deletar sua conta?")) return;
-    btnDelete.disabled = true;
-    try{ await deleteMe(); }
-    catch(err){ toast("Delete falhou", err?.message || String(err), "bad"); btnDelete.disabled = false; }
-  };
-
-  btnAddSkill.onclick = async ()=>{
-    const sk = (skillName.value||"").trim();
-    if(!sk){ toast("Ops", "Digita uma skill 😅", "warn"); return; }
-    try{ await addSkill(sk); render(); }
-    catch(err){ toast("Falhou", err?.message || String(err), "bad"); }
-  };
-
-  btnRemSkill.onclick = async ()=>{
-    const sk = (skillName.value||"").trim();
-    if(!sk){ toast("Ops", "Digita uma skill 😅", "warn"); return; }
-    try{ await removeSkill(sk); render(); }
-    catch(err){ toast("Falhou", err?.message || String(err), "bad"); }
-  };
-}
-
-function renderAdmin(app){
-  app.innerHTML = `
-    <div class="grid">
-      <div class="card">
-        <div class="row" style="justify-content:space-between">
-          <div>
-            <h2>🛡️ Admin</h2>
-            <div class="muted">Ver todas as contas + CRUD total.</div>
-          </div>
-          <span class="pill ok">Admin mode</span>
-        </div>
-
-        <div class="hr"></div>
-
-        <div class="split">
-          <div class="field">
-            <label>Buscar (email/id)</label>
-            <input id="q" placeholder="ex: user@gmail.com" />
-          </div>
-          <div class="row" style="align-items:flex-end">
-            <button class="btn primary" id="btnLoad">📥 Carregar lista</button>
-            <button class="btn" id="btnNew">➕ Novo usuário</button>
-          </div>
-        </div>
-
-        <div class="hr"></div>
-        <div class="list" id="usersList"></div>
-      </div>
-
-      <div class="card">
-        <h2>✍️ Editor</h2>
-        <div class="muted">Selecione um usuário na lista pra editar.</div>
-
-        <div class="hr"></div>
-
-        <div class="field">
-          <label>ID selecionado</label>
-          <input id="selId" readonly />
-        </div>
-
-        <div class="field">
-          <label>JSON (patch)</label>
-          <textarea id="patch" placeholder='{"bio":"novo","skills":["a","b"],"is_admin":false}'></textarea>
-          <div class="smallnote">Envia <span class="tag">patch</span> para <span class="tag">/admin/users/update</span>.</div>
-        </div>
-
-        <div class="row">
-          <button class="btn primary" id="btnSaveUser">💾 Atualizar</button>
-          <button class="btn danger" id="btnDelUser">🗑️ Deletar</button>
-          <button class="btn" id="btnGetUser">🔎 Ver detalhes</button>
-        </div>
-
-        <div class="hr"></div>
-        <div class="field">
-          <label>Detalhes (read-only)</label>
-          <textarea id="details" readonly></textarea>
-        </div>
-      </div>
-    </div>
-  `;
-
-  const q = app.querySelector("#q");
-  const btnLoad = app.querySelector("#btnLoad");
-  const btnNew = app.querySelector("#btnNew");
-  const usersList = app.querySelector("#usersList");
-  const selId = app.querySelector("#selId");
-  const patch = app.querySelector("#patch");
-  const details = app.querySelector("#details");
-  const btnSaveUser = app.querySelector("#btnSaveUser");
-  const btnDelUser = app.querySelector("#btnDelUser");
-  const btnGetUser = app.querySelector("#btnGetUser");
-
-  let usersCache = [];
-
-  function renderUsers(list){
-    usersList.innerHTML = "";
-    if(!list.length){
-      usersList.innerHTML = `<div class="muted">Nenhuma conta encontrada.</div>`;
-      return;
-    }
-    list.forEach(u=>{
-      const id = pickId(u);
-      const name = u.usuario || u.nome || u.name || u.username || u.email || "—";
-      const role = (u.is_admin || u.admin || u.role==="admin") ? "admin" : "user";
-      const el = document.createElement("div");
-      el.className = "item";
-      el.innerHTML = `
-        <div class="row" style="justify-content:space-between">
-          <div>
-            <div class="title">${escapeHtml(name)}</div>
-            <div class="sub">${escapeHtml(u.email || "")}</div>
-          </div>
-          <span class="pill ${role==="admin" ? "ok":"warn"}">${role==="admin" ? "🛡️ admin":"👤 user"}</span>
-        </div>
-        <div class="hr"></div>
-        <div class="tag">${escapeHtml(id || "—")}</div>
-      `;
-      el.onclick = ()=>{
-        selId.value = id || "";
-        details.value = JSON.stringify(u, null, 2);
-        patch.value = "{}";
-      };
-      usersList.appendChild(el);
-    });
-  }
-
-  btnLoad.onclick = async ()=>{
-    btnLoad.disabled = true;
-    btnLoad.textContent = "Carregando…";
-    try{
-      const list = await adminListUsers();
-      usersCache = Array.isArray(list) ? list : [];
-      const term = (q.value||"").trim().toLowerCase();
-      const filtered = term
-        ? usersCache.filter(u => JSON.stringify(u).toLowerCase().includes(term))
-        : usersCache;
-      renderUsers(filtered);
-      toast("Admin", "Lista carregada ✅", "ok");
-    }catch(err){
-      toast("Admin falhou", err?.message || String(err), "bad");
-    }finally{
-      btnLoad.disabled = false;
-      btnLoad.textContent = "📥 Carregar lista";
-    }
-  };
-
-  btnNew.onclick = async ()=>{
-    const usuario = prompt("Usuário (nick):");
-    if(!usuario) return;
-    const email = prompt("Email do novo usuário:");
-    if(!email) return;
-    const senha = prompt("Senha:");
-    if(!senha) return;
-    const isAdmin = confirm("Esse usuário é ADMIN?");
-    try{
-      await adminCreateUser({ usuario, email, senha, is_admin: isAdmin });
-      await btnLoad.onclick();
-    }catch(err){
-      toast("Criar falhou", err?.message || String(err), "bad");
-    }
-  };
-
-  btnGetUser.onclick = async ()=>{
-    const id = (selId.value||"").trim();
-    if(!id){ toast("Ops", "Seleciona um usuário 😅", "warn"); return; }
-    try{
-      const u = await adminGetUser(id);
-      details.value = JSON.stringify(u, null, 2);
-      toast("OK", "Detalhes carregados ✅", "ok");
-    }catch(err){
-      toast("Falhou", err?.message || String(err), "bad");
-    }
-  };
-
-  btnSaveUser.onclick = async ()=>{
-    const id = (selId.value||"").trim();
-    if(!id){ toast("Ops", "Seleciona um usuário 😅", "warn"); return; }
-    let p = {};
-    try{ p = JSON.parse((patch.value||"{}") || "{}"); }
-    catch{ toast("JSON inválido", "Corrige o patch 😅", "warn"); return; }
-
-    btnSaveUser.disabled = true;
-    try{
-      await adminUpdateUser(id, p);
-      await btnLoad.onclick();
-    }catch(err){
-      toast("Update falhou", err?.message || String(err), "bad");
-    }finally{
-      btnSaveUser.disabled = false;
-    }
-  };
-
-  btnDelUser.onclick = async ()=>{
-    const id = (selId.value||"").trim();
-    if(!id){ toast("Ops", "Seleciona um usuário 😅", "warn"); return; }
-    if(!confirm("Deletar esse usuário?")) return;
-    btnDelUser.disabled = true;
-    try{
-      await adminDeleteUser(id);
-      selId.value = "";
-      details.value = "";
-      patch.value = "{}";
-      await btnLoad.onclick();
-    }catch(err){
-      toast("Delete falhou", err?.message || String(err), "bad");
-    }finally{
-      btnDelUser.disabled = false;
-    }
-  };
 }
 
 /* ============================================================
-   Boot (sempre busca json do GitHub ao abrir)
+   Boot
    ============================================================ */
 async function boot(){
   try{
-    state.loading = true;
     renderNav();
 
-    const st = await fetchStatusAlways();     // ✅ SEMPRE busca no GitHub ao carregar
+    const st = await fetchStatusAlways();
     state.status = st;
 
     const base = (st?.url_api_base || "").trim();
     if(!base) throw new Error("server_status.json sem url_api_base");
     state.apiBase = base.replace(/\/+$/,"");
-    localStorage.setItem(LS.apiBase, state.apiBase);
 
     const online = String(st?.status_servidor || "").toLowerCase().includes("online");
     setServerBadge(online);
 
     if(state.token){
       try{ await loadMe(); }
-      catch{ toast("Sessão", "Token inválido/expirado. Faz login de novo 😉", "warn"); doLogout(); }
+      catch{ toast("Sessão", "Token inválido/expirado. Faça login de novo 😉", "warn"); doLogout(); }
     }
 
-    await loadUpdates(); // carrega updates para público
     renderNav();
     render();
   }catch(err){
@@ -1383,14 +672,12 @@ async function boot(){
     toast("Boot falhou", err?.message || String(err), "bad");
     renderNav();
     render();
-  }finally{
-    state.loading = false;
   }
 }
 boot();
 
 /* ============================================================
-   Background animado (particles / nebula)
+   Background animado (particles)
    ============================================================ */
 (function bgParticles(){
   const canvas = document.getElementById("bg");
@@ -1430,20 +717,16 @@ boot();
   function step(){
     ctx.clearRect(0,0,w,h);
 
-    // glow
     const g = ctx.createRadialGradient(w*0.3, h*0.2, 0, w*0.3, h*0.2, Math.max(w,h)*0.7);
     g.addColorStop(0, "rgba(90,166,255,.08)");
     g.addColorStop(1, "rgba(0,0,0,0)");
-    ctx.fillStyle = g;
-    ctx.fillRect(0,0,w,h);
+    ctx.fillStyle = g; ctx.fillRect(0,0,w,h);
 
     const g2 = ctx.createRadialGradient(w*0.8, h*0.25, 0, w*0.8, h*0.25, Math.max(w,h)*0.75);
     g2.addColorStop(0, "rgba(139,92,246,.08)");
     g2.addColorStop(1, "rgba(0,0,0,0)");
-    ctx.fillStyle = g2;
-    ctx.fillRect(0,0,w,h);
+    ctx.fillStyle = g2; ctx.fillRect(0,0,w,h);
 
-    // particles
     for(const p of parts){
       p.x += p.vx; p.y += p.vy;
       if(p.x < -20) p.x = w+20;
