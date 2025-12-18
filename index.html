@@ -1,29 +1,31 @@
 <!doctype html>
 <html lang="pt-br">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>OBEARCO — Login</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>OBEARCO • RPG Hub</title>
   <style>
     :root{
-      --bg0:#07060c;
-      --bg1:#0b0a14;
-      --card:#0f1020cc;
-      --card2:#0b0b16cc;
-      --txt:#e9e7ff;
-      --mut:#a7a4d8;
-      --acc:#8b5cf6;
-      --acc2:#22c55e;
-      --bad:#ef4444;
-      --warn:#f59e0b;
-      --line:#2b2b55;
-      --glow: 0 0 22px rgba(139,92,246,.55);
-      --glow2: 0 0 22px rgba(34,197,94,.45);
-      --shadow: 0 18px 55px rgba(0,0,0,.55);
+      --bg0:#06070b;
+      --bg1:#0a1020;
+      --panel: rgba(14,18,30,.62);
+      --panel2: rgba(10,14,26,.78);
+      --stroke: rgba(140,180,255,.18);
+      --stroke2: rgba(255,255,255,.08);
+      --txt: rgba(236,244,255,.92);
+      --muted: rgba(236,244,255,.62);
+      --good:#46f0a7;
+      --warn:#ffd166;
+      --bad:#ff4d6d;
+      --cyan:#4cc9f0;
+      --vio:#9b5de5;
+      --blue:#3a86ff;
+      --glow: 0 0 18px rgba(76,201,240,.22), 0 0 44px rgba(155,93,229,.16);
       --radius: 18px;
-      --radius2: 24px;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      --radius2: 26px;
+      --shadow: 0 18px 60px rgba(0,0,0,.55);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
     }
 
     *{box-sizing:border-box}
@@ -32,206 +34,150 @@
       margin:0;
       font-family: var(--sans);
       color:var(--txt);
-      background: radial-gradient(1200px 800px at 20% 10%, #1b0f35 0%, transparent 55%),
-                  radial-gradient(900px 600px at 90% 20%, #0c3b28 0%, transparent 55%),
-                  radial-gradient(1100px 800px at 50% 110%, #2b173d 0%, transparent 50%),
+      background: radial-gradient(1200px 900px at 20% 10%, #121a38 0%, rgba(18,26,56,0) 60%),
+                  radial-gradient(900px 900px at 85% 40%, rgba(76,201,240,.18) 0%, rgba(76,201,240,0) 55%),
+                  radial-gradient(900px 700px at 70% 95%, rgba(155,93,229,.16) 0%, rgba(155,93,229,0) 55%),
                   linear-gradient(180deg, var(--bg0), var(--bg1));
-      overflow-x:hidden;
-    }
-
-    /* ====== VFX ====== */
-    #vfx{
-      position:fixed; inset:0;
-      width:100%; height:100%;
-      z-index:0;
-      pointer-events:none;
-      filter: drop-shadow(0 0 10px rgba(139,92,246,.25));
-      opacity:.95;
-    }
-    .fog{
-      position:fixed; inset:-20%;
-      background:
-        radial-gradient(closest-side at 20% 25%, rgba(139,92,246,.11), transparent 60%),
-        radial-gradient(closest-side at 80% 35%, rgba(34,197,94,.10), transparent 60%),
-        radial-gradient(closest-side at 55% 70%, rgba(255,255,255,.06), transparent 60%);
-      animation: drift 18s linear infinite;
-      z-index:0;
-      pointer-events:none;
-      mix-blend-mode: screen;
-    }
-    @keyframes drift{
-      0%{transform:translate3d(-2%, -1%, 0) scale(1)}
-      50%{transform:translate3d(2%, 1%, 0) scale(1.03)}
-      100%{transform:translate3d(-2%, -1%, 0) scale(1)}
-    }
-
-    /* ====== Layout ====== */
-    .wrap{
-      position:relative;
-      z-index:1;
-      min-height:100%;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:28px 16px;
-    }
-    .shell{
-      width:min(1200px, 96vw);
-      display:grid;
-      grid-template-columns: 1.1fr .9fr;
-      gap:18px;
-    }
-
-    @media (max-width: 980px){
-      .shell{grid-template-columns:1fr}
-    }
-
-    .card{
-      background: linear-gradient(180deg, rgba(18,16,35,.85), rgba(10,10,20,.75));
-      border:1px solid rgba(139,92,246,.20);
-      border-radius: var(--radius2);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(10px);
       overflow:hidden;
-      position:relative;
     }
-    .card::before{
-      content:"";
-      position:absolute; inset:-1px;
-      background: radial-gradient(600px 200px at 30% 0%, rgba(139,92,246,.25), transparent 70%),
-                  radial-gradient(520px 220px at 90% 10%, rgba(34,197,94,.20), transparent 70%);
-      opacity:.75;
+
+    /* ====== VFX LAYERS ====== */
+    #vfxCanvas{
+      position:fixed; inset:0; z-index:0;
+      width:100vw; height:100vh;
+      filter: blur(.0px) saturate(1.05);
+    }
+    .scanlines{
       pointer-events:none;
+      position:fixed; inset:0; z-index:1;
+      background:
+        linear-gradient(rgba(255,255,255,.035), rgba(255,255,255,.0) 2px) 0 0/100% 4px,
+        radial-gradient(900px 520px at 25% 15%, rgba(76,201,240,.06), rgba(0,0,0,0) 60%),
+        radial-gradient(820px 480px at 85% 65%, rgba(155,93,229,.06), rgba(0,0,0,0) 60%);
+      mix-blend-mode: overlay;
+      opacity:.55;
+      animation: flicker 6s infinite linear;
+    }
+    @keyframes flicker{
+      0%,100%{opacity:.50}
+      33%{opacity:.58}
+      66%{opacity:.46}
+    }
+    .grain{
+      pointer-events:none;
+      position:fixed; inset:-20%; z-index:2;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='.28'/%3E%3C/svg%3E");
+      transform: translateZ(0);
+      opacity:.16;
+      animation: grainMove 10s infinite linear;
+      mix-blend-mode: overlay;
+    }
+    @keyframes grainMove{
+      0%{transform:translate(-2%,-3%)}
+      100%{transform:translate(2%,3%)}
+    }
+    .bloom{
+      pointer-events:none;
+      position:fixed; inset:-10%; z-index:1;
+      background:
+        radial-gradient(700px 380px at 20% 30%, rgba(58,134,255,.10), rgba(0,0,0,0) 60%),
+        radial-gradient(760px 420px at 70% 70%, rgba(155,93,229,.10), rgba(0,0,0,0) 60%),
+        radial-gradient(520px 320px at 80% 20%, rgba(76,201,240,.10), rgba(0,0,0,0) 60%);
+      filter: blur(12px);
+      opacity:.85;
     }
 
-    .pane{
+    /* ====== APP SHELL ====== */
+    .shell{
       position:relative;
-      padding:22px;
+      z-index:5;
+      height:100%;
+      display:flex;
+      flex-direction:column;
     }
 
-    .brand{
+    .topbar{
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap:14px;
-      padding-bottom:14px;
-      border-bottom:1px solid rgba(139,92,246,.18);
-      margin-bottom:16px;
+      padding:18px 18px 10px;
+      gap:12px;
     }
+    .brand{
+      display:flex; align-items:center; gap:12px;
+      user-select:none;
+    }
+    .logo{
+      width:38px; height:38px; border-radius:12px;
+      background: radial-gradient(circle at 30% 30%, rgba(76,201,240,.9), rgba(155,93,229,.45) 55%, rgba(0,0,0,0) 70%),
+                  linear-gradient(135deg, rgba(58,134,255,.35), rgba(0,0,0,0));
+      border:1px solid rgba(255,255,255,.14);
+      box-shadow: var(--glow);
+      position:relative;
+      overflow:hidden;
+    }
+    .logo:after{
+      content:"";
+      position:absolute; inset:-40%;
+      background: conic-gradient(from 180deg, rgba(76,201,240,.0), rgba(76,201,240,.6), rgba(155,93,229,.0), rgba(58,134,255,.5), rgba(76,201,240,.0));
+      animation: spin 3.8s linear infinite;
+      opacity:.55;
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
     .brand h1{
-      margin:0;
-      font-size:18px;
-      letter-spacing:.8px;
+      font-size:16px; margin:0;
+      letter-spacing:.08em;
+      text-transform:uppercase;
     }
     .badge{
       font-family: var(--mono);
       font-size:12px;
-      color:rgba(255,255,255,.86);
-      padding:7px 10px;
-      border:1px solid rgba(255,255,255,.16);
+      padding:6px 10px;
       border-radius:999px;
-      background: rgba(0,0,0,.25);
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+      color:var(--muted);
+      display:flex; gap:10px; align-items:center;
+      white-space:nowrap;
     }
-    .badge b{color:var(--acc2)}
-    .grid2{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:12px;
+    .dot{
+      width:8px; height:8px; border-radius:99px;
+      background: rgba(255,255,255,.25);
+      box-shadow: 0 0 12px rgba(255,255,255,.12);
     }
-    @media (max-width: 560px){
-      .grid2{grid-template-columns:1fr}
-    }
+    .dot.ok{ background: var(--good); box-shadow: 0 0 14px rgba(70,240,167,.35)}
+    .dot.bad{ background: var(--bad); box-shadow: 0 0 14px rgba(255,77,109,.35)}
 
-    .tabs{
-      display:flex; gap:10px; flex-wrap:wrap;
-      margin: 12px 0 0;
+    .actions{
+      display:flex; gap:10px; align-items:center;
     }
-    .tab{
-      appearance:none; border:1px solid rgba(255,255,255,.14);
-      background: rgba(0,0,0,.22);
-      color:var(--txt);
-      padding:10px 12px;
-      border-radius: 12px;
-      cursor:pointer;
-      transition: .18s ease;
-      font-weight:650;
-      letter-spacing:.2px;
-    }
-    .tab:hover{transform: translateY(-1px); box-shadow: var(--glow)}
-    .tab.active{
-      border-color: rgba(139,92,246,.45);
-      background: rgba(139,92,246,.18);
-      box-shadow: var(--glow);
-    }
-
-    .rune{
-      position:absolute;
-      right:-70px;
-      top:-70px;
-      width:220px;
-      height:220px;
-      border-radius:50%;
-      border:1px dashed rgba(139,92,246,.35);
-      box-shadow: 0 0 60px rgba(139,92,246,.22) inset;
-      animation: spin 22s linear infinite;
-      opacity:.55;
-      pointer-events:none;
-      filter: blur(.1px);
-    }
-    .rune::after{
-      content:"";
-      position:absolute; inset:22px;
-      border-radius:50%;
-      border:1px solid rgba(34,197,94,.22);
-      box-shadow: 0 0 40px rgba(34,197,94,.18) inset;
-    }
-    @keyframes spin{ to{transform:rotate(360deg)} }
-
-    label{display:block; font-size:12px; color:var(--mut); margin-bottom:6px}
-    input, textarea, select{
-      width:100%;
-      padding:12px 12px;
-      border-radius: 14px;
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(0,0,0,.28);
-      color:var(--txt);
-      outline:none;
-      transition: .15s ease;
-    }
-    input:focus, textarea:focus{
-      border-color: rgba(139,92,246,.5);
-      box-shadow: var(--glow);
-    }
-
-    .btnrow{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px}
     .btn{
       appearance:none;
       border:none;
-      padding:12px 14px;
+      color:var(--txt);
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.12);
       border-radius: 14px;
+      padding:10px 12px;
+      font-weight:700;
+      letter-spacing:.02em;
       cursor:pointer;
-      font-weight:800;
-      letter-spacing:.3px;
-      transition: .15s ease;
-      color: #fff;
-      background: linear-gradient(180deg, rgba(139,92,246,.95), rgba(109,40,217,.92));
-      box-shadow: var(--glow);
+      transition: transform .15s ease, background .15s ease, border .15s ease, box-shadow .15s ease;
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
     }
-    .btn:hover{transform: translateY(-1px)}
-    .btn:active{transform: translateY(0px) scale(.99)}
-    .btn.secondary{
-      background: rgba(0,0,0,.28);
-      border:1px solid rgba(255,255,255,.14);
-      box-shadow: none;
-      color: var(--txt);
-    }
-    .btn.good{
-      background: linear-gradient(180deg, rgba(34,197,94,.95), rgba(16,185,129,.88));
-      box-shadow: var(--glow2);
+    .btn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.085); border-color: rgba(76,201,240,.22); box-shadow: var(--glow);}
+    .btn:active{ transform: translateY(0px) scale(.99); }
+    .btn.primary{
+      background: linear-gradient(135deg, rgba(76,201,240,.22), rgba(155,93,229,.18));
+      border-color: rgba(76,201,240,.26);
     }
     .btn.danger{
-      background: linear-gradient(180deg, rgba(239,68,68,.95), rgba(185,28,28,.88));
-      box-shadow: 0 0 22px rgba(239,68,68,.35);
+      background: linear-gradient(135deg, rgba(255,77,109,.18), rgba(155,93,229,.10));
+      border-color: rgba(255,77,109,.22);
+    }
+    .btn.ghost{
+      background: transparent;
+      border-color: rgba(255,255,255,.12);
     }
     .btn:disabled{
       opacity:.45;
@@ -240,721 +186,910 @@
       box-shadow:none;
     }
 
-    .hint{
-      margin-top:10px;
-      font-size:12px;
-      color:rgba(255,255,255,.78);
-      opacity:.95;
-    }
-    .hint code{
-      font-family: var(--mono);
-      font-size:11px;
-      background: rgba(0,0,0,.35);
-      padding:2px 6px;
-      border-radius: 8px;
-      border: 1px solid rgba(255,255,255,.12);
+    .main{
+      flex:1;
+      display:grid;
+      grid-template-columns: 360px 1fr 360px;
+      gap:14px;
+      padding: 8px 18px 18px;
+      min-height:0;
     }
 
-    .toast{
-      position:fixed;
-      left:50%;
-      bottom:18px;
-      transform:translateX(-50%);
-      background: rgba(0,0,0,.55);
-      border:1px solid rgba(255,255,255,.16);
-      padding:10px 12px;
-      border-radius: 14px;
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(10px);
-      z-index: 50;
-      min-width: min(520px, 92vw);
-      display:none;
-    }
-    .toast.show{display:block; animation: pop .18s ease}
-    @keyframes pop{from{transform:translateX(-50%) translateY(8px); opacity:0} to{transform:translateX(-50%) translateY(0); opacity:1}}
-    .toast .t{font-weight:800}
-    .toast .m{color:rgba(255,255,255,.86); margin-top:4px; font-size:13px}
-
-    /* ====== Right side: Patch + Feed ====== */
-    .sideTop{
-      display:flex; align-items:center; justify-content:space-between;
-      gap:12px;
-      padding-bottom:14px;
-      border-bottom:1px solid rgba(255,255,255,.12);
-      margin-bottom:14px;
-    }
-    .sideTop h2{margin:0; font-size:16px}
-    .subpill{
-      font-family:var(--mono);
-      font-size:11px;
-      opacity:.9;
-      padding:6px 10px;
-      border:1px solid rgba(255,255,255,.14);
-      border-radius:999px;
-      background: rgba(0,0,0,.22);
-    }
-    .box{
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
       border:1px solid rgba(255,255,255,.12);
-      border-radius: var(--radius);
-      background: rgba(0,0,0,.25);
-      padding:12px;
-      margin-bottom:12px;
+      border-radius: var(--radius2);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      min-height:0;
+      position:relative;
     }
-    .box h3{
-      margin:0 0 8px;
-      font-size:13px;
-      color:rgba(255,255,255,.90);
-      letter-spacing:.3px;
+    .card:before{
+      content:"";
+      position:absolute; inset:0;
+      background: radial-gradient(800px 220px at 50% 0%, rgba(76,201,240,.12), rgba(0,0,0,0) 60%),
+                  radial-gradient(700px 260px at 10% 90%, rgba(155,93,229,.10), rgba(0,0,0,0) 60%);
+      opacity:.85;
+      pointer-events:none;
     }
-    .notes{
-      max-height: 280px;
-      overflow:auto;
-      padding-right:6px;
-    }
-    .note{
-      padding:10px 10px;
-      border:1px solid rgba(139,92,246,.15);
-      background: rgba(139,92,246,.08);
-      border-radius: 14px;
-      margin-bottom:10px;
-    }
-    .note .d{font-family:var(--mono); font-size:11px; opacity:.86}
-    .note .t{font-weight:900; margin:6px 0 4px}
-    .note .b{font-size:13px; opacity:.92; line-height:1.35}
-    .feed{
-      max-height: 220px;
-      overflow:auto;
+    .card > .inner{
+      position:relative;
+      padding:18px;
+      height:100%;
       display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-      padding-right:6px;
+      flex-direction:column;
+      gap:12px;
+      min-height:0;
     }
-    .chip{
-      padding:7px 10px;
-      border-radius: 999px;
-      border:1px solid rgba(34,197,94,.22);
-      background: rgba(34,197,94,.10);
-      font-weight:800;
+    .titleRow{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+    }
+    .title{
+      margin:0;
+      font-size:14px;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      color: rgba(236,244,255,.84);
+    }
+    .sub{
       font-size:12px;
-      letter-spacing:.2px;
-      box-shadow: 0 0 18px rgba(34,197,94,.16);
+      color:var(--muted);
+      line-height:1.35;
+    }
+    .sep{
+      height:1px;
+      background: linear-gradient(90deg, rgba(255,255,255,.0), rgba(255,255,255,.14), rgba(255,255,255,.0));
+      margin:6px 0;
     }
 
-    /* ====== Pages ====== */
-    .page{display:none}
-    .page.active{display:block; animation: fadeIn .22s ease}
-    @keyframes fadeIn{from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:translateY(0)}}
-
-    .rowline{
-      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
-      margin: 10px 0;
-    }
     .kv{
+      display:flex; gap:10px; align-items:center; justify-content:space-between;
+      padding:10px 12px;
+      background: rgba(0,0,0,.18);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius: 16px;
+    }
+    .kv .k{ color:var(--muted); font-size:12px; font-family:var(--mono); }
+    .kv .v{ color:var(--txt); font-size:12px; font-family:var(--mono); max-width:70%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+    .input{
+      width:100%;
+      padding:12px 12px;
+      border-radius: 16px;
+      background: rgba(0,0,0,.22);
+      border:1px solid rgba(255,255,255,.12);
+      color:var(--txt);
+      outline:none;
+      transition:border .15s ease, box-shadow .15s ease, transform .15s ease;
+    }
+    .input:focus{
+      border-color: rgba(76,201,240,.28);
+      box-shadow: 0 0 0 4px rgba(76,201,240,.08);
+    }
+    .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .grid3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+
+    .pillRow{
+      display:flex; gap:10px; flex-wrap:wrap;
+    }
+    .pill{
       font-family:var(--mono);
       font-size:12px;
       padding:8px 10px;
-      border-radius:14px;
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(0,0,0,.28);
-      max-width: 100%;
-      overflow:auto;
-      white-space:nowrap;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      color: rgba(236,244,255,.78);
     }
 
-    /* ====== Modal confirm delete ====== */
+    /* ====== AUTH VIEW ====== */
+    .authWrap{
+      display:grid;
+      grid-template-columns: 1fr 420px;
+      gap:14px;
+      height:100%;
+    }
+    .authBox{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      min-height:0;
+    }
+    .modeRow{
+      display:flex; gap:10px;
+    }
+    .hint{
+      font-size:12px;
+      color: var(--muted);
+    }
+    .bigBtn{
+      padding:14px 14px;
+      border-radius: 18px;
+      font-size:14px;
+    }
+
+    /* ====== FEED ====== */
+    .feed{
+      flex:1;
+      overflow:auto;
+      padding-right:6px;
+    }
+    .feed::-webkit-scrollbar{ width:10px }
+    .feed::-webkit-scrollbar-thumb{
+      background: rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:999px;
+    }
+    .tile{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:12px 12px;
+      border-radius: 18px;
+      background: rgba(0,0,0,.18);
+      border:1px solid rgba(255,255,255,.10);
+      margin-bottom:10px;
+      position:relative;
+      overflow:hidden;
+    }
+    .tile:before{
+      content:"";
+      position:absolute; inset:-60% -40%;
+      background: conic-gradient(from 180deg, rgba(76,201,240,.0), rgba(76,201,240,.20), rgba(155,93,229,.0), rgba(58,134,255,.16), rgba(76,201,240,.0));
+      opacity:.22;
+      animation: spin 7.5s linear infinite;
+      filter: blur(1px);
+    }
+    .tile .tInner{ position:relative; display:flex; align-items:center; justify-content:space-between; width:100%; }
+    .avatar{
+      width:34px; height:34px; border-radius:14px;
+      border:1px solid rgba(255,255,255,.16);
+      background: radial-gradient(circle at 30% 20%, rgba(76,201,240,.7), rgba(155,93,229,.25) 55%, rgba(0,0,0,0) 70%);
+      box-shadow: var(--glow);
+    }
+    .nick{
+      font-weight:800;
+      letter-spacing:.02em;
+    }
+    .tag{
+      font-family:var(--mono);
+      font-size:12px;
+      color:var(--muted);
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      white-space:nowrap;
+    }
+    .skeleton{
+      height:60px;
+      border-radius:18px;
+      margin-bottom:10px;
+      border:1px solid rgba(255,255,255,.08);
+      background: linear-gradient(90deg, rgba(255,255,255,.04), rgba(255,255,255,.08), rgba(255,255,255,.04));
+      background-size: 240% 100%;
+      animation: shimmer 1.2s infinite linear;
+    }
+    @keyframes shimmer{
+      0%{background-position:0% 0%}
+      100%{background-position:240% 0%}
+    }
+
+    /* ====== SETTINGS MODAL ====== */
     .modalBack{
-      position:fixed; inset:0;
+      position:fixed; inset:0; z-index:50;
       background: rgba(0,0,0,.55);
       display:none;
       align-items:center;
       justify-content:center;
-      z-index:60;
       padding:18px;
     }
-    .modalBack.show{display:flex}
     .modal{
-      width:min(560px, 94vw);
-      border-radius: var(--radius2);
-      border:1px solid rgba(239,68,68,.25);
-      background: linear-gradient(180deg, rgba(25,10,15,.92), rgba(12,7,12,.88));
-      box-shadow: 0 0 40px rgba(239,68,68,.18);
-      padding:18px;
-      position:relative;
-      overflow:hidden;
-    }
-    .modal h3{margin:0 0 8px}
-    .modal p{margin:0; color:rgba(255,255,255,.86); line-height:1.4}
-    .count{
-      font-family:var(--mono);
-      margin-top:10px;
-      display:inline-block;
-      padding:6px 10px;
+      width:min(1100px, 100%);
+      height:min(720px, 92vh);
+      border-radius: 26px;
       border:1px solid rgba(255,255,255,.14);
-      border-radius: 999px;
-      background: rgba(0,0,0,.28);
+      background: linear-gradient(180deg, rgba(10,14,26,.92), rgba(10,14,26,.78));
+      box-shadow: 0 30px 120px rgba(0,0,0,.65);
+      overflow:hidden;
+      position:relative;
     }
+    .modalGrid{
+      display:grid;
+      grid-template-columns: 1fr 360px;
+      height:100%;
+    }
+    .modalMain{
+      padding:18px;
+      overflow:auto;
+    }
+    .modalSide{
+      border-left:1px solid rgba(255,255,255,.10);
+      padding:18px;
+      overflow:auto;
+      background: rgba(0,0,0,.18);
+    }
+    .tabs{
+      display:flex; gap:10px; flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+    .tab{
+      font-family:var(--mono);
+      font-size:12px;
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      color: rgba(236,244,255,.78);
+      cursor:pointer;
+      user-select:none;
+    }
+    .tab.active{
+      border-color: rgba(76,201,240,.28);
+      box-shadow: 0 0 0 4px rgba(76,201,240,.06);
+      background: rgba(76,201,240,.09);
+      color: rgba(236,244,255,.92);
+    }
+    .row{
+      display:flex; gap:10px; align-items:center;
+    }
+    .note{
+      font-size:12px; color:var(--muted); line-height:1.45;
+    }
+    .toast{
+      position:fixed; z-index:80;
+      left:18px; bottom:18px;
+      padding:12px 14px;
+      border-radius: 16px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(10,14,26,.86);
+      box-shadow: var(--shadow);
+      display:none;
+      max-width:min(520px, 90vw);
+      backdrop-filter: blur(10px);
+    }
+    .toast strong{display:block; margin-bottom:4px;}
+    .toast.ok{ border-color: rgba(70,240,167,.28) }
+    .toast.bad{ border-color: rgba(255,77,109,.28) }
 
-    /* ====== Error shake ====== */
-    .shake{animation: shake .28s ease}
-    @keyframes shake{
-      0%{transform:translateX(0)}
-      25%{transform:translateX(-6px)}
-      50%{transform:translateX(6px)}
-      75%{transform:translateX(-4px)}
-      100%{transform:translateX(0)}
+    /* Responsive */
+    @media (max-width: 1100px){
+      .main{ grid-template-columns: 1fr; }
+    }
+    @media (max-width: 900px){
+      .authWrap{ grid-template-columns: 1fr; }
+      .modalGrid{ grid-template-columns: 1fr; }
+      .modalSide{ border-left:none; border-top:1px solid rgba(255,255,255,.10); }
     }
   </style>
 </head>
 <body>
-  <canvas id="vfx"></canvas>
-  <div class="fog"></div>
+  <canvas id="vfxCanvas"></canvas>
+  <div class="bloom"></div>
+  <div class="scanlines"></div>
+  <div class="grain"></div>
 
-  <div class="wrap">
-    <div class="shell">
+  <div class="shell">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo"></div>
+        <div>
+          <h1>OBEARCO • RPG Hub</h1>
+          <div class="hint" id="hintApi">Carregando server_status.json…</div>
+        </div>
+      </div>
 
-      <!-- LEFT: Auth + Dashboard -->
+      <div class="badge" id="serverBadge">
+        <span class="dot" id="serverDot"></span>
+        <span id="serverText">offline</span>
+        <span style="opacity:.35">•</span>
+        <span id="serverVer">api ?</span>
+      </div>
+
+      <div class="actions">
+        <button class="btn ghost" id="btnReload">↻ Recarregar status</button>
+        <button class="btn primary" id="btnOpenSettings" style="display:none">⚙️ Configurações</button>
+        <button class="btn" id="btnLogout" style="display:none">Sair</button>
+      </div>
+    </div>
+
+    <div class="main" id="viewAuth">
       <div class="card">
-        <div class="rune"></div>
-        <div class="pane">
-          <div class="brand">
-            <h1>🛡️ OBEARCO — Portal do Aventureiro</h1>
-            <div class="badge">API: <b id="apiBadge">carregando…</b></div>
+        <div class="inner">
+          <div class="titleRow">
+            <h2 class="title">Login / Registro</h2>
+            <div class="pill" id="modePill">modo: login</div>
           </div>
+          <div class="sep"></div>
 
-          <div class="tabs">
-            <button class="tab active" id="tabLogin">Login</button>
-            <button class="tab" id="tabRegister">Register</button>
-            <button class="tab" id="tabDashboard" style="display:none">Painel</button>
-          </div>
-
-          <!-- Login Page -->
-          <div class="page active" id="pageLogin">
-            <div class="grid2" style="margin-top:14px">
-              <div>
-                <label>Login (email ou username)</label>
-                <input id="login_login" placeholder="ex: meuemail@gmail.com ou MeuNick" autocomplete="username" />
-              </div>
-              <div>
-                <label>Senha</label>
-                <input id="login_senha" type="password" placeholder="••••••••" autocomplete="current-password" />
-              </div>
-            </div>
-            <div class="btnrow">
-              <button class="btn good" id="btnDoLogin">Entrar</button>
-              <button class="btn secondary" id="btnGoRegister">Criar conta</button>
-            </div>
-            <div class="hint">
-              Base carregada do <code>server_status.json</code>. Se cair, usa fallback local.
-            </div>
-          </div>
-
-          <!-- Register Page -->
-          <div class="page" id="pageRegister">
-            <div class="grid2" style="margin-top:14px">
-              <div>
-                <label>Username</label>
-                <input id="reg_username" placeholder="3-32 (letras/números/espaço/_)" autocomplete="username" />
-              </div>
-              <div>
-                <label>Email</label>
-                <input id="reg_email" placeholder="voce@exemplo.com" autocomplete="email" />
-              </div>
-            </div>
-            <div style="margin-top:12px">
-              <label>Senha</label>
-              <input id="reg_senha" type="password" placeholder="mín 6 chars" autocomplete="new-password" />
-            </div>
-            <div class="btnrow">
-              <button class="btn good" id="btnDoRegister">Forjar Conta</button>
-              <button class="btn secondary" id="btnGoLogin">Voltar</button>
-            </div>
-            <div class="hint">Dica: o servidor valida username/email/senha. Se der erro, a UI mostra o motivo.</div>
-          </div>
-
-          <!-- Dashboard -->
-          <div class="page" id="pageDashboard">
-            <div class="rowline" style="margin-top:14px">
-              <span style="font-weight:900">Bem-vindo,</span>
-              <span class="kv" id="dashUser">…</span>
-              <button class="btn secondary" id="btnRefreshMe">Atualizar perfil</button>
-              <button class="btn danger" id="btnLogout">Sair</button>
-            </div>
-
-            <div class="box">
-              <h3>🔑 Session Token (visível pra copiar)</h3>
-              <div class="rowline">
-                <div class="kv" id="tokenBox" style="flex:1">—</div>
-                <button class="btn secondary" id="btnCopyToken">Copiar</button>
-              </div>
-              <div class="hint">O launcher/site pode usar <code>Authorization: Bearer &lt;token&gt;</code> nas chamadas.</div>
-            </div>
-
-            <div class="grid2">
-              <div class="box">
-                <h3>🧙 Perfil</h3>
-                <label>Username (nome)</label>
-                <input id="set_username" placeholder="Novo username" />
-                <label style="margin-top:10px">Email</label>
-                <input id="set_email" placeholder="novo@email.com" />
+          <div class="authWrap">
+            <div class="authBox">
+              <div class="modeRow">
+                <button class="btn" id="btnModeLogin">Login</button>
+                <button class="btn" id="btnModeRegister">Registrar</button>
               </div>
 
-              <div class="box">
-                <h3>🗡️ Segurança</h3>
-                <label>Nova senha</label>
-                <input id="set_senha" type="password" placeholder="deixe vazio pra não mudar" />
-                <label style="margin-top:10px">Senha atual (pra confirmar)</label>
-                <input id="set_senha_atual" type="password" placeholder="obrigatório pra alterar" />
+              <div class="hint">Usa seu servidor via <span class="pill">/api/v1/cmd</span> com comandos <span class="pill">/login</span> e <span class="pill">/register</span>.</div>
+
+              <input class="input" id="inpUser" placeholder="username (no registro) — letras/números/espaço/_ (3-32)"/>
+              <input class="input" id="inpEmailOrLogin" placeholder="email ou username (no login)"/>
+              <input class="input" id="inpPass" placeholder="senha (6-72)" type="password"/>
+
+              <button class="btn primary bigBtn" id="btnForge">⚔️ Forjar!</button>
+              <div class="note" id="authNote">
+                Dica: no login, pode usar email ou username. No registro, preenche username + email + senha.
+              </div>
+
+              <div class="sep"></div>
+              <div class="titleRow">
+                <h2 class="title">Patch Notes</h2>
+                <div class="pill">lado a lado</div>
+              </div>
+              <div class="sub" id="patchNotes">
+                • v0.1 — UI AAA + VFX<br/>
+                • v0.2 — Login/Registro<br/>
+                • v0.3 — Configurações + exclusão com confirmação<br/>
+                <br/>
+                (Pode trocar isso por um fetch do seu arquivo de patch notes quando quiser.)
               </div>
             </div>
 
-            <div class="btnrow">
-              <button class="btn good" id="btnSaveAccount">Salvar alterações</button>
-              <button class="btn danger" id="btnDeleteAccount">Deletar conta</button>
-            </div>
+            <div class="card" style="background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02)); border-radius:26px;">
+              <div class="inner">
+                <div class="titleRow">
+                  <h2 class="title">Status do Servidor</h2>
+                  <div class="pill" id="statusPill">…</div>
+                </div>
+                <div class="sep"></div>
 
-            <div class="hint">
-              Alterações usam comandos: <code>/updateaccount</code> e <code>/deleteaccount</code>.
-              Se seu servidor ainda não tiver, vai aparecer “Comando não reconhecido”.
+                <div class="kv"><div class="k">url_api_base</div><div class="v" id="kvApiBase">…</div></div>
+                <div class="kv"><div class="k">porta</div><div class="v" id="kvPort">…</div></div>
+                <div class="kv"><div class="k">status_servidor</div><div class="v" id="kvOnline">…</div></div>
+                <div class="kv"><div class="k">version_api</div><div class="v" id="kvVer">…</div></div>
+
+                <div class="sep"></div>
+                <button class="btn" id="btnPing">Ping (cmd)</button>
+                <div class="note" id="pingOut">—</div>
+              </div>
             </div>
           </div>
 
         </div>
       </div>
 
-      <!-- RIGHT: Patch Notes + Feed -->
       <div class="card">
-        <div class="pane">
-          <div class="sideTop">
-            <h2>📜 Patch Notes & Reino</h2>
-            <div class="subpill" id="statusPill">status: …</div>
+        <div class="inner">
+          <div class="titleRow">
+            <h2 class="title">Preview • Lobby</h2>
+            <div class="pill">placeholder</div>
           </div>
-
-          <div class="box">
-            <h3>🧾 Patch Notes</h3>
-            <div class="notes" id="notes"></div>
+          <div class="sep"></div>
+          <div class="sub">
+            Esse painel vira o “conteúdo principal” depois do login. Por agora: só vibe + VFX.
           </div>
-
-          <div class="box">
-            <h3>👥 Aventureiros Registrados (feed)</h3>
-            <div class="feed" id="feed"></div>
-            <div class="btnrow" style="margin-top:10px">
-              <button class="btn secondary" id="btnRefreshFeed">Atualizar feed</button>
-              <button class="btn secondary" id="btnForceReloadBase">Recarregar API base</button>
-            </div>
-            <div class="hint">
-              Feed usa comando <code>/listusers</code> (precisa existir no servidor).
-            </div>
-          </div>
-
-          <div class="box">
-            <h3>🌐 Conexão</h3>
-            <div class="hint" style="margin-top:0">
-              server_status.json: <code id="statusUrl">raw github</code><br/>
-              api_base atual: <code id="apiNow">…</code>
-            </div>
+          <div style="flex:1"></div>
+          <div class="pillRow">
+            <span class="pill">VFX: partículas</span>
+            <span class="pill">scanlines</span>
+            <span class="pill">bloom</span>
+            <span class="pill">shimmer</span>
           </div>
         </div>
       </div>
 
+      <div class="card">
+        <div class="inner">
+          <div class="titleRow">
+            <h2 class="title">Notas</h2>
+            <div class="pill">warframe-ish</div>
+          </div>
+          <div class="sep"></div>
+          <div class="sub">
+            • Botão “Forjar!” envia pro servidor.<br/>
+            • Se der erro, eu mostro toast com a mensagem do JSON.<br/>
+            • O site sempre busca o status no GitHub na abertura (cache-bust).<br/>
+          </div>
+          <div style="flex:1"></div>
+          <button class="btn" id="btnOpenRaw">Abrir server_status.json (raw)</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- APP VIEW -->
+    <div class="main" id="viewApp" style="display:none;">
+      <!-- left token -->
+      <div class="card">
+        <div class="inner">
+          <div class="titleRow">
+            <h2 class="title">Perfil</h2>
+            <span class="pill" id="pillNick">—</span>
+          </div>
+          <div class="sep"></div>
+
+          <div class="kv"><div class="k">email</div><div class="v" id="meEmail">—</div></div>
+          <div class="kv"><div class="k">conta_id</div><div class="v" id="meId">—</div></div>
+
+          <div class="sep"></div>
+
+          <div class="sub">Token de login (visível):</div>
+          <input class="input" id="tokenBox" readonly style="font-family:var(--mono)"/>
+          <div class="grid2">
+            <button class="btn primary" id="btnCopyToken">Copiar token</button>
+            <button class="btn" id="btnWhoAmI">whoami</button>
+          </div>
+
+          <div class="sep"></div>
+          <div class="sub">Servidor:</div>
+          <div class="kv"><div class="k">api_base</div><div class="v" id="appApiBase">—</div></div>
+          <div class="kv"><div class="k">udp_lobby</div><div class="v" id="appUdp">—</div></div>
+
+          <div style="flex:1"></div>
+          <div class="note">Dica: o token também vai no header <span class="pill">Authorization: Bearer TOKEN</span>.</div>
+        </div>
+      </div>
+
+      <!-- center feed -->
+      <div class="card">
+        <div class="inner">
+          <div class="titleRow">
+            <h2 class="title">Feed</h2>
+            <div class="row">
+              <button class="btn" id="btnRefreshFeed">Atualizar</button>
+              <span class="pill">nicks registrados</span>
+            </div>
+          </div>
+          <div class="sep"></div>
+
+          <div class="feed" id="feed"></div>
+        </div>
+      </div>
+
+      <!-- right userbar -->
+      <div class="card">
+        <div class="inner">
+          <div class="titleRow">
+            <h2 class="title">Conta</h2>
+            <div class="row">
+              <button class="btn primary" id="btnSettings">⚙️ Abrir configurações</button>
+            </div>
+          </div>
+          <div class="sep"></div>
+
+          <div class="sub">
+            Aqui você mexe em username/email/senha e pode deletar conta (com confirmação + delay).
+          </div>
+
+          <div style="flex:1"></div>
+
+          <div class="sep"></div>
+          <button class="btn danger" id="btnHardLogout">Sair agora</button>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Toast -->
-  <div class="toast" id="toast">
-    <div class="t" id="toastT">—</div>
-    <div class="m" id="toastM">—</div>
-  </div>
-
-  <!-- Modal delete -->
+  <!-- SETTINGS MODAL -->
   <div class="modalBack" id="modalBack">
     <div class="modal">
-      <h3>⚠️ Deletar conta</h3>
-      <p>Isso é irreversível. Seus dados e acesso serão removidos. Tem certeza?</p>
-      <div class="count" id="countDown">Confirmação disponível em 5s…</div>
-      <div class="btnrow" style="margin-top:12px">
-        <button class="btn secondary" id="btnCancelDel">Cancelar</button>
-        <button class="btn danger" id="btnConfirmDel" disabled>Confirmar (aguarde)</button>
+      <div class="modalGrid">
+        <div class="modalMain">
+          <div class="titleRow">
+            <h2 class="title">Configurações da Conta</h2>
+            <div class="row">
+              <button class="btn" id="btnCloseModal">Fechar</button>
+            </div>
+          </div>
+          <div class="sep"></div>
+
+          <div class="tabs">
+            <div class="tab active" data-tab="profile">Perfil</div>
+            <div class="tab" data-tab="security">Segurança</div>
+            <div class="tab" data-tab="danger">Danger Zone</div>
+          </div>
+
+          <div id="tab_profile">
+            <div class="sub">Atualizar username e email.</div>
+            <div class="sep"></div>
+
+            <div class="grid2">
+              <input class="input" id="setUsername" placeholder="novo username"/>
+              <input class="input" id="setEmail" placeholder="novo email"/>
+            </div>
+
+            <div class="row" style="margin-top:10px;">
+              <input class="input" id="setPassConfirmA" type="password" placeholder="confirme sua senha atual (obrigatório)"/>
+              <button class="btn primary" id="btnSaveProfile">Salvar</button>
+            </div>
+
+            <div class="note" style="margin-top:10px;">
+              O servidor valida username/email. Se você não quiser mudar um campo, deixa em branco.
+            </div>
+          </div>
+
+          <div id="tab_security" style="display:none;">
+            <div class="sub">Trocar senha (recomendado sempre confirmar a senha atual).</div>
+            <div class="sep"></div>
+
+            <input class="input" id="curPass" type="password" placeholder="senha atual"/>
+            <div style="height:10px"></div>
+            <input class="input" id="newPass" type="password" placeholder="nova senha"/>
+            <div style="height:10px"></div>
+            <input class="input" id="newPass2" type="password" placeholder="repita a nova senha"/>
+
+            <div class="row" style="margin-top:10px;">
+              <button class="btn primary" id="btnChangePass">Atualizar senha</button>
+            </div>
+          </div>
+
+          <div id="tab_danger" style="display:none;">
+            <div class="sub" style="color:rgba(255,77,109,.92); font-weight:800;">
+              Excluir conta é permanente.
+            </div>
+            <div class="sep"></div>
+
+            <input class="input" id="delPass" type="password" placeholder="digite sua senha para confirmar"/>
+            <div style="height:10px"></div>
+
+            <div class="kv">
+              <div class="k">Confirmação</div>
+              <div class="v" id="delTimer">botão habilita em 5s</div>
+            </div>
+
+            <div class="row" style="margin-top:10px;">
+              <button class="btn danger" id="btnDelete" disabled>✅ Confirmar exclusão (5s)</button>
+            </div>
+
+            <div class="note" style="margin-top:10px;">
+              Você vai sair e o token será invalidado.
+            </div>
+          </div>
+
+        </div>
+
+        <div class="modalSide">
+          <div class="titleRow">
+            <h2 class="title">Patch Notes</h2>
+            <div class="pill">ao lado</div>
+          </div>
+          <div class="sep"></div>
+          <div class="sub" id="patchNotesSide">
+            • v0.1 — UI AAA + VFX<br/>
+            • v0.2 — Auth + Token copy<br/>
+            • v0.3 — Feed + Settings + Delete confirm<br/>
+            <br/>
+            Quer buscar patch notes do GitHub também? Só me fala o arquivo/URL.
+          </div>
+
+          <div class="sep"></div>
+          <div class="titleRow">
+            <h2 class="title">Debug</h2>
+            <div class="pill">api</div>
+          </div>
+          <div class="sep"></div>
+          <div class="kv"><div class="k">api_base</div><div class="v" id="dbgBase">—</div></div>
+          <div class="kv"><div class="k">status_json</div><div class="v" id="dbgStatusUrl">—</div></div>
+          <div class="note" style="margin-top:10px;">
+            Se der 400/401, normalmente é payload faltando ou sessão inválida.
+          </div>
+        </div>
       </div>
     </div>
   </div>
+
+  <div class="toast" id="toast"></div>
 
 <script>
 /* =========================
-   0) Config / Status JSON
+   0) Config / status.json
 ========================= */
-const STATUS_RAW_URL = "https://raw.githubusercontent.com/NoSense-Bot/Servidor/main/server_status.json";
+const STATUS_GH = "https://raw.githubusercontent.com/NoSense-Bot/Servidor/main/server_status.json";
+let API_BASE = "";          // vem do status.json (url_api_base)
+let SESSION_TOKEN = "";     // setado no login
+let ME = null;              // conta pública
+let MODE = "login";         // login | register
 
-const el = (id)=>document.getElementById(id);
-const toast = (t,m,kind="ok")=>{
-  el("toastT").textContent = t;
-  el("toastM").textContent = m;
-  el("toast").classList.add("show");
-  if(kind==="bad"){
-    el("toast").style.borderColor = "rgba(239,68,68,.28)";
-  }else if(kind==="warn"){
-    el("toast").style.borderColor = "rgba(245,158,11,.28)";
-  }else{
-    el("toast").style.borderColor = "rgba(34,197,94,.22)";
-  }
-  setTimeout(()=>el("toast").classList.remove("show"), 2800);
-};
+const $ = (id)=>document.getElementById(id);
 
-let apiBase = ""; // ex: https://xxxxx.ngrok-free.dev
-let statusCache = null;
+function toast(type, title, msg){
+  const t = $("toast");
+  t.className = "toast " + (type==="ok" ? "ok" : "bad");
+  t.innerHTML = `<strong>${title}</strong><div style="color:var(--muted); font-size:12px; line-height:1.35">${msg}</div>`;
+  t.style.display = "block";
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(()=>t.style.display="none", 3200);
+}
 
 async function loadServerStatus(){
-  el("statusUrl").textContent = STATUS_RAW_URL;
+  $("hintApi").textContent = "Buscando status no GitHub…";
+  $("statusPill").textContent = "fetching…";
+  const url = STATUS_GH + "?t=" + Date.now();
+  $("dbgStatusUrl").textContent = url;
+
   try{
-    const r = await fetch(STATUS_RAW_URL, {cache:"no-store"});
-    if(!r.ok) throw new Error("HTTP "+r.status);
+    const r = await fetch(url, {cache:"no-store"});
     const j = await r.json();
-    statusCache = j;
-    apiBase = String(j.url_api_base || "").replace(/\/$/,"");
-    if(!apiBase) throw new Error("url_api_base vazio no server_status.json");
-    el("apiBadge").textContent = apiBase;
-    el("apiNow").textContent = apiBase;
-    el("statusPill").textContent = "status: " + (j.status_servidor || "Online");
-    return true;
+
+    API_BASE = (j.url_api_base || "").replace(/\/+$/,"");
+    $("kvApiBase").textContent = API_BASE || "—";
+    $("kvPort").textContent = String(j.porta ?? "—");
+    $("kvOnline").textContent = String(j.status_servidor ?? "—");
+    $("kvVer").textContent = String(j.version_api ?? "—");
+
+    $("appApiBase").textContent = API_BASE || "—";
+    const udp = j.UDP_LOBBY ? `${j.UDP_LOBBY.host}:${j.UDP_LOBBY.port}` : "—";
+    $("appUdp").textContent = udp;
+
+    $("serverVer").textContent = "api " + (j.version_api || "?");
+    const isOn = String(j.status_servidor||"").toLowerCase().includes("online");
+
+    $("serverDot").className = "dot " + (isOn ? "ok" : "bad");
+    $("serverText").textContent = isOn ? "online" : "offline";
+    $("statusPill").textContent = isOn ? "Online" : "Offline";
+
+    $("hintApi").textContent = API_BASE ? `API base: ${API_BASE}` : "Sem url_api_base no status.json";
+    $("dbgBase").textContent = API_BASE || "—";
+
   }catch(e){
-    // fallback local
-    apiBase = (location.origin || "http://127.0.0.1:7776").replace(/\/$/,"");
-    el("apiBadge").textContent = apiBase + " (fallback)";
-    el("apiNow").textContent = apiBase + " (fallback)";
-    el("statusPill").textContent = "status: (fallback)";
-    toast("⚠️ Status JSON falhou", "Usando fallback: " + apiBase, "warn");
-    return false;
+    $("serverDot").className = "dot bad";
+    $("serverText").textContent = "status fetch FAIL";
+    $("serverVer").textContent = "api ?";
+    $("hintApi").textContent = "Falha ao ler server_status.json (raw).";
+    $("statusPill").textContent = "erro";
+    toast("bad","Status FAIL","Não consegui parsear o server_status.json do GitHub (raw).");
   }
 }
 
 /* =========================
    1) API helper
 ========================= */
-function getToken(){
-  return localStorage.getItem("obearco_token") || "";
-}
-function setToken(t){
-  if(t) localStorage.setItem("obearco_token", t);
-  else localStorage.removeItem("obearco_token");
-  renderToken();
-}
-function renderToken(){
-  const t = getToken();
-  el("tokenBox").textContent = t || "—";
-}
-async function apiCmd(payload){
-  const url = apiBase + "/api/v1/cmd";
-  const token = getToken();
+async function apiCmd(payload, {token} = {}){
+  if(!API_BASE) throw new Error("API_BASE vazio. status.json não carregou.");
+  const url = API_BASE + "/api/v1/cmd";
   const headers = {"Content-Type":"application/json"};
-  if(token) headers["Authorization"] = "Bearer " + token;
-  const r = await fetch(url, {
-    method:"POST",
-    headers,
-    body: JSON.stringify(payload || {})
-  });
-  const txt = await r.text();
-  let j=null;
-  try{ j = JSON.parse(txt); }catch{ j = {ok:false, error:"Resposta não-JSON", raw:txt}; }
-  // seu Server.py envolve em {ok:true, request_id, **out}, então:
-  if(!r.ok || j.ok===false){
-    return {ok:false, status:r.status, ...j};
+  const tk = token || SESSION_TOKEN;
+  if(tk) headers["Authorization"] = "Bearer " + tk;
+
+  const r = await fetch(url, {method:"POST", headers, body: JSON.stringify(payload)});
+  const j = await r.json().catch(()=>({ok:false, error:"Resposta inválida (não-JSON)"}));
+
+  if(!r.ok || j.ok === false){
+    const msg = j.error || ("HTTP " + r.status);
+    const extra = (j && typeof j === "object") ? JSON.stringify(j) : "";
+    throw new Error(msg + (extra ? ` • ${extra}` : ""));
   }
-  return {ok:true, status:r.status, ...j};
+  return j;
 }
 
 /* =========================
-   2) Pages / Tabs
+   2) Auth flow
 ========================= */
-function setActiveTab(tabId){
-  ["tabLogin","tabRegister","tabDashboard"].forEach(id=>{
-    const t = el(id);
-    if(!t) return;
-    t.classList.toggle("active", id===tabId);
-  });
-  const map = {
-    tabLogin:"pageLogin",
-    tabRegister:"pageRegister",
-    tabDashboard:"pageDashboard"
-  };
-  Object.values(map).forEach(pid=>el(pid).classList.remove("active"));
-  el(map[tabId]).classList.add("active");
+function setMode(m){
+  MODE = m;
+  $("modePill").textContent = "modo: " + m;
+  $("btnModeLogin").classList.toggle("primary", m==="login");
+  $("btnModeRegister").classList.toggle("primary", m==="register");
+  $("inpUser").style.display = (m==="register") ? "block" : "none";
+  $("inpEmailOrLogin").placeholder = (m==="login") ? "email ou username" : "email";
 }
+async function doForge(){
+  const username = $("inpUser").value.trim();
+  const emailOrLogin = $("inpEmailOrLogin").value.trim();
+  const senha = $("inpPass").value;
 
-function showDashboard(){
-  el("tabDashboard").style.display = "inline-block";
-  setActiveTab("tabDashboard");
-  el("tabLogin").style.display = "none";
-  el("tabRegister").style.display = "none";
-}
-function showAuth(){
-  el("tabDashboard").style.display = "none";
-  el("tabLogin").style.display = "inline-block";
-  el("tabRegister").style.display = "inline-block";
-  setActiveTab("tabLogin");
-}
-
-/* =========================
-   3) Patch Notes (mock)
-========================= */
-const PATCH = [
-  {date:"2025-12-18", title:"Portal do Aventureiro", body:"Login/Register com VFX RPG. Perfil com token copiável. Patch panel e feed de jogadores."},
-  {date:"2025-12-17", title:"Servidor HTTP + UDP", body:"Hypercorn/FastAPI, UDP Lobby, ngrok e server_status.json com push opcional."},
-  {date:"2025-12-16", title:"Sistema de contas", body:"Tabela contas com PBKDF2, sessão e comandos base (/register /login /whoami)."}
-];
-function renderNotes(){
-  const root = el("notes");
-  root.innerHTML = "";
-  PATCH.forEach(n=>{
-    const d = document.createElement("div");
-    d.className = "note";
-    d.innerHTML = `
-      <div class="d">${n.date}</div>
-      <div class="t">${n.title}</div>
-      <div class="b">${n.body}</div>
-    `;
-    root.appendChild(d);
-  });
-}
-
-/* =========================
-   4) Feed users
-========================= */
-async function refreshFeed(){
-  const box = el("feed");
-  box.innerHTML = "";
-  const r = await apiCmd({comando:"/listusers"});
-  if(!r.ok){
-    toast("❌ Feed falhou", (r.error || "erro"), "bad");
-    // fallback UI
-    const c = document.createElement("div");
-    c.className = "chip";
-    c.style.borderColor = "rgba(245,158,11,.35)";
-    c.style.background = "rgba(245,158,11,.10)";
-    c.textContent = "Servidor sem /listusers (adicione no Comandos.py)";
-    box.appendChild(c);
-    return;
-  }
-  const users = (r.users || r.usuarios || []);
-  if(!Array.isArray(users) || users.length===0){
-    const c = document.createElement("div");
-    c.className = "chip";
-    c.textContent = "ninguém ainda…";
-    box.appendChild(c);
-    return;
-  }
-  users.forEach(u=>{
-    const c = document.createElement("div");
-    c.className = "chip";
-    c.textContent = String(u.username || u.nick || u || "???");
-    box.appendChild(c);
-  });
-}
-
-/* =========================
-   5) Auth / Profile
-========================= */
-async function whoami(){
-  const r = await apiCmd({comando:"/whoami"});
-  if(!r.ok){
-    return null;
-  }
-  // Comandos.py retorna ok(session=...), e Server envolve, então pode vir:
-  // r.session OR r.session.session etc. Vamos ser tolerantes:
-  return r.session || (r.data && r.data.session) || null;
-}
-
-function fillProfileFields(sess){
-  const username = sess?.username || "";
-  const email = sess?.email || "";
-  el("dashUser").textContent = username ? `${username} (${email || "sem email"})` : (email || "—");
-  el("set_username").value = username || "";
-  el("set_email").value = email || "";
-  el("set_senha").value = "";
-  el("set_senha_atual").value = "";
-}
-
-async function doLogin(){
-  const login = el("login_login").value.trim();
-  const senha = el("login_senha").value.trim();
-  const page = el("pageLogin");
-
-  if(!login || !senha){
-    page.classList.add("shake"); setTimeout(()=>page.classList.remove("shake"), 280);
-    toast("⚠️ Falta coisa", "Preencha login e senha.", "warn");
-    return;
-  }
-
-  const r = await apiCmd({comando:"/login", login, senha});
-  if(!r.ok){
-    page.classList.add("shake"); setTimeout(()=>page.classList.remove("shake"), 280);
-    toast("❌ Login falhou", r.error || "erro", "bad");
-    return;
-  }
-  const token = r.session_token || r.token || r.sessionToken;
-  if(token) setToken(token);
-
-  toast("✅ Login OK", "Bem-vindo de volta!", "ok");
-  showDashboard();
-
-  // puxa perfil
-  const sess = await whoami();
-  if(sess) fillProfileFields(sess);
-
-  // feed
-  refreshFeed();
-}
-
-async function doRegister(){
-  const username = el("reg_username").value.trim();
-  const email = el("reg_email").value.trim();
-  const senha = el("reg_senha").value.trim();
-  const page = el("pageRegister");
-
-  if(!username || !email || !senha){
-    page.classList.add("shake"); setTimeout(()=>page.classList.remove("shake"), 280);
-    toast("⚠️ Falta coisa", "Preencha username, email e senha.", "warn");
-    return;
-  }
-
-  const r = await apiCmd({comando:"/register", username, email, senha});
-  if(!r.ok){
-    page.classList.add("shake"); setTimeout(()=>page.classList.remove("shake"), 280);
-    toast("❌ Register falhou", r.error || "erro", "bad");
-    return;
-  }
-  toast("✅ Conta criada", "Agora faça login.", "ok");
-  setActiveTab("tabLogin");
-}
-
-async function doLogout(){
-  // tenta logout se existir
-  await apiCmd({comando:"/logout"});
-  setToken("");
-  showAuth();
-  toast("👋 Saiu", "Sessão limpa.", "ok");
-}
-
-async function refreshMe(){
-  const sess = await whoami();
-  if(!sess){
-    toast("⚠️ Sessão", "Token inválido/expirou. Faça login de novo.", "warn");
-    setToken("");
-    showAuth();
-    return;
-  }
-  fillProfileFields(sess);
-  toast("✅ Perfil atualizado", "Dados recarregados.", "ok");
-}
-
-async function saveAccount(){
-  const username = el("set_username").value.trim();
-  const email = el("set_email").value.trim();
-  const nova = el("set_senha").value.trim();
-  const atual = el("set_senha_atual").value.trim();
-
-  // se quer mudar senha, exige senha atual
-  if(nova && !atual){
-    toast("⚠️ Segurança", "Para trocar senha, informe a senha atual.", "warn");
-    return;
-  }
-
-  const payload = {
-    comando:"/updateaccount",
-    username,
-    email,
-    senha_nova: nova || null,
-    senha_atual: atual || null,
-  };
-
-  const r = await apiCmd(payload);
-  if(!r.ok){
-    toast("❌ Não salvou", r.error || "erro", "bad");
-    return;
-  }
-  toast("✅ Salvo", "Alterações aplicadas.", "ok");
-  // recarrega perfil
-  refreshMe();
-  refreshFeed();
-}
-
-/* =========================
-   6) Delete modal (5s)
-========================= */
-let delTimer = null;
-let delLeft = 5;
-
-function openDeleteModal(){
-  delLeft = 5;
-  el("btnConfirmDel").disabled = true;
-  el("btnConfirmDel").textContent = "Confirmar (aguarde)";
-  el("countDown").textContent = "Confirmação disponível em 5s…";
-  el("modalBack").classList.add("show");
-
-  if(delTimer) clearInterval(delTimer);
-  delTimer = setInterval(()=>{
-    delLeft--;
-    if(delLeft <= 0){
-      clearInterval(delTimer);
-      delTimer = null;
-      el("btnConfirmDel").disabled = false;
-      el("btnConfirmDel").textContent = "Confirmar agora";
-      el("countDown").textContent = "⚠️ Clique em confirmar para deletar de verdade.";
+  try{
+    if(MODE==="register"){
+      const out = await apiCmd({comando:"/register", username, email: emailOrLogin, senha});
+      toast("ok","Conta criada", out.message || "Registro OK.");
+      // auto-login
+      setMode("login");
+      $("inpEmailOrLogin").value = emailOrLogin;
+      $("inpPass").value = senha;
+      await doForge();
+      return;
     }else{
-      el("countDown").textContent = `Confirmação disponível em ${delLeft}s…`;
+      const out = await apiCmd({comando:"/login", login: emailOrLogin, senha});
+      SESSION_TOKEN = out.session_token || "";
+      ME = out.conta || null;
+
+      if(!SESSION_TOKEN){
+        throw new Error("Login OK mas sem session_token no retorno.");
+      }
+
+      $("tokenBox").value = SESSION_TOKEN;
+      $("pillNick").textContent = (ME?.username || "—");
+      $("meEmail").textContent = (ME?.email || "—");
+      $("meId").textContent = String(ME?.conta_id ?? "—");
+
+      $("btnOpenSettings").style.display = "inline-block";
+      $("btnLogout").style.display = "inline-block";
+
+      $("viewAuth").style.display = "none";
+      $("viewApp").style.display = "grid";
+
+      toast("ok","Login OK","Sessão iniciada.");
+      await refreshFeed();
+    }
+  }catch(e){
+    toast("bad","Falhou", String(e.message || e));
+  }
+}
+function logout(){
+  SESSION_TOKEN = "";
+  ME = null;
+  $("tokenBox").value = "";
+  $("viewApp").style.display = "none";
+  $("viewAuth").style.display = "grid";
+  $("btnOpenSettings").style.display = "none";
+  $("btnLogout").style.display = "none";
+}
+
+/* =========================
+   3) Feed: lista de users
+   Precisa do comando /listusers no Comandos.py
+========================= */
+function feedSkeleton(){
+  const el = $("feed");
+  el.innerHTML = "";
+  for(let i=0;i<8;i++){
+    const d = document.createElement("div");
+    d.className="skeleton";
+    el.appendChild(d);
+  }
+}
+async function refreshFeed(){
+  feedSkeleton();
+  try{
+    const out = await apiCmd({comando:"/listusers"});
+    const list = out.users || out.usernames || [];
+    const el = $("feed");
+    el.innerHTML = "";
+
+    if(!Array.isArray(list) || list.length===0){
+      el.innerHTML = `<div class="sub">Nenhum usuário retornado (ou comando não implementado).</div>`;
+      return;
+    }
+
+    list.forEach((u, idx)=>{
+      const tile = document.createElement("div");
+      tile.className = "tile";
+      tile.innerHTML = `
+        <div class="tInner">
+          <div class="row">
+            <div class="avatar"></div>
+            <div>
+              <div class="nick">${escapeHtml(String(u))}</div>
+              <div class="sub">Registrado • #${idx+1}</div>
+            </div>
+          </div>
+          <div class="tag">OBEARCO</div>
+        </div>
+      `;
+      el.appendChild(tile);
+    });
+  }catch(e){
+    $("feed").innerHTML = `<div class="sub">Feed erro: ${escapeHtml(String(e.message||e))}</div>`;
+  }
+}
+
+/* =========================
+   4) Settings: update / pass / delete
+   Precisa dos comandos /updateaccount e /deleteaccount
+========================= */
+function openModal(){
+  $("modalBack").style.display = "flex";
+  // prefill
+  $("setUsername").value = "";
+  $("setEmail").value = "";
+  $("setPassConfirmA").value = "";
+  $("curPass").value = "";
+  $("newPass").value = "";
+  $("newPass2").value = "";
+  $("delPass").value = "";
+  startDeleteTimer();
+}
+function closeModal(){ $("modalBack").style.display = "none"; }
+
+function setTab(name){
+  document.querySelectorAll(".tab").forEach(t=>{
+    t.classList.toggle("active", t.dataset.tab===name);
+  });
+  ["profile","security","danger"].forEach(n=>{
+    $("tab_"+n).style.display = (n===name) ? "block" : "none";
+  });
+}
+
+async function saveProfile(){
+  try{
+    const newUsername = $("setUsername").value.trim();
+    const newEmail = $("setEmail").value.trim();
+    const senha_atual = $("setPassConfirmA").value;
+
+    const payload = {comando:"/updateaccount", senha_atual};
+    if(newUsername) payload.username = newUsername;
+    if(newEmail) payload.email = newEmail;
+
+    const out = await apiCmd(payload, {token: SESSION_TOKEN});
+    ME = out.conta || ME;
+
+    $("pillNick").textContent = (ME?.username || "—");
+    $("meEmail").textContent = (ME?.email || "—");
+
+    toast("ok","Salvo", out.message || "Conta atualizada.");
+  }catch(e){
+    toast("bad","Falhou", String(e.message||e));
+  }
+}
+
+async function changePassword(){
+  try{
+    const cur = $("curPass").value;
+    const n1 = $("newPass").value;
+    const n2 = $("newPass2").value;
+    if(n1 !== n2) throw new Error("Nova senha e confirmação não batem.");
+
+    const out = await apiCmd({comando:"/updateaccount", senha_atual: cur, senha_nova: n1}, {token: SESSION_TOKEN});
+    toast("ok","Senha atualizada", out.message || "OK.");
+  }catch(e){
+    toast("bad","Falhou", String(e.message||e));
+  }
+}
+
+let delTimer = null;
+function startDeleteTimer(){
+  const btn = $("btnDelete");
+  const label = $("delTimer");
+  btn.disabled = true;
+  btn.textContent = "✅ Confirmar exclusão (5s)";
+  let s = 5;
+  label.textContent = "botão habilita em 5s";
+  clearInterval(delTimer);
+  delTimer = setInterval(()=>{
+    s--;
+    if(s<=0){
+      clearInterval(delTimer);
+      btn.disabled = false;
+      btn.textContent = "✅ Confirmar exclusão (AGORA)";
+      label.textContent = "habilitado";
+    }else{
+      btn.textContent = `✅ Confirmar exclusão (${s}s)`;
+      label.textContent = `aguarde ${s}s…`;
     }
   }, 1000);
 }
 
-function closeDeleteModal(){
-  el("modalBack").classList.remove("show");
-  if(delTimer) clearInterval(delTimer);
-  delTimer = null;
-}
-
-async function confirmDelete(){
-  const r = await apiCmd({comando:"/deleteaccount"});
-  if(!r.ok){
-    toast("❌ Falhou", r.error || "erro", "bad");
-    closeDeleteModal();
-    return;
-  }
-  toast("✅ Conta deletada", "Você saiu do reino.", "ok");
-  closeDeleteModal();
-  setToken("");
-  showAuth();
-  refreshFeed();
-}
-
-/* =========================
-   7) Token copy
-========================= */
-async function copyToken(){
-  const t = getToken();
-  if(!t){
-    toast("⚠️ Token vazio", "Faça login para gerar token.", "warn");
-    return;
-  }
+async function deleteAccount(){
   try{
-    await navigator.clipboard.writeText(t);
-    toast("✅ Copiado", "Token no clipboard.", "ok");
-  }catch{
-    // fallback
-    const ta = document.createElement("textarea");
-    ta.value = t;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand("copy");
-    ta.remove();
-    toast("✅ Copiado", "Token no clipboard.", "ok");
+    const senha = $("delPass").value;
+    const out = await apiCmd({comando:"/deleteaccount", senha}, {token: SESSION_TOKEN});
+    toast("ok","Conta excluída", out.message || "OK.");
+    closeModal();
+    logout();
+  }catch(e){
+    toast("bad","Falhou", String(e.message||e));
   }
 }
 
 /* =========================
-   8) VFX particles (canvas)
+   5) Utils
 ========================= */
-const canvas = el("vfx");
+function escapeHtml(s){
+  return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+async function copyText(t){
+  await navigator.clipboard.writeText(t);
+  toast("ok","Copiado","Texto copiado para a área de transferência.");
+}
+
+/* =========================
+   6) VFX canvas (particles + streaks)
+========================= */
+const canvas = $("vfxCanvas");
 const ctx = canvas.getContext("2d");
 let W=0,H=0, DPR=1;
-let particles = [];
+const particles = [];
+const streaks = [];
+
 function resize(){
   DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
   W = canvas.width = Math.floor(innerWidth * DPR);
@@ -964,123 +1099,134 @@ function resize(){
 }
 window.addEventListener("resize", resize);
 
-function rand(a,b){return a + Math.random()*(b-a);}
-function spawn(n=110){
-  particles = Array.from({length:n}, ()=>({
-    x: rand(0,W), y: rand(0,H),
-    r: rand(0.8, 2.4) * DPR,
-    vx: rand(-0.18, 0.18) * DPR,
-    vy: rand(-0.10, 0.22) * DPR,
-    a: rand(0.15, 0.65),
-    hue: Math.random() < 0.7 ? 270 : 140
-  }));
+function rand(a,b){ return a + Math.random()*(b-a); }
+
+function seed(){
+  particles.length=0;
+  streaks.length=0;
+  const n = Math.floor((innerWidth*innerHeight)/12000);
+  for(let i=0;i<n;i++){
+    particles.push({
+      x: rand(0,W), y: rand(0,H),
+      r: rand(0.8,2.2)*DPR,
+      vx: rand(-.10,.12)*DPR,
+      vy: rand(-.06,.16)*DPR,
+      a: rand(.15,.55),
+      hue: Math.random() < .5 ? 195 : 270
+    });
+  }
+  for(let i=0;i<14;i++){
+    streaks.push({
+      x: rand(-W*0.2, W*1.2),
+      y: rand(-H*0.2, H*1.2),
+      w: rand(120, 360)*DPR,
+      h: rand(1.2, 2.6)*DPR,
+      s: rand(.25, .75)*DPR,
+      a: rand(.05,.12),
+      hue: Math.random() < .5 ? 195 : 250
+    });
+  }
 }
-function step(){
+
+function loop(t){
   ctx.clearRect(0,0,W,H);
 
   // soft vignette
-  const g = ctx.createRadialGradient(W*0.5,H*0.55, 0, W*0.5,H*0.55, Math.max(W,H)*0.65);
-  g.addColorStop(0,"rgba(0,0,0,0)");
-  g.addColorStop(1,"rgba(0,0,0,0.55)");
+  const g = ctx.createRadialGradient(W*0.5,H*0.5,0, W*0.5,H*0.5, Math.max(W,H)*0.65);
+  g.addColorStop(0, "rgba(0,0,0,0)");
+  g.addColorStop(1, "rgba(0,0,0,.55)");
   ctx.fillStyle = g;
   ctx.fillRect(0,0,W,H);
 
+  // streaks
+  streaks.forEach(s=>{
+    s.x += s.s;
+    if(s.x - s.w > W) s.x = -s.w;
+    ctx.save();
+    ctx.globalAlpha = s.a;
+    ctx.fillStyle = `hsla(${s.hue}, 95%, 60%, 1)`;
+    ctx.translate(s.x, s.y);
+    ctx.rotate(0.12);
+    ctx.fillRect(0,0,s.w,s.h);
+    ctx.restore();
+  });
+
   // particles
-  for(const p of particles){
+  particles.forEach(p=>{
     p.x += p.vx;
     p.y += p.vy;
-    if(p.x < -20) p.x = W+20;
-    if(p.x > W+20) p.x = -20;
-    if(p.y < -20) p.y = H+20;
-    if(p.y > H+20) p.y = -20;
+    if(p.x< -20) p.x=W+20;
+    if(p.x> W+20) p.x=-20;
+    if(p.y< -20) p.y=H+20;
+    if(p.y> H+20) p.y=-20;
 
     ctx.beginPath();
+    ctx.globalAlpha = p.a;
+    ctx.fillStyle = `hsla(${p.hue}, 95%, 62%, 1)`;
     ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-    ctx.fillStyle = `hsla(${p.hue}, 90%, 65%, ${p.a})`;
     ctx.fill();
-  }
+  });
 
-  // links
-  for(let i=0;i<particles.length;i++){
-    const a = particles[i];
-    for(let j=i+1;j<i+8 && j<particles.length;j++){
-      const b = particles[j];
-      const dx=a.x-b.x, dy=a.y-b.y;
-      const d = Math.hypot(dx,dy);
-      if(d < 140*DPR){
-        ctx.strokeStyle = `rgba(139,92,246,${0.08 * (1 - d/(140*DPR))})`;
-        ctx.beginPath();
-        ctx.moveTo(a.x,a.y);
-        ctx.lineTo(b.x,b.y);
-        ctx.stroke();
-      }
-    }
-  }
+  // subtle pulse glow
+  ctx.globalAlpha = 0.06 + 0.02*Math.sin(t/900);
+  ctx.fillStyle = "rgba(76,201,240,1)";
+  ctx.fillRect(0,0,W,H);
 
-  requestAnimationFrame(step);
+  requestAnimationFrame(loop);
 }
 
 /* =========================
-   9) Boot
+   7) Wire UI
 ========================= */
-function wire(){
-  el("tabLogin").onclick = ()=>setActiveTab("tabLogin");
-  el("tabRegister").onclick = ()=>setActiveTab("tabRegister");
-  el("tabDashboard").onclick = ()=>setActiveTab("tabDashboard");
+$("btnReload").onclick = loadServerStatus;
+$("btnModeLogin").onclick = ()=>setMode("login");
+$("btnModeRegister").onclick = ()=>setMode("register");
+$("btnForge").onclick = doForge;
 
-  el("btnGoRegister").onclick = ()=>setActiveTab("tabRegister");
-  el("btnGoLogin").onclick = ()=>setActiveTab("tabLogin");
-
-  el("btnDoLogin").onclick = doLogin;
-  el("btnDoRegister").onclick = doRegister;
-
-  el("btnLogout").onclick = doLogout;
-  el("btnRefreshMe").onclick = refreshMe;
-
-  el("btnCopyToken").onclick = copyToken;
-  el("btnSaveAccount").onclick = saveAccount;
-
-  el("btnDeleteAccount").onclick = openDeleteModal;
-  el("btnCancelDel").onclick = closeDeleteModal;
-  el("btnConfirmDel").onclick = confirmDelete;
-
-  el("btnRefreshFeed").onclick = refreshFeed;
-  el("btnForceReloadBase").onclick = async ()=>{ await loadServerStatus(); toast("🔄 API base", apiBase, "ok"); };
-
-  // enter key
-  ["login_login","login_senha"].forEach(id=>{
-    el(id).addEventListener("keydown", (e)=>{ if(e.key==="Enter") doLogin(); });
-  });
-  ["reg_username","reg_email","reg_senha"].forEach(id=>{
-    el(id).addEventListener("keydown", (e)=>{ if(e.key==="Enter") doRegister(); });
-  });
-}
-
-(async function boot(){
-  resize(); spawn(); step();
-  wire(); renderNotes();
-  renderToken();
-
-  await loadServerStatus();
-
-  // tenta auto-login se tiver token
-  const t = getToken();
-  if(t){
-    const sess = await whoami();
-    if(sess){
-      showDashboard();
-      fillProfileFields(sess);
-      toast("🟣 Sessão restaurada", "Token válido. Bem-vindo!", "ok");
-      refreshFeed();
-      return;
-    }else{
-      setToken("");
-    }
+$("btnPing").onclick = async ()=>{
+  try{
+    const out = await apiCmd({comando:"/ping"});
+    $("pingOut").textContent = JSON.stringify(out).slice(0,160) + "…";
+    toast("ok","Ping", "Servidor respondeu.");
+  }catch(e){
+    toast("bad","Ping FAIL", String(e.message||e));
   }
-  // sem token
-  showAuth();
-  refreshFeed(); // vai falhar se /listusers não existir, mas deixa a dica
-})();
+};
+
+$("btnOpenRaw").onclick = ()=>window.open(STATUS_GH, "_blank");
+
+$("btnLogout").onclick = logout;
+$("btnHardLogout").onclick = logout;
+
+$("btnOpenSettings").onclick = openModal;
+$("btnSettings").onclick = openModal;
+$("btnCloseModal").onclick = closeModal;
+$("modalBack").addEventListener("click",(e)=>{ if(e.target === $("modalBack")) closeModal(); });
+
+document.querySelectorAll(".tab").forEach(t=>{
+  t.addEventListener("click", ()=>setTab(t.dataset.tab));
+});
+
+$("btnSaveProfile").onclick = saveProfile;
+$("btnChangePass").onclick = changePassword;
+$("btnDelete").onclick = deleteAccount;
+
+$("btnCopyToken").onclick = ()=>copyText($("tokenBox").value || "");
+$("btnWhoAmI").onclick = async ()=>{
+  try{
+    const out = await apiCmd({comando:"/whoami"}, {token: SESSION_TOKEN});
+    toast("ok","whoami", JSON.stringify(out.session||out).slice(0,160)+"…");
+  }catch(e){
+    toast("bad","whoami FAIL", String(e.message||e));
+  }
+};
+
+$("btnRefreshFeed").onclick = refreshFeed;
+
+/* boot */
+setMode("login");
+resize(); seed(); requestAnimationFrame(loop);
+loadServerStatus();
 </script>
 </body>
 </html>
