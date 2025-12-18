@@ -1,196 +1,35 @@
 <!doctype html>
-<html lang="pt-br">
+<html>
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>OBEARCO • Web</title>
-  <meta name="color-scheme" content="dark light" />
-  <style>
-    :root{
-      --bg:#0b0d10; --panel:#10141a; --panel2:#0f1318;
-      --text:#e7eef7; --muted:#a6b2c2; --border:#1e2632;
-      --accent:#5aa6ff; --accent2:#8b5cf6; --ok:#22c55e; --bad:#ef4444; --warn:#f59e0b;
-      --shadow: 0 10px 35px rgba(0,0,0,.35);
-      --radius: 16px;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0; font-family:var(--sans); background:radial-gradient(1200px 700px at 10% -10%, rgba(90,166,255,.12), transparent 50%),
-      radial-gradient(900px 600px at 90% 0%, rgba(139,92,246,.10), transparent 45%),
-      var(--bg);
-      color:var(--text);
-    }
-    a{color:inherit; text-decoration:none}
-    .app{min-height:100vh; display:flex; flex-direction:column}
-    .topbar{
-      position:sticky; top:0; z-index:50;
-      background: rgba(11,13,16,.75); backdrop-filter: blur(10px);
-      border-bottom:1px solid var(--border);
-    }
-    .topbar-inner{
-      max-width:1100px; margin:0 auto; padding:14px 16px;
-      display:flex; align-items:center; gap:12px; justify-content:space-between;
-    }
-    .brand{
-      display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:.4px;
-    }
-    .dot{width:10px;height:10px;border-radius:99px;background:var(--warn); box-shadow:0 0 0 4px rgba(245,158,11,.12)}
-    .nav{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
-    .chip{
-      border:1px solid var(--border); background:rgba(16,20,26,.6);
-      padding:8px 10px; border-radius:999px; color:var(--muted);
-      font-size:13px;
-      display:inline-flex; gap:8px; align-items:center;
-    }
-    .btn{
-      border:1px solid var(--border);
-      background:linear-gradient(180deg, rgba(16,20,26,.85), rgba(16,20,26,.55));
-      color:var(--text);
-      padding:9px 12px; border-radius:12px;
-      cursor:pointer; transition:.15s transform,.15s filter,.15s border-color;
-      display:inline-flex; align-items:center; gap:8px; font-weight:650;
-    }
-    .btn:hover{transform:translateY(-1px); filter:brightness(1.05); border-color:#2a3648}
-    .btn.primary{
-      border-color: rgba(90,166,255,.35);
-      background: linear-gradient(180deg, rgba(90,166,255,.22), rgba(90,166,255,.10));
-    }
-    .btn.danger{
-      border-color: rgba(239,68,68,.35);
-      background: linear-gradient(180deg, rgba(239,68,68,.22), rgba(239,68,68,.10));
-    }
-    .btn.ghost{background:transparent}
-    .container{
-      max-width:1100px; width:100%;
-      margin:0 auto; padding:18px 16px 34px;
-      display:grid; gap:16px;
-    }
-    .grid{
-      display:grid; gap:16px;
-      grid-template-columns: 1.2fr .8fr;
-    }
-    @media (max-width: 920px){
-      .grid{grid-template-columns:1fr}
-    }
-    .card{
-      background:linear-gradient(180deg, rgba(16,20,26,.95), rgba(16,20,26,.70));
-      border:1px solid var(--border);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      padding:14px;
-    }
-    .card h2{margin:0 0 8px; font-size:18px}
-    .card h3{margin:0 0 8px; font-size:15px; color:var(--muted); font-weight:700}
-    .muted{color:var(--muted)}
-    .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
-    .col{display:flex; flex-direction:column; gap:10px}
-    .pill{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:6px 10px; border-radius:999px; font-size:12px;
-      border:1px solid var(--border); background:rgba(15,19,24,.65);
-      color:var(--muted);
-    }
-    .pill.ok{border-color: rgba(34,197,94,.35); color:#b7f7cb; background:rgba(34,197,94,.08)}
-    .pill.bad{border-color: rgba(239,68,68,.35); color:#ffd0d0; background:rgba(239,68,68,.08)}
-    .pill.warn{border-color: rgba(245,158,11,.35); color:#ffe2b3; background:rgba(245,158,11,.08)}
-    .hr{height:1px; background:var(--border); margin:12px 0}
-    .field{display:flex; flex-direction:column; gap:6px}
-    .field label{font-size:12px; color:var(--muted)}
-    input, textarea, select{
-      width:100%;
-      padding:10px 11px;
-      border-radius:12px;
-      border:1px solid var(--border);
-      background:rgba(15,19,24,.85);
-      color:var(--text);
-      outline:none;
-    }
-    textarea{min-height:110px; resize:vertical; font-family:var(--mono); font-size:12.5px}
-    .kpi{
-      display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:10px;
-    }
-    @media (max-width: 600px){
-      .kpi{grid-template-columns:1fr}
-    }
-    .kpi .box{
-      border:1px solid var(--border);
-      background:rgba(15,19,24,.6);
-      border-radius:14px;
-      padding:10px;
-    }
-    .kpi .n{font-weight:900; font-size:16px}
-    .kpi .t{font-size:12px; color:var(--muted)}
-    .toast-wrap{
-      position:fixed; right:16px; bottom:16px; z-index:9999;
-      display:flex; flex-direction:column; gap:10px;
-      max-width:min(520px, calc(100vw - 32px));
-    }
-    .toast{
-      border:1px solid var(--border);
-      background:rgba(16,20,26,.92);
-      border-radius:14px;
-      padding:10px 12px;
-      box-shadow:var(--shadow);
-      display:flex; gap:10px; align-items:flex-start;
-    }
-    .toast b{display:block; margin-bottom:2px}
-    .tag{font-family:var(--mono); font-size:12px; opacity:.9}
-    .mini{font-size:12px}
-    .list{display:flex; flex-direction:column; gap:10px}
-    .item{
-      border:1px solid var(--border);
-      background:rgba(15,19,24,.6);
-      border-radius:14px;
-      padding:10px;
-    }
-    .item .title{font-weight:800}
-    .item .sub{color:var(--muted); font-size:12px}
-    .split{display:grid; grid-template-columns:1fr 1fr; gap:12px}
-    @media (max-width: 700px){ .split{grid-template-columns:1fr} }
-    .smallnote{font-size:12px; color:var(--muted); line-height:1.35}
-  </style>
+  <title>OBEARCO</title>
 </head>
-
 <body>
-<div class="app">
-  <div class="topbar">
-    <div class="topbar-inner">
-      <div class="brand">
-        <span class="dot" id="srvDot"></span>
-        <div>
-          <div>OBEARCO <span class="muted">Web</span></div>
-          <div class="mini muted" id="srvLine">Carregando status…</div>
-        </div>
-      </div>
-
-      <div class="nav" id="nav">
-        <!-- preenchido via JS -->
-      </div>
-    </div>
-  </div>
-
-  <main class="container" id="app"></main>
-</div>
-
-<div class="toast-wrap" id="toasts"></div>
-
 <script>
 /* ============================================================
-   CONFIG (GitHub status.json)
+   OBEARCO Web — Refatorado para GitHub Pages
+   - Mantém suas funções (login/register/me/admin)
+   - Melhora performance: timeout, retry, cache, abort
+   - UI: animações de rotas + toasts
    ============================================================ */
 
-const STATUS_BLOB_URL = "https://github.com/NoSense-Bot/Servidor/blob/main/server_status.json";
+/** =========================
+ *  CONFIG (GitHub status.json)
+ *  ========================= */
+const CONFIG = {
+  // Recomendo usar RAW direto (menos dor de cabeça e mais rápido)
+  // Exemplo: https://raw.githubusercontent.com/NoSense-Bot/Servidor/main/server_status.json
+  // Pode usar tanto a versão "blob" do GitHub (https://github.com/.../blob/...) quanto
+  // o raw (https://raw.githubusercontent.com/...). Se passar um blob, a função
+  // `normalizeGitHubRawUrl` converte automaticamente para o raw correto.
+  STATUS_RAW_URL: "https://raw.githubusercontent.com/NoSense-Bot/Servidor/main/server_status.json",
 
-function blobToRaw(url){
-  try{
-    if(url.includes("raw.githubusercontent.com")) return url;
-    return url
-      .replace("https://github.com/", "https://raw.githubusercontent.com/")
-      .replace("/blob/", "/");
-  }catch{ return url; }
-}
+  API_PREFIX: "/api/v1",
+  STATUS_POLL_SEC: 25,     // atualiza bolinha/status no topo
+  BOOT_RETRY: 2,           // tentativas para carregar status no boot
+  FETCH_TIMEOUT_MS: 9000,  // timeout padrão
+};
 
 const LS = {
   token: "obearco_session_token",
@@ -198,10 +37,9 @@ const LS = {
   me: "obearco_me_cache",
 };
 
-function safeJson(s){
-  try{ return JSON.parse(s); }catch{ return null; }
-}
-
+/** =========================
+ *  STATE
+ *  ========================= */
 const state = {
   loading: true,
   status: null,
@@ -210,8 +48,34 @@ const state = {
   me: safeJson(localStorage.getItem(LS.me)) || null,
   isAdmin: false,
   route: location.hash || "#/login",
+  lastStatusFetchAt: 0,
+  statusTimer: null,
 };
 
+/** =========================
+ *  Utils base
+ *  ========================= */
+function safeJson(s){ try{ return JSON.parse(s); }catch{ return null; } }
+
+function escapeHtml(s){
+  return String(s ?? "").replace(/[&<>"']/g, m => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+  }[m]));
+}
+
+function pickId(user){
+  return (user && user.id) || (user && user.user_id) || (user && user._id) || (user && user.email) || null;
+}
+
+function isAdminFromMe(me){
+  return !!((me && me.is_admin) || (me && me.admin) || (me && me.role === "admin") || (me && me.nivel === "admin"));
+}
+
+function go(hash){ location.hash = hash; }
+
+/** =========================
+ *  Toast (com animação)
+ *  ========================= */
 function toast(title, msg, kind="info"){
   const wrap = document.getElementById("toasts");
   const t = document.createElement("div");
@@ -225,80 +89,178 @@ function toast(title, msg, kind="info"){
     </div>
   `;
   wrap.appendChild(t);
-  setTimeout(()=>{ t.style.opacity="0"; t.style.transform="translateY(6px)"; }, 3200);
-  setTimeout(()=>{ t.remove(); }, 3800);
+
+  setTimeout(()=> t.classList.add("out"), 3200);
+  setTimeout(()=> t.remove(), 3650);
 }
 
-function escapeHtml(s){
-  return String(s ?? "").replace(/[&<>"']/g, m => ({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
-  }[m]));
+/** =========================
+ *  Fetch helper: timeout + retry
+ *  ========================= */
+async function fetchJson(url, opts={}){
+  const timeout = opts.timeout ?? CONFIG.FETCH_TIMEOUT_MS;
+  const tries = opts.tries ?? 1;
+
+  let lastErr = null;
+
+  for(let attempt=1; attempt<=tries; attempt++){
+    const controller = new AbortController();
+    const id = setTimeout(()=> controller.abort(), timeout);
+
+    try{
+      const res = await fetch(url, {
+        ...opts,
+        signal: controller.signal,
+        headers: opts.headers ?? {},
+      });
+      clearTimeout(id);
+
+      if(!res.ok){
+        const text = await res.text().catch(()=> "");
+          throw new Error(`HTTP ${res.status} — ${(text && text.slice(0,120)) || "erro"}`);
+      }
+      return await res.json();
+    }catch(err){
+      clearTimeout(id);
+      lastErr = err;
+      // pequeno backoff
+      if(attempt < tries) await sleep(350 * attempt);
+    }
+  }
+
+  throw lastErr || new Error("Falha no fetch");
 }
 
-/* ============================================================
-   API helpers
-   ============================================================ */
+function sleep(ms){ return new Promise(r=>setTimeout(r, ms)); }
 
+/** =========================
+ *  STATUS (server_status.json)
+ *  ========================= */
 async function fetchStatus(){
-  const rawUrl = blobToRaw(STATUS_BLOB_URL);
-  const res = await fetch(rawUrl, { cache: "no-store" });
-  if(!res.ok) throw new Error("Não consegui baixar server_status.json");
-  return await res.json();
+  // cache-bust simples pra evitar GitHub cache agressivo em alguns casos
+  // normaliza links do GitHub: se alguém configurar o link como
+  // https://github.com/NoSense-Bot/Servidor/blob/main/server_status.json
+  // converte automaticamente para a versão raw em raw.githubusercontent.com
+  function normalizeGitHubRawUrl(url){
+    try{
+      if(!url) return url;
+      // ex: https://github.com/<owner>/<repo>/blob/<branch>/path
+      const marker = "/blob/";
+      if(url.indexOf("github.com/") !== -1 && url.indexOf(marker) !== -1){
+        const after = url.split("github.com/")[1];
+        const parts = after.split(marker);
+        if(parts.length === 2){
+          return "https://raw.githubusercontent.com/" + parts[0] + "/" + parts[1];
+        }
+      }
+      return url;
+    }catch(e){ return url; }
+  }
+
+  const rawUrl = normalizeGitHubRawUrl(CONFIG.STATUS_RAW_URL);
+  const u = new URL(rawUrl);
+  u.searchParams.set("t", String(Date.now()));
+
+  try{
+    return await fetchJson(u.toString(), { cache: "no-store", tries: 2 });
+  }catch(e){
+    // fallback para a URL original (caso a normalização não seja adequada)
+    if(rawUrl !== CONFIG.STATUS_RAW_URL){
+      try{
+        const u2 = new URL(CONFIG.STATUS_RAW_URL);
+        u2.searchParams.set("t", String(Date.now()));
+        return await fetchJson(u2.toString(), { cache: "no-store", tries: 1 });
+      }catch(_){ /* ignore */ }
+    }
+    throw e;
+  }
 }
 
+function setServerBadge(online){
+  const dot = document.getElementById("srvDot");
+  const line = document.getElementById("srvLine");
+
+  if(online){
+    dot.style.background = "var(--ok)";
+    dot.style.boxShadow = "0 0 0 4px rgba(34,197,94,.12)";
+    dot.style.transform = "scale(1.0)";
+    line.textContent = "Servidor: Online ✅";
+  }else{
+    dot.style.background = "var(--bad)";
+    dot.style.boxShadow = "0 0 0 4px rgba(239,68,68,.12)";
+    dot.style.transform = "scale(1.0)";
+    line.textContent = "Servidor: Offline ❌";
+  }
+}
+
+/** =========================
+ *  API helpers
+ *  ========================= */
 function apiUrl(path){
   const base = (state.apiBase || "").replace(/\/+$/,"");
   return base + path;
 }
 
 async function apiCmd(payload){
-  const url = apiUrl("/api/v1/cmd");
+  // endpoint principal
+  const url = apiUrl(CONFIG.API_PREFIX + "/cmd");
+
   const headers = { "Content-Type":"application/json" };
   if(state.token) headers["Authorization"] = "Bearer " + state.token;
 
   try{
-    const r = await fetch(url, { method:"POST", headers, body: JSON.stringify(payload) });
-    const j = await r.json().catch(()=> ({}));
-    if(!r.ok || j.ok === false) throw new Error(j.error || "Falha no cmd");
+    const j = await fetchJson(url, {
+      method:"POST",
+      headers,
+      body: JSON.stringify(payload),
+      tries: 1,
+      timeout: CONFIG.FETCH_TIMEOUT_MS,
+    });
+
+  if(j && j.ok === false) throw new Error(j.error || "Falha no cmd");
     return j;
   }catch(err){
-    if(payload?.comando === "/login" || payload?.comando === "/register"){
+    // fallback legacy APENAS pra login/register
+  if(payload && (payload.comando === "/login" || payload.comando === "/register")){
       const legacyPath = payload.comando === "/login" ? "/login" : "/register";
-      const rr = await fetch(apiUrl(legacyPath), { method:"POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(payload) });
-      const jj = await rr.json().catch(()=> ({}));
-      if(!rr.ok || jj.ok === false) throw new Error(jj.error || "Falha no login/register");
+      const jj = await fetchJson(apiUrl(legacyPath), {
+        method:"POST",
+        headers: { "Content-Type":"application/json" },
+        body: JSON.stringify(payload),
+        tries: 1,
+        timeout: CONFIG.FETCH_TIMEOUT_MS,
+      });
+  if(jj && jj.ok === false) throw new Error(jj.error || "Falha no login/register");
       return jj;
     }
     throw err;
   }
 }
 
-function pickId(user){
-  return user?.id ?? user?.user_id ?? user?._id ?? user?.email ?? null;
-}
-
-function isAdminFromMe(me){
-  return !!(me?.is_admin || me?.admin || me?.role === "admin" || me?.nivel === "admin");
-}
-
-/* ============================================================
-   Auth flows
-   ============================================================ */
-
+/** =========================
+ *  Auth flows
+ *  ========================= */
 async function doLogin(email, senha){
   const out = await apiCmd({ comando:"/login", email, senha });
-  const token = out.session_token || out.token || out?.data?.session_token || out?.session?.token;
+
+  const token =
+    out.session_token ||
+    out.token ||
+    (out && out.data && out.data.session_token) ||
+    (out && out.session && out.session.token);
+
   if(!token) throw new Error("Login OK mas não veio session_token");
+
   state.token = token;
   localStorage.setItem(LS.token, token);
   toast("Login", "Sessão salva ✅", "ok");
+
   await loadMe();
   go("#/feed");
 }
 
 async function doRegister(email, senha, extra={}){
-  // AGORA ENVIA usuario TAMBÉM (backend exige email, senha, usuario)
-  const out = await apiCmd({ comando:"/register", email, senha, ...extra });
+  await apiCmd({ comando:"/register", email, senha, ...extra });
   toast("Conta criada", "Agora faz login 😉", "ok");
   go("#/login");
 }
@@ -313,39 +275,40 @@ function doLogout(){
   go("#/login");
 }
 
-/* ============================================================
-   ME / USER CRUD (normal)
-   ============================================================ */
-
+/** =========================
+ *  ME / USER CRUD
+ *  ========================= */
 async function loadMe(){
   if(!state.token) return null;
+
   try{
     const out = await apiCmd({ comando:"/me/get" });
     const me = out.me || out.user || out.account || out.data || out;
-    state.me = me;
-    state.isAdmin = isAdminFromMe(me);
-    localStorage.setItem(LS.me, JSON.stringify(me));
-    renderNav();
+    applyMe(me);
     return me;
   }catch(e1){
+    // compat
     const out2 = await apiCmd({ comando:"/me" }).catch(()=> null);
     if(out2){
       const me = out2.me || out2.user || out2.account || out2.data || out2;
-      state.me = me;
-      state.isAdmin = isAdminFromMe(me);
-      localStorage.setItem(LS.me, JSON.stringify(me));
-      renderNav();
+      applyMe(me);
       return me;
     }
     throw e1;
   }
 }
 
+function applyMe(me){
+  state.me = me;
+  state.isAdmin = isAdminFromMe(me);
+  localStorage.setItem(LS.me, JSON.stringify(me));
+  renderNav();
+}
+
 async function updateMe(patch){
-  const out = await apiCmd({ comando:"/me/update", patch });
+  await apiCmd({ comando:"/me/update", patch });
   toast("Conta", "Atualizada ✅", "ok");
   await loadMe();
-  return out;
 }
 
 async function deleteMe(){
@@ -366,10 +329,9 @@ async function removeSkill(skill){
   await loadMe();
 }
 
-/* ============================================================
-   ADMIN CRUD (tudo)
-   ============================================================ */
-
+/** =========================
+ *  ADMIN CRUD
+ *  ========================= */
 async function adminListUsers(){
   const out = await apiCmd({ comando:"/admin/users/list" });
   return out.users || out.list || out.data || [];
@@ -391,14 +353,9 @@ async function adminCreateUser(payload){
   toast("Admin", "Usuário criado ✅", "ok");
 }
 
-/* ============================================================
-   Router + Render
-   ============================================================ */
-
-function go(hash){
-  location.hash = hash;
-}
-
+/** =========================
+ *  Router + Nav
+ *  ========================= */
 window.addEventListener("hashchange", ()=>{
   state.route = location.hash || "#/login";
   render();
@@ -438,45 +395,38 @@ function btn(label, onClick, cls=""){
   return b;
 }
 
-function setServerBadge(online){
-  const dot = document.getElementById("srvDot");
-  const line = document.getElementById("srvLine");
-  if(online){
-    dot.style.background = "var(--ok)";
-    dot.style.boxShadow = "0 0 0 4px rgba(34,197,94,.12)";
-    line.textContent = "Servidor: Online ✅";
-  }else{
-    dot.style.background = "var(--bad)";
-    dot.style.boxShadow = "0 0 0 4px rgba(239,68,68,.12)";
-    line.textContent = "Servidor: Offline ❌";
-  }
+/** =========================
+ *  Render Views
+ *  ========================= */
+function mountView(html){
+  const app = document.getElementById("app");
+  app.innerHTML = `<div class="view">${html}</div>`;
+  return app.querySelector(".view");
 }
 
 function render(){
-  const app = document.getElementById("app");
   const r = state.route;
 
   if(!state.token && (r.startsWith("#/feed") || r.startsWith("#/config") || r.startsWith("#/admin"))){
-    go("#/login");
-    return;
+    go("#/login"); return;
   }
   if(state.token && r.startsWith("#/admin") && !state.isAdmin){
     toast("Sem permissão", "Você não é admin 😅", "warn");
-    go("#/feed");
-    return;
+    go("#/feed"); return;
   }
 
-  if(r.startsWith("#/login")) return renderLogin(app);
-  if(r.startsWith("#/register")) return renderRegister(app);
-  if(r.startsWith("#/feed")) return renderFeed(app);
-  if(r.startsWith("#/config")) return renderConfig(app);
-  if(r.startsWith("#/admin")) return renderAdmin(app);
+  if(r.startsWith("#/login")) return renderLogin();
+  if(r.startsWith("#/register")) return renderRegister();
+  if(r.startsWith("#/feed")) return renderFeed();
+  if(r.startsWith("#/config")) return renderConfig();
+  if(r.startsWith("#/admin")) return renderAdmin();
 
   go("#/login");
 }
 
-function renderLogin(app){
-  app.innerHTML = `
+function renderLogin(){
+  const st = state.status || {};
+  const view = mountView(`
     <div class="grid">
       <div class="card">
         <h2>🔐 Login</h2>
@@ -485,77 +435,66 @@ function renderLogin(app){
 
         <div class="field">
           <label>Email</label>
-          <input id="email" placeholder="email@exemplo.com" />
+          <input id="email" placeholder="email@exemplo.com" autocomplete="email" />
         </div>
         <div class="field">
           <label>Senha</label>
-          <input id="senha" type="password" placeholder="••••••••" />
+          <input id="senha" type="password" placeholder="••••••••" autocomplete="current-password" />
         </div>
 
         <div class="row" style="margin-top:10px">
           <button class="btn primary" id="btnLogin">Entrar</button>
-          <button class="btn" onclick="location.hash='#/register'">Criar conta</button>
+          <button class="btn" id="btnGoReg">Criar conta</button>
         </div>
 
         <div class="hr"></div>
         <div class="smallnote">
-          💡 Dica: a base da API vem do <span class="tag">server_status.json</span> (GitHub).<br/>
-          Se o CORS travar, confirme se seu servidor permite <span class="tag">https://nosense-bot.github.io</span>.
+          💡 A base da API vem do <span class="tag">server_status.json</span> (GitHub).<br/>
+          Se o CORS travar, confirme se seu servidor permite <span class="tag">https://nosense-bot.github.io</span> (ou seu domínio do Pages).
         </div>
       </div>
 
       <div class="card">
         <h2>📡 Conexão</h2>
         <div class="kpi">
-          <div class="box">
-            <div class="n" id="kpiStatus">—</div>
-            <div class="t">status_servidor</div>
-          </div>
-          <div class="box">
-            <div class="n" id="kpiApi">—</div>
-            <div class="t">version_api</div>
-          </div>
-          <div class="box">
-            <div class="n" id="kpiPort">—</div>
-            <div class="t">porta</div>
-          </div>
+          <div class="box"><div class="n">${escapeHtml(st.status_servidor ?? "—")}</div><div class="t">status_servidor</div></div>
+          <div class="box"><div class="n">${escapeHtml(st.version_api ?? "—")}</div><div class="t">version_api</div></div>
+          <div class="box"><div class="n">${escapeHtml(st.porta ?? "—")}</div><div class="t">porta</div></div>
         </div>
         <div class="hr"></div>
         <div class="muted mini"><span class="tag">url_api_base</span></div>
-        <div class="tag" id="kpiBase">—</div>
+        <div class="tag">${escapeHtml(st.url_api_base ?? "—")}</div>
       </div>
     </div>
-  `;
+  `);
 
-  const email = app.querySelector("#email");
-  const senha = app.querySelector("#senha");
-  const btnLogin = app.querySelector("#btnLogin");
+  const email = view.querySelector("#email");
+  const senha = view.querySelector("#senha");
+  const btnLogin = view.querySelector("#btnLogin");
+  const btnGoReg = view.querySelector("#btnGoReg");
+
+  btnGoReg.onclick = ()=> go("#/register");
 
   btnLogin.onclick = async ()=>{
     const e = (email.value || "").trim();
     const s = (senha.value || "");
     if(!e || !s){ toast("Ops", "Preenche email e senha 😅", "warn"); return; }
+
     btnLogin.disabled = true;
     btnLogin.textContent = "Entrando…";
     try{
       await doLogin(e, s);
     }catch(err){
-      toast("Login falhou", err?.message || String(err), "bad");
+  toast("Login falhou", (err && err.message) || String(err), "bad");
     }finally{
       btnLogin.disabled = false;
       btnLogin.textContent = "Entrar";
     }
   };
-
-  const st = state.status || {};
-  app.querySelector("#kpiStatus").textContent = st.status_servidor ?? "—";
-  app.querySelector("#kpiApi").textContent = st.version_api ?? "—";
-  app.querySelector("#kpiPort").textContent = st.porta ?? "—";
-  app.querySelector("#kpiBase").textContent = st.url_api_base ?? "—";
 }
 
-function renderRegister(app){
-  app.innerHTML = `
+function renderRegister(){
+  const view = mountView(`
     <div class="grid">
       <div class="card">
         <h2>🧾 Registrar</h2>
@@ -564,40 +503,43 @@ function renderRegister(app){
 
         <div class="field">
           <label>Usuário</label>
-          <input id="usuario" placeholder="seu nick" />
+          <input id="usuario" placeholder="seu nick" autocomplete="username" />
         </div>
         <div class="field">
           <label>Email</label>
-          <input id="email" placeholder="email@exemplo.com" />
+          <input id="email" placeholder="email@exemplo.com" autocomplete="email" />
         </div>
         <div class="field">
           <label>Senha</label>
-          <input id="senha" type="password" placeholder="••••••••" />
+          <input id="senha" type="password" placeholder="••••••••" autocomplete="new-password" />
         </div>
 
         <div class="row" style="margin-top:10px">
           <button class="btn primary" id="btnReg">Criar</button>
-          <button class="btn" onclick="location.hash='#/login'">Voltar</button>
+          <button class="btn" id="btnBack">Voltar</button>
         </div>
 
         <div class="hr"></div>
-        <div class="smallnote">🔧 Backend esperado: comando <span class="tag">/register</span> retornando ok (requer email, senha, usuario).</div>
+        <div class="smallnote">🔧 Backend esperado: comando <span class="tag">/register</span> (requer email, senha, usuario).</div>
       </div>
 
       <div class="card">
         <h2>🧠 Observação</h2>
         <div class="muted">
-          Esse site salva o token no <span class="tag">localStorage</span> (simples e prático pra dev).<br/>
-          Em produção, o ideal é cookie HttpOnly.
+          Esse site salva o token no <span class="tag">localStorage</span> (simples e prático).<br/>
+          Em produção, o ideal é cookie HttpOnly + refresh token.
         </div>
       </div>
     </div>
-  `;
+  `);
 
-  const usuario = app.querySelector("#usuario");
-  const email = app.querySelector("#email");
-  const senha = app.querySelector("#senha");
-  const btnReg = app.querySelector("#btnReg");
+  const usuario = view.querySelector("#usuario");
+  const email = view.querySelector("#email");
+  const senha = view.querySelector("#senha");
+  const btnReg = view.querySelector("#btnReg");
+  const btnBack = view.querySelector("#btnBack");
+
+  btnBack.onclick = ()=> go("#/login");
 
   btnReg.onclick = async ()=>{
     const u = (usuario.value || "").trim();
@@ -607,12 +549,13 @@ function renderRegister(app){
       toast("Ops", "Preenche usuário, email e senha 😅", "warn");
       return;
     }
+
     btnReg.disabled = true;
     btnReg.textContent = "Criando…";
     try{
-      await doRegister(e, s, { usuario: u }); // envia usuario pro backend
+      await doRegister(e, s, { usuario: u });
     }catch(err){
-      toast("Registro falhou", err?.message || String(err), "bad");
+  toast("Registro falhou", (err && err.message) || String(err), "bad");
     }finally{
       btnReg.disabled = false;
       btnReg.textContent = "Criar";
@@ -620,17 +563,17 @@ function renderRegister(app){
   };
 }
 
-function renderFeed(app){
+function renderFeed(){
   const me = state.me || {};
   const skills = me.skills ?? me.Skills ?? me.habilidades ?? null;
 
-  app.innerHTML = `
+  mountView(`
     <div class="grid">
       <div class="card">
         <div class="row" style="justify-content:space-between">
           <div>
             <h2>📰 Feed</h2>
-            <div class="muted">Seu perfil aparece no topo (skills etc.). Se não tiver, fica <span class="tag">null</span>.</div>
+            <div class="muted">Seu perfil aparece no topo (skills etc.).</div>
           </div>
           <div class="row">
             ${state.isAdmin ? `<span class="pill ok">🛡️ Admin</span>` : `<span class="pill warn">👤 User</span>`}
@@ -639,7 +582,7 @@ function renderFeed(app){
 
         <div class="hr"></div>
 
-        <div class="item">
+        <div class="item" style="cursor:default">
           <div class="title">${escapeHtml(me.usuario || me.nome || me.name || me.username || me.email || "—")}</div>
           <div class="sub">${escapeHtml(me.email || "—")}</div>
 
@@ -663,11 +606,9 @@ function renderFeed(app){
         </div>
 
         <div class="hr"></div>
-
         <h3>📌 Seu feed (placeholder)</h3>
         <div class="muted mini">
-          Aqui você pode listar posts, atividades, quests, etc.<br/>
-          (quando você criar comandos tipo <span class="tag">/feed/list</span>, é só plugar).
+          Aqui você pode listar posts, atividades, quests, etc.
         </div>
       </div>
 
@@ -684,15 +625,15 @@ function renderFeed(app){
         </div>
       </div>
     </div>
-  `;
+  `);
 }
 
-function renderConfig(app){
+function renderConfig(){
   const me = state.me || {};
   const skills = Array.isArray(me.skills) ? me.skills : (Array.isArray(me.Skills) ? me.Skills : []);
   const skillsJson = JSON.stringify(skills ?? null, null, 2);
 
-  app.innerHTML = `
+  const view = mountView(`
     <div class="grid">
       <div class="card">
         <h2>⚙️ Config (usuário)</h2>
@@ -762,23 +703,25 @@ function renderConfig(app){
         </div>
       </div>
     </div>
-  `;
+  `);
 
-  const fUsuario = app.querySelector("#fUsuario");
-  const fName = app.querySelector("#fName");
-  const fEmail = app.querySelector("#fEmail");
-  const fBio = app.querySelector("#fBio");
-  const fSkills = app.querySelector("#fSkills");
-  const btnSave = app.querySelector("#btnSave");
-  const btnReload = app.querySelector("#btnReload");
-  const btnDelete = app.querySelector("#btnDelete");
-  const skillName = app.querySelector("#skillName");
-  const btnAddSkill = app.querySelector("#btnAddSkill");
-  const btnRemSkill = app.querySelector("#btnRemSkill");
+  const fUsuario = view.querySelector("#fUsuario");
+  const fName = view.querySelector("#fName");
+  const fEmail = view.querySelector("#fEmail");
+  const fBio = view.querySelector("#fBio");
+  const fSkills = view.querySelector("#fSkills");
+
+  const btnSave = view.querySelector("#btnSave");
+  const btnReload = view.querySelector("#btnReload");
+  const btnDelete = view.querySelector("#btnDelete");
+
+  const skillName = view.querySelector("#skillName");
+  const btnAddSkill = view.querySelector("#btnAddSkill");
+  const btnRemSkill = view.querySelector("#btnRemSkill");
 
   btnReload.onclick = async ()=>{
     try{ await loadMe(); render(); toast("OK", "Recarregado ✅", "ok"); }
-    catch(err){ toast("Falhou", err?.message || String(err), "bad"); }
+  catch(err){ toast("Falhou", (err && err.message) || String(err), "bad"); }
   };
 
   btnSave.onclick = async ()=>{
@@ -787,9 +730,7 @@ function renderConfig(app){
     try{
       let skillsVal = null;
       const raw = (fSkills.value || "").trim();
-      if(raw !== ""){
-        skillsVal = JSON.parse(raw);
-      }
+      if(raw !== "") skillsVal = JSON.parse(raw);
 
       const patch = {
         usuario: (fUsuario.value || "").trim(),
@@ -802,7 +743,7 @@ function renderConfig(app){
       await updateMe(patch);
       render();
     }catch(err){
-      toast("Salvar falhou", err?.message || String(err), "bad");
+  toast("Salvar falhou", (err && err.message) || String(err), "bad");
     }finally{
       btnSave.disabled = false;
       btnSave.textContent = "💾 Salvar";
@@ -813,26 +754,29 @@ function renderConfig(app){
     if(!confirm("Tem certeza que quer deletar sua conta?")) return;
     btnDelete.disabled = true;
     try{ await deleteMe(); }
-    catch(err){ toast("Delete falhou", err?.message || String(err), "bad"); btnDelete.disabled = false; }
+    catch(err){
+  toast("Delete falhou", (err && err.message) || String(err), "bad");
+      btnDelete.disabled = false;
+    }
   };
 
   btnAddSkill.onclick = async ()=>{
     const sk = (skillName.value||"").trim();
     if(!sk){ toast("Ops", "Digita uma skill 😅", "warn"); return; }
     try{ await addSkill(sk); render(); }
-    catch(err){ toast("Falhou", err?.message || String(err), "bad"); }
+  catch(err){ toast("Falhou", (err && err.message) || String(err), "bad"); }
   };
 
   btnRemSkill.onclick = async ()=>{
     const sk = (skillName.value||"").trim();
     if(!sk){ toast("Ops", "Digita uma skill 😅", "warn"); return; }
     try{ await removeSkill(sk); render(); }
-    catch(err){ toast("Falhou", err?.message || String(err), "bad"); }
+  catch(err){ toast("Falhou", (err && err.message) || String(err), "bad"); }
   };
 }
 
-function renderAdmin(app){
-  app.innerHTML = `
+function renderAdmin(){
+  const view = mountView(`
     <div class="grid">
       <div class="card">
         <div class="row" style="justify-content:space-between">
@@ -890,18 +834,18 @@ function renderAdmin(app){
         </div>
       </div>
     </div>
-  `;
+  `);
 
-  const q = app.querySelector("#q");
-  const btnLoad = app.querySelector("#btnLoad");
-  const btnNew = app.querySelector("#btnNew");
-  const usersList = app.querySelector("#usersList");
-  const selId = app.querySelector("#selId");
-  const patch = app.querySelector("#patch");
-  const details = app.querySelector("#details");
-  const btnSaveUser = app.querySelector("#btnSaveUser");
-  const btnDelUser = app.querySelector("#btnDelUser");
-  const btnGetUser = app.querySelector("#btnGetUser");
+  const q = view.querySelector("#q");
+  const btnLoad = view.querySelector("#btnLoad");
+  const btnNew = view.querySelector("#btnNew");
+  const usersList = view.querySelector("#usersList");
+  const selId = view.querySelector("#selId");
+  const patch = view.querySelector("#patch");
+  const details = view.querySelector("#details");
+  const btnSaveUser = view.querySelector("#btnSaveUser");
+  const btnDelUser = view.querySelector("#btnDelUser");
+  const btnGetUser = view.querySelector("#btnGetUser");
 
   let usersCache = [];
 
@@ -915,6 +859,7 @@ function renderAdmin(app){
       const id = pickId(u);
       const name = u.usuario || u.nome || u.name || u.username || u.email || "—";
       const role = (u.is_admin || u.admin || u.role==="admin") ? "admin" : "user";
+
       const el = document.createElement("div");
       el.className = "item";
       el.innerHTML = `
@@ -950,7 +895,7 @@ function renderAdmin(app){
       renderUsers(filtered);
       toast("Admin", "Lista carregada ✅", "ok");
     }catch(err){
-      toast("Admin falhou", err?.message || String(err), "bad");
+  toast("Admin falhou", (err && err.message) || String(err), "bad");
     }finally{
       btnLoad.disabled = false;
       btnLoad.textContent = "📥 Carregar lista";
@@ -969,7 +914,7 @@ function renderAdmin(app){
       await adminCreateUser({ usuario, email, senha, is_admin: isAdmin });
       await btnLoad.onclick();
     }catch(err){
-      toast("Criar falhou", err?.message || String(err), "bad");
+  toast("Criar falhou", (err && err.message) || String(err), "bad");
     }
   };
 
@@ -981,7 +926,7 @@ function renderAdmin(app){
       details.value = JSON.stringify(u, null, 2);
       toast("OK", "Detalhes carregados ✅", "ok");
     }catch(err){
-      toast("Falhou", err?.message || String(err), "bad");
+  toast("Falhou", (err && err.message) || String(err), "bad");
     }
   };
 
@@ -997,7 +942,7 @@ function renderAdmin(app){
       await adminUpdateUser(id, p);
       await btnLoad.onclick();
     }catch(err){
-      toast("Update falhou", err?.message || String(err), "bad");
+  toast("Update falhou", (err && err.message) || String(err), "bad");
     }finally{
       btnSaveUser.disabled = false;
     }
@@ -1007,6 +952,7 @@ function renderAdmin(app){
     const id = (selId.value||"").trim();
     if(!id){ toast("Ops", "Seleciona um usuário 😅", "warn"); return; }
     if(!confirm("Deletar esse usuário?")) return;
+
     btnDelUser.disabled = true;
     try{
       await adminDeleteUser(id);
@@ -1015,44 +961,79 @@ function renderAdmin(app){
       patch.value = "{}";
       await btnLoad.onclick();
     }catch(err){
-      toast("Delete falhou", err?.message || String(err), "bad");
+  toast("Delete falhou", (err && err.message) || String(err), "bad");
     }finally{
       btnDelUser.disabled = false;
     }
   };
 }
 
-/* ============================================================
-   Boot
-   ============================================================ */
-
+/** =========================
+ *  Boot + polling de status
+ *  ========================= */
 async function boot(){
   try{
     state.loading = true;
     renderNav();
 
-    const st = await fetchStatus();
+    // skeleton simples enquanto carrega
+    mountView(`
+      <div class="card">
+        <h2>Carregando…</h2>
+        <div class="hr"></div>
+        <div class="skeleton" style="width:55%"></div>
+        <div style="height:10px"></div>
+        <div class="skeleton" style="width:80%"></div>
+        <div style="height:10px"></div>
+        <div class="skeleton" style="width:35%"></div>
+      </div>
+    `);
+
+    // tenta pegar status (com retries no boot)
+    let st = null;
+    let lastErr = null;
+
+    for(let i=0; i<CONFIG.BOOT_RETRY; i++){
+      try{
+        st = await fetchStatus();
+        break;
+      }catch(e){
+        lastErr = e;
+        await sleep(350 * (i+1));
+      }
+    }
+
+    if(!st) throw lastErr || new Error("Não consegui carregar o status");
+
     state.status = st;
 
-    const base = (st?.url_api_base || "").trim();
+  const base = ((st && st.url_api_base) || "").trim();
     if(base){
       state.apiBase = base.replace(/\/+$/,"");
       localStorage.setItem(LS.apiBase, state.apiBase);
     }
 
-    const online = String(st?.status_servidor || "").toLowerCase().includes("online");
+  const sstatus = (st && st.status_servidor) || "";
+  const online = ("" + sstatus).toLowerCase().indexOf("online") !== -1;
     setServerBadge(online);
 
+    // se tiver token, valida
     if(state.token){
       try{ await loadMe(); }
-      catch(e){ toast("Sessão", "Token inválido/expirado. Faz login de novo 😉", "warn"); doLogout(); }
+      catch(e){
+        toast("Sessão", "Token inválido/expirado. Faz login de novo 😉", "warn");
+        doLogout();
+      }
     }
 
     renderNav();
     render();
+
+    // polling do status (apenas UI)
+    startStatusPolling();
   }catch(err){
     setServerBadge(false);
-    toast("Boot falhou", err?.message || String(err), "bad");
+  toast("Boot falhou", (err && err.message) || String(err), "bad");
     renderNav();
     render();
   }finally{
@@ -1060,7 +1041,33 @@ async function boot(){
   }
 }
 
+function startStatusPolling(){
+  if(state.statusTimer) clearInterval(state.statusTimer);
+
+  state.statusTimer = setInterval(async ()=>{
+    try{
+      const st = await fetchStatus();
+      state.status = st;
+
+  const base = ((st && st.url_api_base) || "").trim();
+      if(base && base.replace(/\/+$/,"") !== state.apiBase){
+        state.apiBase = base.replace(/\/+$/,"");
+        localStorage.setItem(LS.apiBase, state.apiBase);
+        renderNav();
+        toast("API atualizada", "Nova base detectada pelo status.json ✅", "ok");
+      }
+
+  const online = String((st && st.status_servidor) || "").toLowerCase().includes("online");
+      setServerBadge(online);
+    }catch{
+      // silencioso: só marca offline, sem spam de toast
+      setServerBadge(false);
+    }
+  }, Math.max(8, CONFIG.STATUS_POLL_SEC) * 1000);
+}
+
 boot();
+
 </script>
 </body>
 </html>
