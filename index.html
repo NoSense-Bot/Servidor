@@ -9,13 +9,11 @@
     :root{
       --bg:#07090c;
       --panel: rgba(16,20,26,.72);
-      --panel2: rgba(12,16,21,.58);
       --glass: rgba(255,255,255,.06);
       --text:#eaf2ff;
       --muted:#a7b4c7;
       --border: rgba(180,210,255,.12);
       --accent:#5aa6ff;
-      --accent2:#8b5cf6;
       --ok:#22c55e;
       --bad:#ef4444;
       --warn:#f59e0b;
@@ -24,36 +22,18 @@
       --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
       --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
     }
-
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
       margin:0;
       font-family:var(--sans);
-      background: radial-gradient(1100px 650px at 15% -10%, rgba(90,166,255,.14), transparent 55%),
-                  radial-gradient(900px 650px at 95% 5%, rgba(139,92,246,.14), transparent 55%),
-                  var(--bg);
+      background:
+        radial-gradient(1100px 650px at 15% -10%, rgba(90,166,255,.14), transparent 55%),
+        radial-gradient(900px 650px at 95% 5%, rgba(139,92,246,.14), transparent 55%),
+        var(--bg);
       color:var(--text);
       overflow-x:hidden;
     }
-    a{color:inherit; text-decoration:none}
-
-    #bg{
-      position:fixed;
-      inset:0;
-      z-index:-1;
-      opacity:.85;
-      filter: saturate(1.1);
-    }
-    .vignette{
-      position:fixed;
-      inset:0;
-      z-index:-1;
-      pointer-events:none;
-      background: radial-gradient(900px 700px at 50% 35%, transparent 30%, rgba(0,0,0,.55) 78%),
-                  linear-gradient(to bottom, rgba(0,0,0,.55), transparent 30%, rgba(0,0,0,.65));
-    }
-
     .app{min-height:100vh; display:flex; flex-direction:column}
     .topbar{
       position:sticky; top:0; z-index:50;
@@ -62,7 +42,7 @@
       border-bottom:1px solid var(--border);
     }
     .topbar-inner{
-      max-width:1120px;
+      max-width:1100px;
       margin:0 auto;
       padding:14px 16px;
       display:flex;
@@ -70,24 +50,16 @@
       justify-content:space-between;
       gap:12px;
     }
-    .brand{
-      display:flex; align-items:center; gap:12px;
-      font-weight:900; letter-spacing:.5px;
-    }
+    .brand{display:flex; align-items:center; gap:12px; font-weight:900; letter-spacing:.5px;}
     .brand .title{display:flex; flex-direction:column; line-height:1.1}
     .brand .title .sub{font-size:12px; color:var(--muted); font-weight:700}
     .dot{
       width:11px;height:11px;border-radius:999px;
       background:var(--warn);
       box-shadow:0 0 0 6px rgba(245,158,11,.10);
-      transition: .25s ease;
+      transition:.25s ease;
     }
-
-    .nav{
-      display:flex; align-items:center; gap:10px; flex-wrap:wrap;
-      justify-content:flex-end;
-    }
-
+    .nav{display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end;}
     .btn{
       border:1px solid var(--border);
       background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
@@ -112,9 +84,8 @@
       border-color: rgba(239,68,68,.30);
       background: linear-gradient(180deg, rgba(239,68,68,.18), rgba(239,68,68,.08));
     }
-
     .container{
-      max-width:1120px; width:100%;
+      max-width:1100px; width:100%;
       margin:0 auto; padding:18px 16px 34px;
       display:grid; gap:16px;
     }
@@ -124,10 +95,7 @@
       gap:16px;
       animation: fadeUp .35s ease both;
     }
-    @media (max-width: 980px){
-      .grid{grid-template-columns:1fr}
-    }
-
+    @media (max-width: 980px){ .grid{grid-template-columns:1fr} }
     .card{
       background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
       border:1px solid var(--border);
@@ -141,8 +109,9 @@
       content:"";
       position:absolute;
       inset:-1px;
-      background: radial-gradient(800px 220px at 20% 0%, rgba(90,166,255,.14), transparent 55%),
-                  radial-gradient(800px 220px at 80% 0%, rgba(139,92,246,.12), transparent 55%);
+      background:
+        radial-gradient(800px 220px at 20% 0%, rgba(90,166,255,.14), transparent 55%),
+        radial-gradient(800px 220px at 80% 0%, rgba(139,92,246,.12), transparent 55%);
       opacity:.65;
       pointer-events:none;
       mix-blend-mode: screen;
@@ -151,12 +120,11 @@
     .card h2{margin:0 0 8px; font-size:18px}
     .muted{color:var(--muted)}
     .mini{font-size:12px}
-    .tag{font-family:var(--mono); font-size:12px; opacity:.92}
-
+    .tag{font-family:var(--mono); font-size:12px; opacity:.92; word-break:break-all}
+    .hr{height:1px; background:var(--border); margin:12px 0}
     .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
     .field{display:flex; flex-direction:column; gap:7px}
     .field label{font-size:12px; color:var(--muted); font-weight:800; letter-spacing:.2px}
-
     input, textarea{
       width:100%;
       padding:11px 12px;
@@ -168,20 +136,17 @@
     }
     textarea{min-height:120px; resize:vertical; font-family:var(--mono); font-size:12.5px}
     input:focus, textarea:focus{border-color: rgba(90,166,255,.32); box-shadow: 0 0 0 4px rgba(90,166,255,.10)}
-
-    .kpi{
-      display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:10px;
-    }
-    @media (max-width: 600px){ .kpi{grid-template-columns:1fr} }
-    .kpi .box{
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:7px 10px; border-radius:999px; font-size:12px;
       border:1px solid var(--border);
       background: rgba(0,0,0,.18);
-      border-radius:16px;
-      padding:10px;
+      color:var(--muted);
+      font-weight:800;
     }
-    .kpi .n{font-weight:950; font-size:16px}
-    .kpi .t{font-size:12px; color:var(--muted); font-weight:800}
-
+    .pill.ok{border-color: rgba(34,197,94,.32); color:#b7f7cb; background:rgba(34,197,94,.08)}
+    .pill.bad{border-color: rgba(239,68,68,.32); color:#ffd0d0; background:rgba(239,68,68,.08)}
+    .pill.warn{border-color: rgba(245,158,11,.32); color:#ffe2b3; background:rgba(245,158,11,.08)}
     .toast-wrap{
       position:fixed; right:16px; bottom:16px; z-index:9999;
       display:flex; flex-direction:column; gap:10px;
@@ -200,26 +165,16 @@
     .toast b{display:block; margin-bottom:2px}
     @keyframes toastIn{from{opacity:0; transform: translateY(8px)} to{opacity:1; transform: translateY(0)}}
     @keyframes fadeUp{from{opacity:0; transform: translateY(6px)} to{opacity:1; transform: translateY(0)}}
-
     .footer{
-      max-width:1120px;
-      margin:0 auto 24px;
-      padding:0 16px;
-      color:var(--muted);
-      font-size:12px;
-      display:flex;
-      justify-content:space-between;
-      gap:12px;
-      flex-wrap:wrap;
-      opacity:.9;
+      max-width:1100px; margin:0 auto 24px; padding:0 16px;
+      color:var(--muted); font-size:12px; display:flex; justify-content:space-between;
+      gap:12px; flex-wrap:wrap; opacity:.9;
     }
+    .two{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+    @media (max-width: 760px){ .two{grid-template-columns:1fr} }
   </style>
 </head>
-
 <body>
-<canvas id="bg"></canvas>
-<div class="vignette"></div>
-
 <div class="app">
   <div class="topbar">
     <div class="topbar-inner">
@@ -237,8 +192,8 @@
   <main class="container" id="app"></main>
 
   <div class="footer">
-    <div>⚔️ OBEARCO • UI para público (GitHub Pages)</div>
-    <div class="muted">Dica: mantenha CORS liberado para o domínio do seu Pages.</div>
+    <div>⚔️ OBEARCO • UI público (GitHub Pages)</div>
+    <div class="muted">Sempre manda JSON e usa /api/v1/cmd.</div>
   </div>
 </div>
 
@@ -250,28 +205,15 @@
    ============================================================ */
 const STATUS_GITHUB_URL = "https://github.com/NoSense-Bot/Servidor/blob/main/server_status.json";
 
-function githubBlobToRaw(url){
-  try{
-    const u = String(url||"").trim();
-    if(!u) return u;
-    if(u.includes("raw.githubusercontent.com")) return u;
-    return u.replace("https://github.com/", "https://raw.githubusercontent.com/")
-            .replace("/blob/", "/");
-  }catch{ return url; }
-}
-
 const LS = {
   token: "obearco_session_token",
-  apiBase: "obearco_api_base",
-  me: "obearco_me_cache",
+  apiBase: "obearco_api_base_cache",
 };
 
 const state = {
   status: null,
   apiBase: "",
   token: localStorage.getItem(LS.token) || "",
-  me: safeJson(localStorage.getItem(LS.me)) || null,
-  isAdmin: false,
   route: location.hash || "#/login",
 };
 
@@ -279,13 +221,11 @@ const state = {
    Utils
    ============================================================ */
 function safeJson(s){ try{ return JSON.parse(s); }catch{ return null; } }
-
 function escapeHtml(s){
   return String(s ?? "").replace(/[&<>"']/g, m => ({
     "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
   }[m]));
 }
-
 function toast(title, msg, kind="info"){
   const wrap = document.getElementById("toasts");
   const t = document.createElement("div");
@@ -302,28 +242,17 @@ function toast(title, msg, kind="info"){
   setTimeout(()=>{ t.style.opacity="0"; t.style.transform="translateY(6px)"; }, 3200);
   setTimeout(()=>{ t.remove(); }, 3800);
 }
-
 function go(hash){ location.hash = hash; }
 function sleep(ms){ return new Promise(r=>setTimeout(r, ms)); }
-function isAdminFromMe(me){
-  return !!(me?.is_admin || me?.admin || me?.role === "admin" || me?.nivel === "admin");
-}
 
-/* ============================================================
-   Status + API base
-   ============================================================ */
-async function fetchStatusAlways(){
-  const rawUrl = githubBlobToRaw(STATUS_GITHUB_URL);
-  for(let attempt=1; attempt<=2; attempt++){
-    try{
-      const res = await fetch(rawUrl, { cache:"no-store" });
-      if(!res.ok) throw new Error("Não consegui baixar server_status.json");
-      return await res.json();
-    }catch(err){
-      if(attempt===2) throw err;
-      await sleep(500);
-    }
-  }
+function githubBlobToRaw(url){
+  try{
+    const u = String(url||"").trim();
+    if(!u) return u;
+    if(u.includes("raw.githubusercontent.com")) return u;
+    return u.replace("https://github.com/", "https://raw.githubusercontent.com/")
+            .replace("/blob/", "/");
+  }catch{ return url; }
 }
 
 function setServerBadge(online){
@@ -346,85 +275,128 @@ function apiUrl(path){
 }
 
 /* ============================================================
-   API: SEMPRE JSON (e com campos corretos)
+   Boot: sempre pega server_status.json ao abrir
    ============================================================ */
-async function apiCmd(payload){
-  // endpoint principal
-  const url = apiUrl("/api/v1/cmd");
-  const headers = { "Content-Type":"application/json" };
-  if(state.token) headers["Authorization"] = "Bearer " + state.token;
-
-  // helper fetch json robusto
-  async function fetchJson(u, bodyObj){
-    const r = await fetch(u, { method:"POST", headers: {"Content-Type":"application/json", ...(state.token?{"Authorization":"Bearer "+state.token}: {})}, body: JSON.stringify(bodyObj) });
-    const j = await r.json().catch(()=> ({}));
-    if(!r.ok || j.ok === false) throw new Error(j.error || `Falha (${r.status})`);
-    return j;
+async function fetchStatusAlways(){
+  const rawUrl = githubBlobToRaw(STATUS_GITHUB_URL);
+  for(let attempt=1; attempt<=2; attempt++){
+    try{
+      const res = await fetch(rawUrl, { cache:"no-store" });
+      if(!res.ok) throw new Error("Falha baixando server_status.json");
+      return await res.json();
+    }catch(err){
+      if(attempt===2) throw err;
+      await sleep(500);
+    }
   }
+}
 
+async function boot(){
+  renderNav();
   try{
-    return await fetchJson(url, payload);
+    const st = await fetchStatusAlways();
+    state.status = st;
+
+    const base = String(st?.url_api_base || "").trim();
+    if(!base) throw new Error("server_status.json sem url_api_base");
+    state.apiBase = base.replace(/\/+$/,"");
+    localStorage.setItem(LS.apiBase, state.apiBase);
+
+    const online = String(st?.status_servidor || "").toLowerCase().includes("online");
+    setServerBadge(online);
+
+    // tenta ping só pra validar (não quebra se der erro)
+    await apiCall({ comando:"/ping" }).catch(()=>{});
   }catch(err){
-    // fallback legacy pra /login e /register (body SEM "comando")
-    if(payload?.comando === "/login"){
-      const legacyBody = { login: payload.login ?? payload.email ?? payload.username ?? "", senha: payload.senha ?? "" };
-      return await fetchJson(apiUrl("/login"), legacyBody);
+    setServerBadge(false);
+    // fallback: se já tiver cache, usa pra não ficar travado
+    const cached = localStorage.getItem(LS.apiBase) || "";
+    if(cached){
+      state.apiBase = cached;
+      toast("Status", "Falha lendo GitHub. Usando API base em cache.", "warn");
+    }else{
+      toast("Boot falhou", err?.message || String(err), "bad");
     }
-    if(payload?.comando === "/register"){
-      const legacyBody = { username: payload.username ?? "", email: payload.email ?? "", senha: payload.senha ?? "" };
-      return await fetchJson(apiUrl("/register"), legacyBody);
-    }
-    throw err;
+  }finally{
+    render();
   }
 }
 
 /* ============================================================
-   Auth
+   API: SEMPRE JSON + /api/v1/cmd
    ============================================================ */
-async function doLogin(loginOrEmail, senha){
-  const out = await apiCmd({ comando:"/login", login: loginOrEmail, senha });
-  const token = out.session_token || out.token;
-  if(!token) throw new Error("Login OK mas não veio session_token");
-  state.token = token;
-  localStorage.setItem(LS.token, token);
-  toast("Login", "Sessão salva ✅", "ok");
-  await loadMe();
-  go("#/feed");
+async function apiCall(payload){
+  if(!state.apiBase) throw new Error("API base vazia (status.json não carregou).");
+
+  // sempre manda UA e IP (IP real só o servidor vai ver; aqui só "client")
+  const finalPayload = {
+    ...payload,
+    ua: navigator.userAgent,
+    ip: "client", // opcional, teu backend aceita
+  };
+
+  const headers = { "Content-Type":"application/json" };
+  if(state.token) headers["Authorization"] = "Bearer " + state.token;
+
+  const url = apiUrl("/api/v1/cmd");
+
+  const r = await fetch(url, {
+    method:"POST",
+    headers,
+    body: JSON.stringify(finalPayload),
+  });
+
+  // tenta ler JSON, mas se vier texto, mostra
+  const text = await r.text();
+  const j = safeJson(text);
+
+  if(!r.ok){
+    const msg = (j && (j.error || j.message)) ? (j.error || j.message) : (text || "HTTP error");
+    throw new Error(msg);
+  }
+
+  if(!j || typeof j !== "object"){
+    throw new Error("Resposta não é JSON (backend retornou texto).");
+  }
+
+  if(j.ok === false){
+    throw new Error(j.error || "Falha no comando");
+  }
+
+  return j;
 }
 
+/* ============================================================
+   Auth (conforme Comandos.py)
+   ============================================================ */
 async function doRegister(username, email, senha){
-  await apiCmd({ comando:"/register", username, email, senha });
-  toast("Conta criada", "Agora faz login 😉", "ok");
+  // Comandos.py espera: username/email/senha
+  const out = await apiCall({ comando:"/register", username, email, senha });
+  toast("Registro", out.message || "Conta criada.", "ok");
   go("#/login");
 }
 
-function doLogout(){
+async function doLogin(login, senha){
+  // Comandos.py espera: login/senha
+  const out = await apiCall({ comando:"/login", login, senha });
+  const token = out.session_token;
+  if(!token) throw new Error("Login OK mas não veio session_token.");
+  state.token = token;
+  localStorage.setItem(LS.token, token);
+  toast("Login", "Sessão salva ✅", "ok");
+  go("#/panel");
+}
+
+async function doLogout(){
+  try{ await apiCall({ comando:"/logout" }); }catch{}
   state.token = "";
-  state.me = null;
-  state.isAdmin = false;
   localStorage.removeItem(LS.token);
-  localStorage.removeItem(LS.me);
   toast("Logout", "Sessão removida.", "ok");
   go("#/login");
 }
 
 /* ============================================================
-   Me (mínimo)
-   ============================================================ */
-async function loadMe(){
-  if(!state.token) return null;
-  // como seu backend atual tem /whoami, usamos isso
-  const out = await apiCmd({ comando:"/whoami" });
-  const me = out.session || out.me || out.user || out.account || out.data || null;
-  state.me = me;
-  state.isAdmin = isAdminFromMe(me);
-  localStorage.setItem(LS.me, JSON.stringify(me));
-  renderNav();
-  return me;
-}
-
-/* ============================================================
-   Router + Nav
+   Router
    ============================================================ */
 window.addEventListener("hashchange", ()=>{
   state.route = location.hash || "#/login";
@@ -433,8 +405,9 @@ window.addEventListener("hashchange", ()=>{
 
 function renderNav(){
   const nav = document.getElementById("nav");
-  const authed = !!state.token;
   nav.innerHTML = "";
+
+  const authed = !!state.token;
 
   if(!authed){
     nav.appendChild(btn("🔐 Login", ()=>go("#/login"), "primary"));
@@ -442,7 +415,8 @@ function renderNav(){
     return;
   }
 
-  nav.appendChild(btn("🏠 Feed", ()=>go("#/feed"), "primary"));
+  nav.appendChild(btn("🎛️ Painel", ()=>go("#/panel"), "primary"));
+  nav.appendChild(btn("🧩 Personagem", ()=>go("#/character")));
   nav.appendChild(btn("🚪 Sair", doLogout, "ghost"));
 }
 
@@ -454,13 +428,26 @@ function btn(label, onClick, cls=""){
   return b;
 }
 
-function render(){
-  const app = document.getElementById("app");
-  const r = state.route;
+function guard(){
+  const r = state.route || "#/login";
+  if(!state.token && (r.startsWith("#/panel") || r.startsWith("#/character"))){
+    go("#/login");
+    return false;
+  }
+  return true;
+}
 
-  if(r.startsWith("#/login")) return renderLogin(app);
-  if(r.startsWith("#/register")) return renderRegister(app);
-  if(r.startsWith("#/feed")) return renderFeed(app);
+function render(){
+  renderNav();
+  if(!guard()) return;
+
+  const app = document.getElementById("app");
+  const r = state.route || "#/login";
+
+  if(r.startsWith("#/login")) return viewLogin(app);
+  if(r.startsWith("#/register")) return viewRegister(app);
+  if(r.startsWith("#/panel")) return viewPanel(app);
+  if(r.startsWith("#/character")) return viewCharacter(app);
 
   go("#/login");
 }
@@ -468,18 +455,18 @@ function render(){
 /* ============================================================
    Views
    ============================================================ */
-function renderLogin(app){
+function viewLogin(app){
   const st = state.status || {};
   app.innerHTML = `
     <div class="grid">
       <div class="card">
         <h2>🔐 Login</h2>
-        <div class="muted">Entre com <b>email</b> ou <b>username</b>.</div>
+        <div class="muted">Entre com seu <b>email</b> ou <b>username</b> (campo <span class="tag">login</span>).</div>
         <div class="hr"></div>
 
         <div class="field">
-          <label>Email ou Username</label>
-          <input id="login" placeholder="email@exemplo.com ou SeuNome" autocomplete="username" />
+          <label>Email ou Username (login)</label>
+          <input id="login" placeholder="email@exemplo.com ou seuNick" autocomplete="username" />
         </div>
         <div class="field">
           <label>Senha</label>
@@ -492,25 +479,21 @@ function renderLogin(app){
         </div>
 
         <div class="hr"></div>
-        <div class="mini muted">O site envia JSON correto: <span class="tag">{ login/username/email, senha }</span></div>
+        <div class="mini muted">
+          ✅ Envia: <span class="tag">{comando:"/login", login, senha}</span> para <span class="tag">/api/v1/cmd</span>.
+        </div>
       </div>
 
       <div class="card">
         <h2>📡 Status</h2>
-        <div class="kpi">
-          <div class="box">
-            <div class="n">${escapeHtml(st.status_servidor ?? "—")}</div>
-            <div class="t">status_servidor</div>
-          </div>
-          <div class="box">
-            <div class="n">${escapeHtml(st.version_api ?? "—")}</div>
-            <div class="t">version_api</div>
-          </div>
-          <div class="box">
-            <div class="n">${escapeHtml(st.porta ?? "—")}</div>
-            <div class="t">porta</div>
-          </div>
-        </div>
+        <div class="mini muted">Lido do <span class="tag">server_status.json</span> no GitHub a cada abertura.</div>
+        <div class="hr"></div>
+        <div class="mini"><b>status_servidor:</b> <span class="tag">${escapeHtml(st.status_servidor ?? "—")}</span></div>
+        <div class="mini"><b>version_api:</b> <span class="tag">${escapeHtml(st.version_api ?? "—")}</span></div>
+        <div class="mini"><b>porta:</b> <span class="tag">${escapeHtml(st.porta ?? "—")}</span></div>
+        <div class="hr"></div>
+        <div class="mini"><b>API Base (oculta na UI, mas aqui pra debug):</b></div>
+        <div class="tag">${escapeHtml(state.apiBase || "—")}</div>
       </div>
     </div>
   `;
@@ -520,9 +503,10 @@ function renderLogin(app){
   const btnLogin = app.querySelector("#btnLogin");
 
   btnLogin.onclick = async ()=>{
-    const l = (login.value || "").trim();
-    const s = (senha.value || "");
+    const l = (login.value||"").trim();
+    const s = (senha.value||"");
     if(!l || !s){ toast("Ops", "Preenche login e senha 😅", "warn"); return; }
+
     btnLogin.disabled = true; btnLogin.textContent = "Entrando…";
     try{ await doLogin(l, s); }
     catch(err){ toast("Login falhou", err?.message || String(err), "bad"); }
@@ -530,26 +514,28 @@ function renderLogin(app){
   };
 }
 
-function renderRegister(app){
+function viewRegister(app){
   app.innerHTML = `
     <div class="grid">
       <div class="card">
         <h2>🧾 Registrar</h2>
-        <div class="muted">Cria conta (username sem símbolos).</div>
+        <div class="muted">Cria conta (Comandos.py: <span class="tag">username/email/senha</span>).</div>
         <div class="hr"></div>
 
         <div class="field">
-          <label>Usuário (username)</label>
-          <input id="username" placeholder="Ex: NihilGuh" autocomplete="nickname" />
-          <div class="mini muted">Permitido: letras/números/espaço/_ (sem símbolos).</div>
+          <label>Username</label>
+          <input id="username" placeholder="3-32: letras/números/espaço/_" autocomplete="nickname" />
+          <div class="mini muted">Regra: <span class="tag">^[\\w ]{3,32}$</span> (sem símbolos).</div>
         </div>
+
         <div class="field">
           <label>Email</label>
-          <input id="email" placeholder="email@exemplo.com" autocomplete="username" />
+          <input id="email" placeholder="email@exemplo.com" autocomplete="email" />
         </div>
+
         <div class="field">
           <label>Senha</label>
-          <input id="senha" type="password" placeholder="••••••••" autocomplete="new-password" />
+          <input id="senha" type="password" placeholder="mín. 6 chars" autocomplete="new-password" />
         </div>
 
         <div class="row" style="margin-top:10px">
@@ -558,14 +544,16 @@ function renderRegister(app){
         </div>
 
         <div class="hr"></div>
-        <div class="mini muted">Backend esperado: <span class="tag">{ username, email, senha }</span></div>
+        <div class="mini muted">
+          ✅ Envia: <span class="tag">{comando:"/register", username, email, senha}</span> para <span class="tag">/api/v1/cmd</span>.
+        </div>
       </div>
 
       <div class="card">
-        <h2>🧠 Segurança</h2>
+        <h2>🧠 Token</h2>
         <div class="muted">
-          Token no <span class="tag">localStorage</span> (bom pra dev).<br/>
-          Em produção “real”, prefira cookie HttpOnly.
+          Token fica no <span class="tag">localStorage</span> (ok pra dev).<br/>
+          Em produção “real”: cookie HttpOnly.
         </div>
       </div>
     </div>
@@ -577,13 +565,11 @@ function renderRegister(app){
   const btnReg = app.querySelector("#btnReg");
 
   btnReg.onclick = async ()=>{
-    const u = (username.value || "").trim();
-    const e = (email.value || "").trim();
-    const s = (senha.value || "");
-    if(!u || !e || !s){
-      toast("Ops", "Preenche usuário, email e senha 😅", "warn");
-      return;
-    }
+    const u = (username.value||"").trim();
+    const e = (email.value||"").trim();
+    const s = (senha.value||"");
+    if(!u || !e || !s){ toast("Ops", "Preenche username, email e senha 😅", "warn"); return; }
+
     btnReg.disabled = true; btnReg.textContent = "Criando…";
     try{ await doRegister(u, e, s); }
     catch(err){ toast("Registro falhou", err?.message || String(err), "bad"); }
@@ -591,135 +577,143 @@ function renderRegister(app){
   };
 }
 
-function renderFeed(app){
-  const me = state.me || {};
+function viewPanel(app){
   app.innerHTML = `
     <div class="grid">
       <div class="card">
-        <h2>🏠 Feed</h2>
-        <div class="muted">Sessão atual (whoami).</div>
+        <div class="row" style="justify-content:space-between">
+          <div>
+            <h2>🎛️ Painel</h2>
+            <div class="muted">Testes diretos dos comandos do seu backend.</div>
+          </div>
+          <span class="pill ok">Autenticado</span>
+        </div>
+
         <div class="hr"></div>
-        <pre class="tag" style="white-space:pre-wrap">${escapeHtml(JSON.stringify(me, null, 2))}</pre>
+
+        <div class="field">
+          <label>Session Token (salvo)</label>
+          <input value="${escapeHtml(state.token)}" readonly />
+        </div>
+
+        <div class="row" style="margin-top:10px">
+          <button class="btn primary" id="btnWho">👤 /whoami</button>
+          <button class="btn" id="btnPing">🏓 /ping</button>
+          <button class="btn danger" onclick="doLogout()">🚪 Logout</button>
+        </div>
+
+        <div class="hr"></div>
+        <div class="field">
+          <label>Resposta</label>
+          <textarea id="out" readonly></textarea>
+        </div>
       </div>
 
       <div class="card">
-        <h2>⚙️ Sessão</h2>
-        <div class="field">
-          <label>Token</label>
-          <input value="${escapeHtml(state.token || "")}" readonly />
+        <h2>ℹ️ Envio</h2>
+        <div class="mini muted">
+          Sempre manda JSON para: <span class="tag">POST /api/v1/cmd</span><br/>
+          Header: <span class="tag">Authorization: Bearer {token}</span>
         </div>
+        <div class="hr"></div>
+        <div class="mini muted"><b>API Base:</b></div>
+        <div class="tag">${escapeHtml(state.apiBase || "—")}</div>
+      </div>
+    </div>
+  `;
+
+  const out = app.querySelector("#out");
+  const btnWho = app.querySelector("#btnWho");
+  const btnPing = app.querySelector("#btnPing");
+
+  btnWho.onclick = async ()=>{
+    btnWho.disabled = true;
+    try{
+      const j = await apiCall({ comando:"/whoami" });
+      out.value = JSON.stringify(j, null, 2);
+      toast("whoami", "OK ✅", "ok");
+    }catch(err){
+      out.value = String(err?.message || err);
+      toast("whoami", err?.message || String(err), "bad");
+    }finally{
+      btnWho.disabled = false;
+    }
+  };
+
+  btnPing.onclick = async ()=>{
+    btnPing.disabled = true;
+    try{
+      const j = await apiCall({ comando:"/ping" });
+      out.value = JSON.stringify(j, null, 2);
+      toast("ping", "OK ✅", "ok");
+    }catch(err){
+      out.value = String(err?.message || err);
+      toast("ping", err?.message || String(err), "bad");
+    }finally{
+      btnPing.disabled = false;
+    }
+  };
+}
+
+function viewCharacter(app){
+  app.innerHTML = `
+    <div class="grid">
+      <div class="card">
+        <h2>🧩 Criar Personagem</h2>
+        <div class="muted">Comando: <span class="tag">/createcharacter</span> com <span class="tag">nome</span>.</div>
+        <div class="hr"></div>
+
+        <div class="field">
+          <label>Nome do personagem</label>
+          <input id="nome" placeholder="Ex: NihilGuh" />
+        </div>
+
         <div class="row" style="margin-top:10px">
-          <button class="btn danger" onclick="doLogout()">Sair</button>
+          <button class="btn primary" id="btnCreate">Criar</button>
+          <button class="btn" onclick="location.hash='#/panel'">Voltar</button>
+        </div>
+
+        <div class="hr"></div>
+        <div class="field">
+          <label>Resposta</label>
+          <textarea id="out" readonly></textarea>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>✅ JSON enviado</h2>
+        <div class="mini muted">
+          <span class="tag">{comando:"/createcharacter", nome:"..."}</span><br/>
+          Sempre via <span class="tag">POST /api/v1/cmd</span>.
         </div>
       </div>
     </div>
   `;
-}
 
-/* ============================================================
-   Boot
-   ============================================================ */
-async function boot(){
-  try{
-    renderNav();
+  const nome = app.querySelector("#nome");
+  const out = app.querySelector("#out");
+  const btnCreate = app.querySelector("#btnCreate");
 
-    const st = await fetchStatusAlways();
-    state.status = st;
+  btnCreate.onclick = async ()=>{
+    const n = (nome.value||"").trim();
+    if(!n){ toast("Ops", "Digite um nome 😅", "warn"); return; }
 
-    const base = (st?.url_api_base || "").trim();
-    if(!base) throw new Error("server_status.json sem url_api_base");
-    state.apiBase = base.replace(/\/+$/,"");
-    localStorage.setItem(LS.apiBase, state.apiBase);
-
-    const online = String(st?.status_servidor || "").toLowerCase().includes("online");
-    setServerBadge(online);
-
-    if(state.token){
-      try{ await loadMe(); }
-      catch{ toast("Sessão", "Token inválido/expirado. Faz login de novo 😉", "warn"); doLogout(); }
+    btnCreate.disabled = true; btnCreate.textContent = "Criando…";
+    try{
+      const j = await apiCall({ comando:"/createcharacter", nome: n });
+      out.value = JSON.stringify(j, null, 2);
+      toast("Personagem", "Criado ✅", "ok");
+    }catch(err){
+      out.value = String(err?.message || err);
+      toast("Falhou", err?.message || String(err), "bad");
+    }finally{
+      btnCreate.disabled = false; btnCreate.textContent = "Criar";
     }
-
-    renderNav();
-    render();
-  }catch(err){
-    setServerBadge(false);
-    toast("Boot falhou", err?.message || String(err), "bad");
-    renderNav();
-    render();
-  }
+  };
 }
+
+/* start */
 boot();
-
-/* ============================================================
-   Background animado
-   ============================================================ */
-(function bgParticles(){
-  const canvas = document.getElementById("bg");
-  const ctx = canvas.getContext("2d");
-  let w=0,h=0, dpr=1;
-  let parts=[];
-  const N = 70;
-
-  function resize(){
-    dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
-    w = canvas.width = Math.floor(innerWidth * dpr);
-    h = canvas.height = Math.floor(innerHeight * dpr);
-    canvas.style.width = innerWidth + "px";
-    canvas.style.height = innerHeight + "px";
-  }
-  window.addEventListener("resize", resize, {passive:true});
-  resize();
-
-  function rnd(a,b){ return a + Math.random()*(b-a); }
-
-  function seed(){
-    parts = [];
-    for(let i=0;i<N;i++){
-      parts.push({
-        x: rnd(0,w),
-        y: rnd(0,h),
-        r: rnd(0.8*dpr, 2.4*dpr),
-        vx: rnd(-0.18, 0.18)*dpr,
-        vy: rnd(-0.12, 0.12)*dpr,
-        a: rnd(0.10, 0.22),
-        hue: Math.random() < 0.55 ? 210 : 265
-      });
-    }
-  }
-  seed();
-
-  function step(){
-    ctx.clearRect(0,0,w,h);
-
-    const g = ctx.createRadialGradient(w*0.3, h*0.2, 0, w*0.3, h*0.2, Math.max(w,h)*0.7);
-    g.addColorStop(0, "rgba(90,166,255,.08)");
-    g.addColorStop(1, "rgba(0,0,0,0)");
-    ctx.fillStyle = g;
-    ctx.fillRect(0,0,w,h);
-
-    const g2 = ctx.createRadialGradient(w*0.8, h*0.25, 0, w*0.8, h*0.25, Math.max(w,h)*0.75);
-    g2.addColorStop(0, "rgba(139,92,246,.08)");
-    g2.addColorStop(1, "rgba(0,0,0,0)");
-    ctx.fillStyle = g2;
-    ctx.fillRect(0,0,w,h);
-
-    for(const p of parts){
-      p.x += p.vx; p.y += p.vy;
-      if(p.x < -20) p.x = w+20;
-      if(p.x > w+20) p.x = -20;
-      if(p.y < -20) p.y = h+20;
-      if(p.y > h+20) p.y = -20;
-
-      ctx.beginPath();
-      ctx.fillStyle = `hsla(${p.hue}, 90%, 65%, ${p.a})`;
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
-      ctx.fill();
-    }
-
-    requestAnimationFrame(step);
-  }
-  step();
-})();
 </script>
 </body>
 </html>
