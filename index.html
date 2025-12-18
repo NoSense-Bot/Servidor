@@ -5,11 +5,12 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>OBEARCO • RPG Hub</title>
   <meta name="color-scheme" content="dark light" />
-
   <style>
     :root{
       --bg:#07090c;
       --panel: rgba(16,20,26,.72);
+      --panel2: rgba(12,16,21,.58);
+      --glass: rgba(255,255,255,.06);
       --text:#eaf2ff;
       --muted:#a7b4c7;
       --border: rgba(180,210,255,.12);
@@ -101,6 +102,7 @@
       user-select:none;
     }
     .btn:hover{transform:translateY(-1px); filter:brightness(1.06); border-color: rgba(180,210,255,.22)}
+    .btn:active{transform:translateY(0px); filter:brightness(1.02)}
     .btn.primary{
       border-color: rgba(90,166,255,.32);
       background: linear-gradient(180deg, rgba(90,166,255,.22), rgba(90,166,255,.10));
@@ -152,24 +154,10 @@
     .tag{font-family:var(--mono); font-size:12px; opacity:.92}
 
     .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
-    .pill{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:7px 10px; border-radius:999px; font-size:12px;
-      border:1px solid var(--border);
-      background: rgba(0,0,0,.18);
-      color:var(--muted);
-      font-weight:800;
-    }
-    .pill.ok{border-color: rgba(34,197,94,.32); color:#b7f7cb; background:rgba(34,197,94,.08)}
-    .pill.bad{border-color: rgba(239,68,68,.32); color:#ffd0d0; background:rgba(239,68,68,.08)}
-    .pill.warn{border-color: rgba(245,158,11,.32); color:#ffe2b3; background:rgba(245,158,11,.08)}
-
-    .hr{height:1px; background:var(--border); margin:12px 0}
     .field{display:flex; flex-direction:column; gap:7px}
     .field label{font-size:12px; color:var(--muted); font-weight:800; letter-spacing:.2px}
-    input, textarea
 
-textarea{
+    input, textarea{
       width:100%;
       padding:11px 12px;
       border-radius:14px;
@@ -178,6 +166,7 @@ textarea{
       color:var(--text);
       outline:none;
     }
+    textarea{min-height:120px; resize:vertical; font-family:var(--mono); font-size:12.5px}
     input:focus, textarea:focus{border-color: rgba(90,166,255,.32); box-shadow: 0 0 0 4px rgba(90,166,255,.10)}
 
     .kpi{
@@ -241,7 +230,6 @@ textarea{
           <div class="sub" id="srvLine">Carregando status…</div>
         </div>
       </div>
-
       <div class="nav" id="nav"></div>
     </div>
   </div>
@@ -258,7 +246,7 @@ textarea{
 
 <script>
 /* ============================================================
-   CONFIG — SEMPRE BUSCAR API NO server_status.json DO GITHUB
+   CONFIG
    ============================================================ */
 const STATUS_GITHUB_URL = "https://github.com/NoSense-Bot/Servidor/blob/main/server_status.json";
 
@@ -274,18 +262,22 @@ function githubBlobToRaw(url){
 
 const LS = {
   token: "obearco_session_token",
+  apiBase: "obearco_api_base",
   me: "obearco_me_cache",
 };
 
 const state = {
   status: null,
-  apiBase: "",         // não exibimos
+  apiBase: "",
   token: localStorage.getItem(LS.token) || "",
   me: safeJson(localStorage.getItem(LS.me)) || null,
   isAdmin: false,
   route: location.hash || "#/login",
 };
 
+/* ============================================================
+   Utils
+   ============================================================ */
 function safeJson(s){ try{ return JSON.parse(s); }catch{ return null; } }
 
 function escapeHtml(s){
@@ -312,7 +304,7 @@ function toast(title, msg, kind="info"){
 }
 
 function go(hash){ location.hash = hash; }
-
+function sleep(ms){ return new Promise(r=>setTimeout(r, ms)); }
 function isAdminFromMe(me){
   return !!(me?.is_admin || me?.admin || me?.role === "admin" || me?.nivel === "admin");
 }
@@ -322,9 +314,16 @@ function isAdminFromMe(me){
    ============================================================ */
 async function fetchStatusAlways(){
   const rawUrl = githubBlobToRaw(STATUS_GITHUB_URL);
-  const res = await fetch(rawUrl, { cache:"no-store" });
-  if(!res.ok) throw new Error("Não consegui baixar server_status.json");
-  return await res.json();
+  for(let attempt=1; attempt<=2; attempt++){
+    try{
+      const res = await fetch(rawUrl, { cache:"no-store" });
+      if(!res.ok) throw new Error("Não consegui baixar server_status.json");
+      return await res.json();
+    }catch(err){
+      if(attempt===2) throw err;
+      await sleep(500);
+    }
+  }
 }
 
 function setServerBadge(online){
@@ -346,48 +345,35 @@ function apiUrl(path){
   return base + path;
 }
 
+/* ============================================================
+   API: SEMPRE JSON (e com campos corretos)
+   ============================================================ */
 async function apiCmd(payload){
+  // endpoint principal
   const url = apiUrl("/api/v1/cmd");
   const headers = { "Content-Type":"application/json" };
   if(state.token) headers["Authorization"] = "Bearer " + state.token;
 
-  // 1) tenta /api/v1/cmd
-  try{
-    const r = await fetch(url, { method:"POST", headers, body: JSON.stringify(payload) });
+  // helper fetch json robusto
+  async function fetchJson(u, bodyObj){
+    const r = await fetch(u, { method:"POST", headers: {"Content-Type":"application/json", ...(state.token?{"Authorization":"Bearer "+state.token}: {})}, body: JSON.stringify(bodyObj) });
     const j = await r.json().catch(()=> ({}));
-    if(!r.ok || j.ok === false) throw new Error(j.error || "Falha no cmd");
+    if(!r.ok || j.ok === false) throw new Error(j.error || `Falha (${r.status})`);
     return j;
+  }
+
+  try{
+    return await fetchJson(url, payload);
   }catch(err){
-    // 2) fallback legacy /login e /register (body sem "comando")
+    // fallback legacy pra /login e /register (body SEM "comando")
     if(payload?.comando === "/login"){
-      const rr = await fetch(apiUrl("/login"), {
-        method:"POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({
-          login: payload.login || payload.email || payload.username || "",
-          senha: payload.senha || ""
-        })
-      });
-      const jj = await rr.json().catch(()=> ({}));
-      if(!rr.ok || jj.ok === false) throw new Error(jj.error || "Falha no login");
-      return jj;
+      const legacyBody = { login: payload.login ?? payload.email ?? payload.username ?? "", senha: payload.senha ?? "" };
+      return await fetchJson(apiUrl("/login"), legacyBody);
     }
-
     if(payload?.comando === "/register"){
-      const rr = await fetch(apiUrl("/register"), {
-        method:"POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({
-          username: payload.username || "",
-          email: payload.email || "",
-          senha: payload.senha || ""
-        })
-      });
-      const jj = await rr.json().catch(()=> ({}));
-      if(!rr.ok || jj.ok === false) throw new Error(jj.error || "Falha no register");
-      return jj;
+      const legacyBody = { username: payload.username ?? "", email: payload.email ?? "", senha: payload.senha ?? "" };
+      return await fetchJson(apiUrl("/register"), legacyBody);
     }
-
     throw err;
   }
 }
@@ -395,9 +381,9 @@ async function apiCmd(payload){
 /* ============================================================
    Auth
    ============================================================ */
-async function doLogin(email, senha){
-  const out = await apiCmd({ comando:"/login", login: email, senha });
-  const token = out.session_token || out.token || out?.data?.session_token || out?.session?.token;
+async function doLogin(loginOrEmail, senha){
+  const out = await apiCmd({ comando:"/login", login: loginOrEmail, senha });
+  const token = out.session_token || out.token;
   if(!token) throw new Error("Login OK mas não veio session_token");
   state.token = token;
   localStorage.setItem(LS.token, token);
@@ -407,7 +393,6 @@ async function doLogin(email, senha){
 }
 
 async function doRegister(username, email, senha){
-  // ✅ CORRETO: backend espera "username"
   await apiCmd({ comando:"/register", username, email, senha });
   toast("Conta criada", "Agora faz login 😉", "ok");
   go("#/login");
@@ -424,12 +409,13 @@ function doLogout(){
 }
 
 /* ============================================================
-   Me (CRUD)
+   Me (mínimo)
    ============================================================ */
 async function loadMe(){
   if(!state.token) return null;
-  const out = await apiCmd({ comando:"/whoami" }); // se seu Server.py monta payload["session"], use /whoami
-  const me = out.me || out.user || out.account || out.data || out.session || out;
+  // como seu backend atual tem /whoami, usamos isso
+  const out = await apiCmd({ comando:"/whoami" });
+  const me = out.session || out.me || out.user || out.account || out.data || null;
   state.me = me;
   state.isAdmin = isAdminFromMe(me);
   localStorage.setItem(LS.me, JSON.stringify(me));
@@ -456,7 +442,7 @@ function renderNav(){
     return;
   }
 
-  nav.appendChild(btn("📰 Feed", ()=>go("#/feed"), "primary"));
+  nav.appendChild(btn("🏠 Feed", ()=>go("#/feed"), "primary"));
   nav.appendChild(btn("🚪 Sair", doLogout, "ghost"));
 }
 
@@ -468,18 +454,7 @@ function btn(label, onClick, cls=""){
   return b;
 }
 
-function guardRoute(){
-  const r = state.route;
-  if(!state.token && (r.startsWith("#/feed"))){
-    go("#/login");
-    return false;
-  }
-  return true;
-}
-
 function render(){
-  if(!guardRoute()) return;
-
   const app = document.getElementById("app");
   const r = state.route;
 
@@ -499,12 +474,12 @@ function renderLogin(app){
     <div class="grid">
       <div class="card">
         <h2>🔐 Login</h2>
-        <div class="muted">Entre com sua conta.</div>
+        <div class="muted">Entre com <b>email</b> ou <b>username</b>.</div>
         <div class="hr"></div>
 
         <div class="field">
           <label>Email ou Username</label>
-          <input id="email" placeholder="email@exemplo.com" autocomplete="username" />
+          <input id="login" placeholder="email@exemplo.com ou SeuNome" autocomplete="username" />
         </div>
         <div class="field">
           <label>Senha</label>
@@ -517,9 +492,7 @@ function renderLogin(app){
         </div>
 
         <div class="hr"></div>
-        <div class="mini muted">
-          Base da API vem do <span class="tag">server_status.json</span> no GitHub a cada carregamento.
-        </div>
+        <div class="mini muted">O site envia JSON correto: <span class="tag">{ login/username/email, senha }</span></div>
       </div>
 
       <div class="card">
@@ -542,16 +515,16 @@ function renderLogin(app){
     </div>
   `;
 
-  const email = app.querySelector("#email");
+  const login = app.querySelector("#login");
   const senha = app.querySelector("#senha");
   const btnLogin = app.querySelector("#btnLogin");
 
   btnLogin.onclick = async ()=>{
-    const e = (email.value || "").trim();
+    const l = (login.value || "").trim();
     const s = (senha.value || "");
-    if(!e || !s){ toast("Ops", "Preenche login e senha 😅", "warn"); return; }
+    if(!l || !s){ toast("Ops", "Preenche login e senha 😅", "warn"); return; }
     btnLogin.disabled = true; btnLogin.textContent = "Entrando…";
-    try{ await doLogin(e, s); }
+    try{ await doLogin(l, s); }
     catch(err){ toast("Login falhou", err?.message || String(err), "bad"); }
     finally{ btnLogin.disabled = false; btnLogin.textContent = "Entrar"; }
   };
@@ -562,13 +535,13 @@ function renderRegister(app){
     <div class="grid">
       <div class="card">
         <h2>🧾 Registrar</h2>
-        <div class="muted">Cria conta de usuário normal.</div>
+        <div class="muted">Cria conta (username sem símbolos).</div>
         <div class="hr"></div>
 
         <div class="field">
           <label>Usuário (username)</label>
-          <input id="username" placeholder="Ex: Gustavo Azevedo" autocomplete="nickname" />
-          <div class="mini muted">Permitido: letras/números/espaço/_/./- (sem @#!).</div>
+          <input id="username" placeholder="Ex: NihilGuh" autocomplete="nickname" />
+          <div class="mini muted">Permitido: letras/números/espaço/_ (sem símbolos).</div>
         </div>
         <div class="field">
           <label>Email</label>
@@ -583,13 +556,16 @@ function renderRegister(app){
           <button class="btn primary" id="btnReg">Criar</button>
           <button class="btn" onclick="location.hash='#/login'">Voltar</button>
         </div>
+
+        <div class="hr"></div>
+        <div class="mini muted">Backend esperado: <span class="tag">{ username, email, senha }</span></div>
       </div>
 
       <div class="card">
         <h2>🧠 Segurança</h2>
         <div class="muted">
-          Token fica no <span class="tag">localStorage</span> (bom pra dev).<br/>
-          Em produção, prefira cookie HttpOnly.
+          Token no <span class="tag">localStorage</span> (bom pra dev).<br/>
+          Em produção “real”, prefira cookie HttpOnly.
         </div>
       </div>
     </div>
@@ -620,23 +596,20 @@ function renderFeed(app){
   app.innerHTML = `
     <div class="grid">
       <div class="card">
-        <h2>📰 Feed</h2>
-        <div class="muted">Você está logado.</div>
+        <h2>🏠 Feed</h2>
+        <div class="muted">Sessão atual (whoami).</div>
         <div class="hr"></div>
-
-        <div class="row" style="justify-content:space-between">
-          <div>
-            <div><b>Username:</b> ${escapeHtml(me.username || me.usuario || "—")}</div>
-            <div class="mini muted"><b>Email:</b> ${escapeHtml(me.email || "—")}</div>
-          </div>
-          <span class="pill ${state.isAdmin ? "ok" : "warn"}">${state.isAdmin ? "🛡️ admin" : "👤 user"}</span>
-        </div>
+        <pre class="tag" style="white-space:pre-wrap">${escapeHtml(JSON.stringify(me, null, 2))}</pre>
       </div>
 
       <div class="card">
-        <h2>⚡ Ações</h2>
-        <div class="row">
-          <button class="btn danger" onclick="(${doLogout.toString()})()">🚪 Sair</button>
+        <h2>⚙️ Sessão</h2>
+        <div class="field">
+          <label>Token</label>
+          <input value="${escapeHtml(state.token || "")}" readonly />
+        </div>
+        <div class="row" style="margin-top:10px">
+          <button class="btn danger" onclick="doLogout()">Sair</button>
         </div>
       </div>
     </div>
@@ -656,13 +629,14 @@ async function boot(){
     const base = (st?.url_api_base || "").trim();
     if(!base) throw new Error("server_status.json sem url_api_base");
     state.apiBase = base.replace(/\/+$/,"");
+    localStorage.setItem(LS.apiBase, state.apiBase);
 
     const online = String(st?.status_servidor || "").toLowerCase().includes("online");
     setServerBadge(online);
 
     if(state.token){
       try{ await loadMe(); }
-      catch{ toast("Sessão", "Token inválido/expirado. Faça login de novo 😉", "warn"); doLogout(); }
+      catch{ toast("Sessão", "Token inválido/expirado. Faz login de novo 😉", "warn"); doLogout(); }
     }
 
     renderNav();
@@ -677,7 +651,7 @@ async function boot(){
 boot();
 
 /* ============================================================
-   Background animado (particles)
+   Background animado
    ============================================================ */
 (function bgParticles(){
   const canvas = document.getElementById("bg");
@@ -720,12 +694,14 @@ boot();
     const g = ctx.createRadialGradient(w*0.3, h*0.2, 0, w*0.3, h*0.2, Math.max(w,h)*0.7);
     g.addColorStop(0, "rgba(90,166,255,.08)");
     g.addColorStop(1, "rgba(0,0,0,0)");
-    ctx.fillStyle = g; ctx.fillRect(0,0,w,h);
+    ctx.fillStyle = g;
+    ctx.fillRect(0,0,w,h);
 
     const g2 = ctx.createRadialGradient(w*0.8, h*0.25, 0, w*0.8, h*0.25, Math.max(w,h)*0.75);
     g2.addColorStop(0, "rgba(139,92,246,.08)");
     g2.addColorStop(1, "rgba(0,0,0,0)");
-    ctx.fillStyle = g2; ctx.fillRect(0,0,w,h);
+    ctx.fillStyle = g2;
+    ctx.fillRect(0,0,w,h);
 
     for(const p of parts){
       p.x += p.vx; p.y += p.vy;
