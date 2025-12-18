@@ -2,718 +2,1085 @@
 <html lang="pt-br">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>OBEARCO • RPG Hub</title>
-  <meta name="color-scheme" content="dark light" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OBEARCO — Login</title>
   <style>
     :root{
-      --bg:#07090c;
-      --panel: rgba(16,20,26,.72);
-      --glass: rgba(255,255,255,.06);
-      --text:#eaf2ff;
-      --muted:#a7b4c7;
-      --border: rgba(180,210,255,.12);
-      --accent:#5aa6ff;
-      --ok:#22c55e;
+      --bg0:#07060c;
+      --bg1:#0b0a14;
+      --card:#0f1020cc;
+      --card2:#0b0b16cc;
+      --txt:#e9e7ff;
+      --mut:#a7a4d8;
+      --acc:#8b5cf6;
+      --acc2:#22c55e;
       --bad:#ef4444;
       --warn:#f59e0b;
-      --shadow: 0 18px 65px rgba(0,0,0,.45);
+      --line:#2b2b55;
+      --glow: 0 0 22px rgba(139,92,246,.55);
+      --glow2: 0 0 22px rgba(34,197,94,.45);
+      --shadow: 0 18px 55px rgba(0,0,0,.55);
       --radius: 18px;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
-      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      --radius2: 24px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji","Segoe UI Emoji";
     }
+
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
       margin:0;
-      font-family:var(--sans);
-      background:
-        radial-gradient(1100px 650px at 15% -10%, rgba(90,166,255,.14), transparent 55%),
-        radial-gradient(900px 650px at 95% 5%, rgba(139,92,246,.14), transparent 55%),
-        var(--bg);
-      color:var(--text);
+      font-family: var(--sans);
+      color:var(--txt);
+      background: radial-gradient(1200px 800px at 20% 10%, #1b0f35 0%, transparent 55%),
+                  radial-gradient(900px 600px at 90% 20%, #0c3b28 0%, transparent 55%),
+                  radial-gradient(1100px 800px at 50% 110%, #2b173d 0%, transparent 50%),
+                  linear-gradient(180deg, var(--bg0), var(--bg1));
       overflow-x:hidden;
     }
-    .app{min-height:100vh; display:flex; flex-direction:column}
-    .topbar{
-      position:sticky; top:0; z-index:50;
-      background: rgba(7,9,12,.65);
-      backdrop-filter: blur(12px);
-      border-bottom:1px solid var(--border);
+
+    /* ====== VFX ====== */
+    #vfx{
+      position:fixed; inset:0;
+      width:100%; height:100%;
+      z-index:0;
+      pointer-events:none;
+      filter: drop-shadow(0 0 10px rgba(139,92,246,.25));
+      opacity:.95;
     }
-    .topbar-inner{
-      max-width:1100px;
-      margin:0 auto;
-      padding:14px 16px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-    }
-    .brand{display:flex; align-items:center; gap:12px; font-weight:900; letter-spacing:.5px;}
-    .brand .title{display:flex; flex-direction:column; line-height:1.1}
-    .brand .title .sub{font-size:12px; color:var(--muted); font-weight:700}
-    .dot{
-      width:11px;height:11px;border-radius:999px;
-      background:var(--warn);
-      box-shadow:0 0 0 6px rgba(245,158,11,.10);
-      transition:.25s ease;
-    }
-    .nav{display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end;}
-    .btn{
-      border:1px solid var(--border);
-      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
-      color:var(--text);
-      padding:10px 12px;
-      border-radius:14px;
-      cursor:pointer;
-      transition: transform .15s ease, filter .15s ease, border-color .15s ease;
-      display:inline-flex; align-items:center; gap:8px;
-      font-weight:800;
-      letter-spacing:.2px;
-      user-select:none;
-    }
-    .btn:hover{transform:translateY(-1px); filter:brightness(1.06); border-color: rgba(180,210,255,.22)}
-    .btn:active{transform:translateY(0px); filter:brightness(1.02)}
-    .btn.primary{
-      border-color: rgba(90,166,255,.32);
-      background: linear-gradient(180deg, rgba(90,166,255,.22), rgba(90,166,255,.10));
-    }
-    .btn.ghost{background:transparent}
-    .btn.danger{
-      border-color: rgba(239,68,68,.30);
-      background: linear-gradient(180deg, rgba(239,68,68,.18), rgba(239,68,68,.08));
-    }
-    .container{
-      max-width:1100px; width:100%;
-      margin:0 auto; padding:18px 16px 34px;
-      display:grid; gap:16px;
-    }
-    .grid{
-      display:grid;
-      grid-template-columns: 1.2fr .8fr;
-      gap:16px;
-      animation: fadeUp .35s ease both;
-    }
-    @media (max-width: 980px){ .grid{grid-template-columns:1fr} }
-    .card{
-      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
-      border:1px solid var(--border);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      padding:14px;
-      position:relative;
-      overflow:hidden;
-    }
-    .card:before{
-      content:"";
-      position:absolute;
-      inset:-1px;
+    .fog{
+      position:fixed; inset:-20%;
       background:
-        radial-gradient(800px 220px at 20% 0%, rgba(90,166,255,.14), transparent 55%),
-        radial-gradient(800px 220px at 80% 0%, rgba(139,92,246,.12), transparent 55%);
-      opacity:.65;
+        radial-gradient(closest-side at 20% 25%, rgba(139,92,246,.11), transparent 60%),
+        radial-gradient(closest-side at 80% 35%, rgba(34,197,94,.10), transparent 60%),
+        radial-gradient(closest-side at 55% 70%, rgba(255,255,255,.06), transparent 60%);
+      animation: drift 18s linear infinite;
+      z-index:0;
       pointer-events:none;
       mix-blend-mode: screen;
     }
-    .card > *{position:relative}
-    .card h2{margin:0 0 8px; font-size:18px}
-    .muted{color:var(--muted)}
-    .mini{font-size:12px}
-    .tag{font-family:var(--mono); font-size:12px; opacity:.92; word-break:break-all}
-    .hr{height:1px; background:var(--border); margin:12px 0}
-    .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
-    .field{display:flex; flex-direction:column; gap:7px}
-    .field label{font-size:12px; color:var(--muted); font-weight:800; letter-spacing:.2px}
-    input, textarea{
-      width:100%;
-      padding:11px 12px;
-      border-radius:14px;
-      border:1px solid var(--border);
-      background: rgba(0,0,0,.22);
-      color:var(--text);
-      outline:none;
+    @keyframes drift{
+      0%{transform:translate3d(-2%, -1%, 0) scale(1)}
+      50%{transform:translate3d(2%, 1%, 0) scale(1.03)}
+      100%{transform:translate3d(-2%, -1%, 0) scale(1)}
     }
-    textarea{min-height:120px; resize:vertical; font-family:var(--mono); font-size:12.5px}
-    input:focus, textarea:focus{border-color: rgba(90,166,255,.32); box-shadow: 0 0 0 4px rgba(90,166,255,.10)}
-    .pill{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:7px 10px; border-radius:999px; font-size:12px;
-      border:1px solid var(--border);
-      background: rgba(0,0,0,.18);
-      color:var(--muted);
-      font-weight:800;
+
+    /* ====== Layout ====== */
+    .wrap{
+      position:relative;
+      z-index:1;
+      min-height:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:28px 16px;
     }
-    .pill.ok{border-color: rgba(34,197,94,.32); color:#b7f7cb; background:rgba(34,197,94,.08)}
-    .pill.bad{border-color: rgba(239,68,68,.32); color:#ffd0d0; background:rgba(239,68,68,.08)}
-    .pill.warn{border-color: rgba(245,158,11,.32); color:#ffe2b3; background:rgba(245,158,11,.08)}
-    .toast-wrap{
-      position:fixed; right:16px; bottom:16px; z-index:9999;
-      display:flex; flex-direction:column; gap:10px;
-      max-width:min(520px, calc(100vw - 32px));
+    .shell{
+      width:min(1200px, 96vw);
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap:18px;
     }
-    .toast{
-      border:1px solid var(--border);
-      background: rgba(7,9,12,.75);
+
+    @media (max-width: 980px){
+      .shell{grid-template-columns:1fr}
+    }
+
+    .card{
+      background: linear-gradient(180deg, rgba(18,16,35,.85), rgba(10,10,20,.75));
+      border:1px solid rgba(139,92,246,.20);
+      border-radius: var(--radius2);
+      box-shadow: var(--shadow);
       backdrop-filter: blur(10px);
-      border-radius:16px;
+      overflow:hidden;
+      position:relative;
+    }
+    .card::before{
+      content:"";
+      position:absolute; inset:-1px;
+      background: radial-gradient(600px 200px at 30% 0%, rgba(139,92,246,.25), transparent 70%),
+                  radial-gradient(520px 220px at 90% 10%, rgba(34,197,94,.20), transparent 70%);
+      opacity:.75;
+      pointer-events:none;
+    }
+
+    .pane{
+      position:relative;
+      padding:22px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      padding-bottom:14px;
+      border-bottom:1px solid rgba(139,92,246,.18);
+      margin-bottom:16px;
+    }
+    .brand h1{
+      margin:0;
+      font-size:18px;
+      letter-spacing:.8px;
+    }
+    .badge{
+      font-family: var(--mono);
+      font-size:12px;
+      color:rgba(255,255,255,.86);
+      padding:7px 10px;
+      border:1px solid rgba(255,255,255,.16);
+      border-radius:999px;
+      background: rgba(0,0,0,.25);
+    }
+    .badge b{color:var(--acc2)}
+    .grid2{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+    @media (max-width: 560px){
+      .grid2{grid-template-columns:1fr}
+    }
+
+    .tabs{
+      display:flex; gap:10px; flex-wrap:wrap;
+      margin: 12px 0 0;
+    }
+    .tab{
+      appearance:none; border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.22);
+      color:var(--txt);
       padding:10px 12px;
-      box-shadow:var(--shadow);
-      display:flex; gap:10px; align-items:flex-start;
-      animation: toastIn .22s ease both;
+      border-radius: 12px;
+      cursor:pointer;
+      transition: .18s ease;
+      font-weight:650;
+      letter-spacing:.2px;
     }
-    .toast b{display:block; margin-bottom:2px}
-    @keyframes toastIn{from{opacity:0; transform: translateY(8px)} to{opacity:1; transform: translateY(0)}}
-    @keyframes fadeUp{from{opacity:0; transform: translateY(6px)} to{opacity:1; transform: translateY(0)}}
-    .footer{
-      max-width:1100px; margin:0 auto 24px; padding:0 16px;
-      color:var(--muted); font-size:12px; display:flex; justify-content:space-between;
-      gap:12px; flex-wrap:wrap; opacity:.9;
+    .tab:hover{transform: translateY(-1px); box-shadow: var(--glow)}
+    .tab.active{
+      border-color: rgba(139,92,246,.45);
+      background: rgba(139,92,246,.18);
+      box-shadow: var(--glow);
     }
-    .two{display:grid; grid-template-columns:1fr 1fr; gap:12px}
-    @media (max-width: 760px){ .two{grid-template-columns:1fr} }
+
+    .rune{
+      position:absolute;
+      right:-70px;
+      top:-70px;
+      width:220px;
+      height:220px;
+      border-radius:50%;
+      border:1px dashed rgba(139,92,246,.35);
+      box-shadow: 0 0 60px rgba(139,92,246,.22) inset;
+      animation: spin 22s linear infinite;
+      opacity:.55;
+      pointer-events:none;
+      filter: blur(.1px);
+    }
+    .rune::after{
+      content:"";
+      position:absolute; inset:22px;
+      border-radius:50%;
+      border:1px solid rgba(34,197,94,.22);
+      box-shadow: 0 0 40px rgba(34,197,94,.18) inset;
+    }
+    @keyframes spin{ to{transform:rotate(360deg)} }
+
+    label{display:block; font-size:12px; color:var(--mut); margin-bottom:6px}
+    input, textarea, select{
+      width:100%;
+      padding:12px 12px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.28);
+      color:var(--txt);
+      outline:none;
+      transition: .15s ease;
+    }
+    input:focus, textarea:focus{
+      border-color: rgba(139,92,246,.5);
+      box-shadow: var(--glow);
+    }
+
+    .btnrow{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px}
+    .btn{
+      appearance:none;
+      border:none;
+      padding:12px 14px;
+      border-radius: 14px;
+      cursor:pointer;
+      font-weight:800;
+      letter-spacing:.3px;
+      transition: .15s ease;
+      color: #fff;
+      background: linear-gradient(180deg, rgba(139,92,246,.95), rgba(109,40,217,.92));
+      box-shadow: var(--glow);
+    }
+    .btn:hover{transform: translateY(-1px)}
+    .btn:active{transform: translateY(0px) scale(.99)}
+    .btn.secondary{
+      background: rgba(0,0,0,.28);
+      border:1px solid rgba(255,255,255,.14);
+      box-shadow: none;
+      color: var(--txt);
+    }
+    .btn.good{
+      background: linear-gradient(180deg, rgba(34,197,94,.95), rgba(16,185,129,.88));
+      box-shadow: var(--glow2);
+    }
+    .btn.danger{
+      background: linear-gradient(180deg, rgba(239,68,68,.95), rgba(185,28,28,.88));
+      box-shadow: 0 0 22px rgba(239,68,68,.35);
+    }
+    .btn:disabled{
+      opacity:.45;
+      cursor:not-allowed;
+      transform:none;
+      box-shadow:none;
+    }
+
+    .hint{
+      margin-top:10px;
+      font-size:12px;
+      color:rgba(255,255,255,.78);
+      opacity:.95;
+    }
+    .hint code{
+      font-family: var(--mono);
+      font-size:11px;
+      background: rgba(0,0,0,.35);
+      padding:2px 6px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,.12);
+    }
+
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom:18px;
+      transform:translateX(-50%);
+      background: rgba(0,0,0,.55);
+      border:1px solid rgba(255,255,255,.16);
+      padding:10px 12px;
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      z-index: 50;
+      min-width: min(520px, 92vw);
+      display:none;
+    }
+    .toast.show{display:block; animation: pop .18s ease}
+    @keyframes pop{from{transform:translateX(-50%) translateY(8px); opacity:0} to{transform:translateX(-50%) translateY(0); opacity:1}}
+    .toast .t{font-weight:800}
+    .toast .m{color:rgba(255,255,255,.86); margin-top:4px; font-size:13px}
+
+    /* ====== Right side: Patch + Feed ====== */
+    .sideTop{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:12px;
+      padding-bottom:14px;
+      border-bottom:1px solid rgba(255,255,255,.12);
+      margin-bottom:14px;
+    }
+    .sideTop h2{margin:0; font-size:16px}
+    .subpill{
+      font-family:var(--mono);
+      font-size:11px;
+      opacity:.9;
+      padding:6px 10px;
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:999px;
+      background: rgba(0,0,0,.22);
+    }
+    .box{
+      border:1px solid rgba(255,255,255,.12);
+      border-radius: var(--radius);
+      background: rgba(0,0,0,.25);
+      padding:12px;
+      margin-bottom:12px;
+    }
+    .box h3{
+      margin:0 0 8px;
+      font-size:13px;
+      color:rgba(255,255,255,.90);
+      letter-spacing:.3px;
+    }
+    .notes{
+      max-height: 280px;
+      overflow:auto;
+      padding-right:6px;
+    }
+    .note{
+      padding:10px 10px;
+      border:1px solid rgba(139,92,246,.15);
+      background: rgba(139,92,246,.08);
+      border-radius: 14px;
+      margin-bottom:10px;
+    }
+    .note .d{font-family:var(--mono); font-size:11px; opacity:.86}
+    .note .t{font-weight:900; margin:6px 0 4px}
+    .note .b{font-size:13px; opacity:.92; line-height:1.35}
+    .feed{
+      max-height: 220px;
+      overflow:auto;
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      padding-right:6px;
+    }
+    .chip{
+      padding:7px 10px;
+      border-radius: 999px;
+      border:1px solid rgba(34,197,94,.22);
+      background: rgba(34,197,94,.10);
+      font-weight:800;
+      font-size:12px;
+      letter-spacing:.2px;
+      box-shadow: 0 0 18px rgba(34,197,94,.16);
+    }
+
+    /* ====== Pages ====== */
+    .page{display:none}
+    .page.active{display:block; animation: fadeIn .22s ease}
+    @keyframes fadeIn{from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:translateY(0)}}
+
+    .rowline{
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+      margin: 10px 0;
+    }
+    .kv{
+      font-family:var(--mono);
+      font-size:12px;
+      padding:8px 10px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.28);
+      max-width: 100%;
+      overflow:auto;
+      white-space:nowrap;
+    }
+
+    /* ====== Modal confirm delete ====== */
+    .modalBack{
+      position:fixed; inset:0;
+      background: rgba(0,0,0,.55);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:60;
+      padding:18px;
+    }
+    .modalBack.show{display:flex}
+    .modal{
+      width:min(560px, 94vw);
+      border-radius: var(--radius2);
+      border:1px solid rgba(239,68,68,.25);
+      background: linear-gradient(180deg, rgba(25,10,15,.92), rgba(12,7,12,.88));
+      box-shadow: 0 0 40px rgba(239,68,68,.18);
+      padding:18px;
+      position:relative;
+      overflow:hidden;
+    }
+    .modal h3{margin:0 0 8px}
+    .modal p{margin:0; color:rgba(255,255,255,.86); line-height:1.4}
+    .count{
+      font-family:var(--mono);
+      margin-top:10px;
+      display:inline-block;
+      padding:6px 10px;
+      border:1px solid rgba(255,255,255,.14);
+      border-radius: 999px;
+      background: rgba(0,0,0,.28);
+    }
+
+    /* ====== Error shake ====== */
+    .shake{animation: shake .28s ease}
+    @keyframes shake{
+      0%{transform:translateX(0)}
+      25%{transform:translateX(-6px)}
+      50%{transform:translateX(6px)}
+      75%{transform:translateX(-4px)}
+      100%{transform:translateX(0)}
+    }
   </style>
 </head>
 <body>
-<div class="app">
-  <div class="topbar">
-    <div class="topbar-inner">
-      <div class="brand">
-        <span class="dot" id="srvDot"></span>
-        <div class="title">
-          <div>OBEARCO <span class="muted">RPG Hub</span></div>
-          <div class="sub" id="srvLine">Carregando status…</div>
+  <canvas id="vfx"></canvas>
+  <div class="fog"></div>
+
+  <div class="wrap">
+    <div class="shell">
+
+      <!-- LEFT: Auth + Dashboard -->
+      <div class="card">
+        <div class="rune"></div>
+        <div class="pane">
+          <div class="brand">
+            <h1>🛡️ OBEARCO — Portal do Aventureiro</h1>
+            <div class="badge">API: <b id="apiBadge">carregando…</b></div>
+          </div>
+
+          <div class="tabs">
+            <button class="tab active" id="tabLogin">Login</button>
+            <button class="tab" id="tabRegister">Register</button>
+            <button class="tab" id="tabDashboard" style="display:none">Painel</button>
+          </div>
+
+          <!-- Login Page -->
+          <div class="page active" id="pageLogin">
+            <div class="grid2" style="margin-top:14px">
+              <div>
+                <label>Login (email ou username)</label>
+                <input id="login_login" placeholder="ex: meuemail@gmail.com ou MeuNick" autocomplete="username" />
+              </div>
+              <div>
+                <label>Senha</label>
+                <input id="login_senha" type="password" placeholder="••••••••" autocomplete="current-password" />
+              </div>
+            </div>
+            <div class="btnrow">
+              <button class="btn good" id="btnDoLogin">Entrar</button>
+              <button class="btn secondary" id="btnGoRegister">Criar conta</button>
+            </div>
+            <div class="hint">
+              Base carregada do <code>server_status.json</code>. Se cair, usa fallback local.
+            </div>
+          </div>
+
+          <!-- Register Page -->
+          <div class="page" id="pageRegister">
+            <div class="grid2" style="margin-top:14px">
+              <div>
+                <label>Username</label>
+                <input id="reg_username" placeholder="3-32 (letras/números/espaço/_)" autocomplete="username" />
+              </div>
+              <div>
+                <label>Email</label>
+                <input id="reg_email" placeholder="voce@exemplo.com" autocomplete="email" />
+              </div>
+            </div>
+            <div style="margin-top:12px">
+              <label>Senha</label>
+              <input id="reg_senha" type="password" placeholder="mín 6 chars" autocomplete="new-password" />
+            </div>
+            <div class="btnrow">
+              <button class="btn good" id="btnDoRegister">Forjar Conta</button>
+              <button class="btn secondary" id="btnGoLogin">Voltar</button>
+            </div>
+            <div class="hint">Dica: o servidor valida username/email/senha. Se der erro, a UI mostra o motivo.</div>
+          </div>
+
+          <!-- Dashboard -->
+          <div class="page" id="pageDashboard">
+            <div class="rowline" style="margin-top:14px">
+              <span style="font-weight:900">Bem-vindo,</span>
+              <span class="kv" id="dashUser">…</span>
+              <button class="btn secondary" id="btnRefreshMe">Atualizar perfil</button>
+              <button class="btn danger" id="btnLogout">Sair</button>
+            </div>
+
+            <div class="box">
+              <h3>🔑 Session Token (visível pra copiar)</h3>
+              <div class="rowline">
+                <div class="kv" id="tokenBox" style="flex:1">—</div>
+                <button class="btn secondary" id="btnCopyToken">Copiar</button>
+              </div>
+              <div class="hint">O launcher/site pode usar <code>Authorization: Bearer &lt;token&gt;</code> nas chamadas.</div>
+            </div>
+
+            <div class="grid2">
+              <div class="box">
+                <h3>🧙 Perfil</h3>
+                <label>Username (nome)</label>
+                <input id="set_username" placeholder="Novo username" />
+                <label style="margin-top:10px">Email</label>
+                <input id="set_email" placeholder="novo@email.com" />
+              </div>
+
+              <div class="box">
+                <h3>🗡️ Segurança</h3>
+                <label>Nova senha</label>
+                <input id="set_senha" type="password" placeholder="deixe vazio pra não mudar" />
+                <label style="margin-top:10px">Senha atual (pra confirmar)</label>
+                <input id="set_senha_atual" type="password" placeholder="obrigatório pra alterar" />
+              </div>
+            </div>
+
+            <div class="btnrow">
+              <button class="btn good" id="btnSaveAccount">Salvar alterações</button>
+              <button class="btn danger" id="btnDeleteAccount">Deletar conta</button>
+            </div>
+
+            <div class="hint">
+              Alterações usam comandos: <code>/updateaccount</code> e <code>/deleteaccount</code>.
+              Se seu servidor ainda não tiver, vai aparecer “Comando não reconhecido”.
+            </div>
+          </div>
+
         </div>
       </div>
-      <div class="nav" id="nav"></div>
+
+      <!-- RIGHT: Patch Notes + Feed -->
+      <div class="card">
+        <div class="pane">
+          <div class="sideTop">
+            <h2>📜 Patch Notes & Reino</h2>
+            <div class="subpill" id="statusPill">status: …</div>
+          </div>
+
+          <div class="box">
+            <h3>🧾 Patch Notes</h3>
+            <div class="notes" id="notes"></div>
+          </div>
+
+          <div class="box">
+            <h3>👥 Aventureiros Registrados (feed)</h3>
+            <div class="feed" id="feed"></div>
+            <div class="btnrow" style="margin-top:10px">
+              <button class="btn secondary" id="btnRefreshFeed">Atualizar feed</button>
+              <button class="btn secondary" id="btnForceReloadBase">Recarregar API base</button>
+            </div>
+            <div class="hint">
+              Feed usa comando <code>/listusers</code> (precisa existir no servidor).
+            </div>
+          </div>
+
+          <div class="box">
+            <h3>🌐 Conexão</h3>
+            <div class="hint" style="margin-top:0">
+              server_status.json: <code id="statusUrl">raw github</code><br/>
+              api_base atual: <code id="apiNow">…</code>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 
-  <main class="container" id="app"></main>
-
-  <div class="footer">
-    <div>⚔️ OBEARCO • UI público (GitHub Pages)</div>
-    <div class="muted">Sempre manda JSON e usa /api/v1/cmd.</div>
+  <!-- Toast -->
+  <div class="toast" id="toast">
+    <div class="t" id="toastT">—</div>
+    <div class="m" id="toastM">—</div>
   </div>
-</div>
 
-<div class="toast-wrap" id="toasts"></div>
+  <!-- Modal delete -->
+  <div class="modalBack" id="modalBack">
+    <div class="modal">
+      <h3>⚠️ Deletar conta</h3>
+      <p>Isso é irreversível. Seus dados e acesso serão removidos. Tem certeza?</p>
+      <div class="count" id="countDown">Confirmação disponível em 5s…</div>
+      <div class="btnrow" style="margin-top:12px">
+        <button class="btn secondary" id="btnCancelDel">Cancelar</button>
+        <button class="btn danger" id="btnConfirmDel" disabled>Confirmar (aguarde)</button>
+      </div>
+    </div>
+  </div>
 
 <script>
-/* ============================================================
-   CONFIG
-   ============================================================ */
-const STATUS_GITHUB_URL = "https://github.com/NoSense-Bot/Servidor/blob/main/server_status.json";
+/* =========================
+   0) Config / Status JSON
+========================= */
+const STATUS_RAW_URL = "https://raw.githubusercontent.com/NoSense-Bot/Servidor/main/server_status.json";
 
-const LS = {
-  token: "obearco_session_token",
-  apiBase: "obearco_api_base_cache",
-};
-
-const state = {
-  status: null,
-  apiBase: "",
-  token: localStorage.getItem(LS.token) || "",
-  route: location.hash || "#/login",
-};
-
-/* ============================================================
-   Utils
-   ============================================================ */
-function safeJson(s){ try{ return JSON.parse(s); }catch{ return null; } }
-function escapeHtml(s){
-  return String(s ?? "").replace(/[&<>"']/g, m => ({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
-  }[m]));
-}
-function toast(title, msg, kind="info"){
-  const wrap = document.getElementById("toasts");
-  const t = document.createElement("div");
-  t.className = "toast";
-  const icon = kind==="ok" ? "✅" : kind==="bad" ? "❌" : kind==="warn" ? "⚠️" : "ℹ️";
-  t.innerHTML = `
-    <div style="font-size:18px;line-height:1">${icon}</div>
-    <div>
-      <b>${escapeHtml(title)}</b>
-      <div class="mini muted">${escapeHtml(msg)}</div>
-    </div>
-  `;
-  wrap.appendChild(t);
-  setTimeout(()=>{ t.style.opacity="0"; t.style.transform="translateY(6px)"; }, 3200);
-  setTimeout(()=>{ t.remove(); }, 3800);
-}
-function go(hash){ location.hash = hash; }
-function sleep(ms){ return new Promise(r=>setTimeout(r, ms)); }
-
-function githubBlobToRaw(url){
-  try{
-    const u = String(url||"").trim();
-    if(!u) return u;
-    if(u.includes("raw.githubusercontent.com")) return u;
-    return u.replace("https://github.com/", "https://raw.githubusercontent.com/")
-            .replace("/blob/", "/");
-  }catch{ return url; }
-}
-
-function setServerBadge(online){
-  const dot = document.getElementById("srvDot");
-  const line = document.getElementById("srvLine");
-  if(online){
-    dot.style.background = "var(--ok)";
-    dot.style.boxShadow = "0 0 0 6px rgba(34,197,94,.10)";
-    line.textContent = "Servidor: Online ✅";
+const el = (id)=>document.getElementById(id);
+const toast = (t,m,kind="ok")=>{
+  el("toastT").textContent = t;
+  el("toastM").textContent = m;
+  el("toast").classList.add("show");
+  if(kind==="bad"){
+    el("toast").style.borderColor = "rgba(239,68,68,.28)";
+  }else if(kind==="warn"){
+    el("toast").style.borderColor = "rgba(245,158,11,.28)";
   }else{
-    dot.style.background = "var(--bad)";
-    dot.style.boxShadow = "0 0 0 6px rgba(239,68,68,.10)";
-    line.textContent = "Servidor: Offline ❌";
+    el("toast").style.borderColor = "rgba(34,197,94,.22)";
   }
-}
+  setTimeout(()=>el("toast").classList.remove("show"), 2800);
+};
 
-function apiUrl(path){
-  const base = (state.apiBase || "").replace(/\/+$/,"");
-  return base + path;
-}
+let apiBase = ""; // ex: https://xxxxx.ngrok-free.dev
+let statusCache = null;
 
-/* ============================================================
-   Boot: sempre pega server_status.json ao abrir
-   ============================================================ */
-async function fetchStatusAlways(){
-  const rawUrl = githubBlobToRaw(STATUS_GITHUB_URL);
-  for(let attempt=1; attempt<=2; attempt++){
-    try{
-      const res = await fetch(rawUrl, { cache:"no-store" });
-      if(!res.ok) throw new Error("Falha baixando server_status.json");
-      return await res.json();
-    }catch(err){
-      if(attempt===2) throw err;
-      await sleep(500);
-    }
-  }
-}
-
-async function boot(){
-  renderNav();
+async function loadServerStatus(){
+  el("statusUrl").textContent = STATUS_RAW_URL;
   try{
-    const st = await fetchStatusAlways();
-    state.status = st;
-
-    const base = String(st?.url_api_base || "").trim();
-    if(!base) throw new Error("server_status.json sem url_api_base");
-    state.apiBase = base.replace(/\/+$/,"");
-    localStorage.setItem(LS.apiBase, state.apiBase);
-
-    const online = String(st?.status_servidor || "").toLowerCase().includes("online");
-    setServerBadge(online);
-
-    // tenta ping só pra validar (não quebra se der erro)
-    await apiCall({ comando:"/ping" }).catch(()=>{});
-  }catch(err){
-    setServerBadge(false);
-    // fallback: se já tiver cache, usa pra não ficar travado
-    const cached = localStorage.getItem(LS.apiBase) || "";
-    if(cached){
-      state.apiBase = cached;
-      toast("Status", "Falha lendo GitHub. Usando API base em cache.", "warn");
-    }else{
-      toast("Boot falhou", err?.message || String(err), "bad");
-    }
-  }finally{
-    render();
+    const r = await fetch(STATUS_RAW_URL, {cache:"no-store"});
+    if(!r.ok) throw new Error("HTTP "+r.status);
+    const j = await r.json();
+    statusCache = j;
+    apiBase = String(j.url_api_base || "").replace(/\/$/,"");
+    if(!apiBase) throw new Error("url_api_base vazio no server_status.json");
+    el("apiBadge").textContent = apiBase;
+    el("apiNow").textContent = apiBase;
+    el("statusPill").textContent = "status: " + (j.status_servidor || "Online");
+    return true;
+  }catch(e){
+    // fallback local
+    apiBase = (location.origin || "http://127.0.0.1:7776").replace(/\/$/,"");
+    el("apiBadge").textContent = apiBase + " (fallback)";
+    el("apiNow").textContent = apiBase + " (fallback)";
+    el("statusPill").textContent = "status: (fallback)";
+    toast("⚠️ Status JSON falhou", "Usando fallback: " + apiBase, "warn");
+    return false;
   }
 }
 
-/* ============================================================
-   API: SEMPRE JSON + /api/v1/cmd
-   ============================================================ */
-async function apiCall(payload){
-  if(!state.apiBase) throw new Error("API base vazia (status.json não carregou).");
-
-  // sempre manda UA e IP (IP real só o servidor vai ver; aqui só "client")
-  const finalPayload = {
-    ...payload,
-    ua: navigator.userAgent,
-    ip: "client", // opcional, teu backend aceita
-  };
-
-  const headers = { "Content-Type":"application/json" };
-  if(state.token) headers["Authorization"] = "Bearer " + state.token;
-
-  const url = apiUrl("/api/v1/cmd");
-
+/* =========================
+   1) API helper
+========================= */
+function getToken(){
+  return localStorage.getItem("obearco_token") || "";
+}
+function setToken(t){
+  if(t) localStorage.setItem("obearco_token", t);
+  else localStorage.removeItem("obearco_token");
+  renderToken();
+}
+function renderToken(){
+  const t = getToken();
+  el("tokenBox").textContent = t || "—";
+}
+async function apiCmd(payload){
+  const url = apiBase + "/api/v1/cmd";
+  const token = getToken();
+  const headers = {"Content-Type":"application/json"};
+  if(token) headers["Authorization"] = "Bearer " + token;
   const r = await fetch(url, {
     method:"POST",
     headers,
-    body: JSON.stringify(finalPayload),
+    body: JSON.stringify(payload || {})
   });
+  const txt = await r.text();
+  let j=null;
+  try{ j = JSON.parse(txt); }catch{ j = {ok:false, error:"Resposta não-JSON", raw:txt}; }
+  // seu Server.py envolve em {ok:true, request_id, **out}, então:
+  if(!r.ok || j.ok===false){
+    return {ok:false, status:r.status, ...j};
+  }
+  return {ok:true, status:r.status, ...j};
+}
 
-  // tenta ler JSON, mas se vier texto, mostra
-  const text = await r.text();
-  const j = safeJson(text);
+/* =========================
+   2) Pages / Tabs
+========================= */
+function setActiveTab(tabId){
+  ["tabLogin","tabRegister","tabDashboard"].forEach(id=>{
+    const t = el(id);
+    if(!t) return;
+    t.classList.toggle("active", id===tabId);
+  });
+  const map = {
+    tabLogin:"pageLogin",
+    tabRegister:"pageRegister",
+    tabDashboard:"pageDashboard"
+  };
+  Object.values(map).forEach(pid=>el(pid).classList.remove("active"));
+  el(map[tabId]).classList.add("active");
+}
 
+function showDashboard(){
+  el("tabDashboard").style.display = "inline-block";
+  setActiveTab("tabDashboard");
+  el("tabLogin").style.display = "none";
+  el("tabRegister").style.display = "none";
+}
+function showAuth(){
+  el("tabDashboard").style.display = "none";
+  el("tabLogin").style.display = "inline-block";
+  el("tabRegister").style.display = "inline-block";
+  setActiveTab("tabLogin");
+}
+
+/* =========================
+   3) Patch Notes (mock)
+========================= */
+const PATCH = [
+  {date:"2025-12-18", title:"Portal do Aventureiro", body:"Login/Register com VFX RPG. Perfil com token copiável. Patch panel e feed de jogadores."},
+  {date:"2025-12-17", title:"Servidor HTTP + UDP", body:"Hypercorn/FastAPI, UDP Lobby, ngrok e server_status.json com push opcional."},
+  {date:"2025-12-16", title:"Sistema de contas", body:"Tabela contas com PBKDF2, sessão e comandos base (/register /login /whoami)."}
+];
+function renderNotes(){
+  const root = el("notes");
+  root.innerHTML = "";
+  PATCH.forEach(n=>{
+    const d = document.createElement("div");
+    d.className = "note";
+    d.innerHTML = `
+      <div class="d">${n.date}</div>
+      <div class="t">${n.title}</div>
+      <div class="b">${n.body}</div>
+    `;
+    root.appendChild(d);
+  });
+}
+
+/* =========================
+   4) Feed users
+========================= */
+async function refreshFeed(){
+  const box = el("feed");
+  box.innerHTML = "";
+  const r = await apiCmd({comando:"/listusers"});
   if(!r.ok){
-    const msg = (j && (j.error || j.message)) ? (j.error || j.message) : (text || "HTTP error");
-    throw new Error(msg);
+    toast("❌ Feed falhou", (r.error || "erro"), "bad");
+    // fallback UI
+    const c = document.createElement("div");
+    c.className = "chip";
+    c.style.borderColor = "rgba(245,158,11,.35)";
+    c.style.background = "rgba(245,158,11,.10)";
+    c.textContent = "Servidor sem /listusers (adicione no Comandos.py)";
+    box.appendChild(c);
+    return;
   }
-
-  if(!j || typeof j !== "object"){
-    throw new Error("Resposta não é JSON (backend retornou texto).");
+  const users = (r.users || r.usuarios || []);
+  if(!Array.isArray(users) || users.length===0){
+    const c = document.createElement("div");
+    c.className = "chip";
+    c.textContent = "ninguém ainda…";
+    box.appendChild(c);
+    return;
   }
+  users.forEach(u=>{
+    const c = document.createElement("div");
+    c.className = "chip";
+    c.textContent = String(u.username || u.nick || u || "???");
+    box.appendChild(c);
+  });
+}
 
-  if(j.ok === false){
-    throw new Error(j.error || "Falha no comando");
+/* =========================
+   5) Auth / Profile
+========================= */
+async function whoami(){
+  const r = await apiCmd({comando:"/whoami"});
+  if(!r.ok){
+    return null;
   }
-
-  return j;
+  // Comandos.py retorna ok(session=...), e Server envolve, então pode vir:
+  // r.session OR r.session.session etc. Vamos ser tolerantes:
+  return r.session || (r.data && r.data.session) || null;
 }
 
-/* ============================================================
-   Auth (conforme Comandos.py)
-   ============================================================ */
-async function doRegister(username, email, senha){
-  // Comandos.py espera: username/email/senha
-  const out = await apiCall({ comando:"/register", username, email, senha });
-  toast("Registro", out.message || "Conta criada.", "ok");
-  go("#/login");
+function fillProfileFields(sess){
+  const username = sess?.username || "";
+  const email = sess?.email || "";
+  el("dashUser").textContent = username ? `${username} (${email || "sem email"})` : (email || "—");
+  el("set_username").value = username || "";
+  el("set_email").value = email || "";
+  el("set_senha").value = "";
+  el("set_senha_atual").value = "";
 }
 
-async function doLogin(login, senha){
-  // Comandos.py espera: login/senha
-  const out = await apiCall({ comando:"/login", login, senha });
-  const token = out.session_token;
-  if(!token) throw new Error("Login OK mas não veio session_token.");
-  state.token = token;
-  localStorage.setItem(LS.token, token);
-  toast("Login", "Sessão salva ✅", "ok");
-  go("#/panel");
-}
+async function doLogin(){
+  const login = el("login_login").value.trim();
+  const senha = el("login_senha").value.trim();
+  const page = el("pageLogin");
 
-async function doLogout(){
-  try{ await apiCall({ comando:"/logout" }); }catch{}
-  state.token = "";
-  localStorage.removeItem(LS.token);
-  toast("Logout", "Sessão removida.", "ok");
-  go("#/login");
-}
-
-/* ============================================================
-   Router
-   ============================================================ */
-window.addEventListener("hashchange", ()=>{
-  state.route = location.hash || "#/login";
-  render();
-});
-
-function renderNav(){
-  const nav = document.getElementById("nav");
-  nav.innerHTML = "";
-
-  const authed = !!state.token;
-
-  if(!authed){
-    nav.appendChild(btn("🔐 Login", ()=>go("#/login"), "primary"));
-    nav.appendChild(btn("🧾 Registrar", ()=>go("#/register")));
+  if(!login || !senha){
+    page.classList.add("shake"); setTimeout(()=>page.classList.remove("shake"), 280);
+    toast("⚠️ Falta coisa", "Preencha login e senha.", "warn");
     return;
   }
 
-  nav.appendChild(btn("🎛️ Painel", ()=>go("#/panel"), "primary"));
-  nav.appendChild(btn("🧩 Personagem", ()=>go("#/character")));
-  nav.appendChild(btn("🚪 Sair", doLogout, "ghost"));
-}
-
-function btn(label, onClick, cls=""){
-  const b = document.createElement("button");
-  b.className = "btn " + cls;
-  b.textContent = label;
-  b.onclick = onClick;
-  return b;
-}
-
-function guard(){
-  const r = state.route || "#/login";
-  if(!state.token && (r.startsWith("#/panel") || r.startsWith("#/character"))){
-    go("#/login");
-    return false;
+  const r = await apiCmd({comando:"/login", login, senha});
+  if(!r.ok){
+    page.classList.add("shake"); setTimeout(()=>page.classList.remove("shake"), 280);
+    toast("❌ Login falhou", r.error || "erro", "bad");
+    return;
   }
-  return true;
+  const token = r.session_token || r.token || r.sessionToken;
+  if(token) setToken(token);
+
+  toast("✅ Login OK", "Bem-vindo de volta!", "ok");
+  showDashboard();
+
+  // puxa perfil
+  const sess = await whoami();
+  if(sess) fillProfileFields(sess);
+
+  // feed
+  refreshFeed();
 }
 
-function render(){
-  renderNav();
-  if(!guard()) return;
+async function doRegister(){
+  const username = el("reg_username").value.trim();
+  const email = el("reg_email").value.trim();
+  const senha = el("reg_senha").value.trim();
+  const page = el("pageRegister");
 
-  const app = document.getElementById("app");
-  const r = state.route || "#/login";
+  if(!username || !email || !senha){
+    page.classList.add("shake"); setTimeout(()=>page.classList.remove("shake"), 280);
+    toast("⚠️ Falta coisa", "Preencha username, email e senha.", "warn");
+    return;
+  }
 
-  if(r.startsWith("#/login")) return viewLogin(app);
-  if(r.startsWith("#/register")) return viewRegister(app);
-  if(r.startsWith("#/panel")) return viewPanel(app);
-  if(r.startsWith("#/character")) return viewCharacter(app);
-
-  go("#/login");
+  const r = await apiCmd({comando:"/register", username, email, senha});
+  if(!r.ok){
+    page.classList.add("shake"); setTimeout(()=>page.classList.remove("shake"), 280);
+    toast("❌ Register falhou", r.error || "erro", "bad");
+    return;
+  }
+  toast("✅ Conta criada", "Agora faça login.", "ok");
+  setActiveTab("tabLogin");
 }
 
-/* ============================================================
-   Views
-   ============================================================ */
-function viewLogin(app){
-  const st = state.status || {};
-  app.innerHTML = `
-    <div class="grid">
-      <div class="card">
-        <h2>🔐 Login</h2>
-        <div class="muted">Entre com seu <b>email</b> ou <b>username</b> (campo <span class="tag">login</span>).</div>
-        <div class="hr"></div>
+async function doLogout(){
+  // tenta logout se existir
+  await apiCmd({comando:"/logout"});
+  setToken("");
+  showAuth();
+  toast("👋 Saiu", "Sessão limpa.", "ok");
+}
 
-        <div class="field">
-          <label>Email ou Username (login)</label>
-          <input id="login" placeholder="email@exemplo.com ou seuNick" autocomplete="username" />
-        </div>
-        <div class="field">
-          <label>Senha</label>
-          <input id="senha" type="password" placeholder="••••••••" autocomplete="current-password" />
-        </div>
+async function refreshMe(){
+  const sess = await whoami();
+  if(!sess){
+    toast("⚠️ Sessão", "Token inválido/expirou. Faça login de novo.", "warn");
+    setToken("");
+    showAuth();
+    return;
+  }
+  fillProfileFields(sess);
+  toast("✅ Perfil atualizado", "Dados recarregados.", "ok");
+}
 
-        <div class="row" style="margin-top:10px">
-          <button class="btn primary" id="btnLogin">Entrar</button>
-          <button class="btn" onclick="location.hash='#/register'">Criar conta</button>
-        </div>
+async function saveAccount(){
+  const username = el("set_username").value.trim();
+  const email = el("set_email").value.trim();
+  const nova = el("set_senha").value.trim();
+  const atual = el("set_senha_atual").value.trim();
 
-        <div class="hr"></div>
-        <div class="mini muted">
-          ✅ Envia: <span class="tag">{comando:"/login", login, senha}</span> para <span class="tag">/api/v1/cmd</span>.
-        </div>
-      </div>
+  // se quer mudar senha, exige senha atual
+  if(nova && !atual){
+    toast("⚠️ Segurança", "Para trocar senha, informe a senha atual.", "warn");
+    return;
+  }
 
-      <div class="card">
-        <h2>📡 Status</h2>
-        <div class="mini muted">Lido do <span class="tag">server_status.json</span> no GitHub a cada abertura.</div>
-        <div class="hr"></div>
-        <div class="mini"><b>status_servidor:</b> <span class="tag">${escapeHtml(st.status_servidor ?? "—")}</span></div>
-        <div class="mini"><b>version_api:</b> <span class="tag">${escapeHtml(st.version_api ?? "—")}</span></div>
-        <div class="mini"><b>porta:</b> <span class="tag">${escapeHtml(st.porta ?? "—")}</span></div>
-        <div class="hr"></div>
-        <div class="mini"><b>API Base (oculta na UI, mas aqui pra debug):</b></div>
-        <div class="tag">${escapeHtml(state.apiBase || "—")}</div>
-      </div>
-    </div>
-  `;
-
-  const login = app.querySelector("#login");
-  const senha = app.querySelector("#senha");
-  const btnLogin = app.querySelector("#btnLogin");
-
-  btnLogin.onclick = async ()=>{
-    const l = (login.value||"").trim();
-    const s = (senha.value||"");
-    if(!l || !s){ toast("Ops", "Preenche login e senha 😅", "warn"); return; }
-
-    btnLogin.disabled = true; btnLogin.textContent = "Entrando…";
-    try{ await doLogin(l, s); }
-    catch(err){ toast("Login falhou", err?.message || String(err), "bad"); }
-    finally{ btnLogin.disabled = false; btnLogin.textContent = "Entrar"; }
+  const payload = {
+    comando:"/updateaccount",
+    username,
+    email,
+    senha_nova: nova || null,
+    senha_atual: atual || null,
   };
+
+  const r = await apiCmd(payload);
+  if(!r.ok){
+    toast("❌ Não salvou", r.error || "erro", "bad");
+    return;
+  }
+  toast("✅ Salvo", "Alterações aplicadas.", "ok");
+  // recarrega perfil
+  refreshMe();
+  refreshFeed();
 }
 
-function viewRegister(app){
-  app.innerHTML = `
-    <div class="grid">
-      <div class="card">
-        <h2>🧾 Registrar</h2>
-        <div class="muted">Cria conta (Comandos.py: <span class="tag">username/email/senha</span>).</div>
-        <div class="hr"></div>
+/* =========================
+   6) Delete modal (5s)
+========================= */
+let delTimer = null;
+let delLeft = 5;
 
-        <div class="field">
-          <label>Username</label>
-          <input id="username" placeholder="3-32: letras/números/espaço/_" autocomplete="nickname" />
-          <div class="mini muted">Regra: <span class="tag">^[\\w ]{3,32}$</span> (sem símbolos).</div>
-        </div>
+function openDeleteModal(){
+  delLeft = 5;
+  el("btnConfirmDel").disabled = true;
+  el("btnConfirmDel").textContent = "Confirmar (aguarde)";
+  el("countDown").textContent = "Confirmação disponível em 5s…";
+  el("modalBack").classList.add("show");
 
-        <div class="field">
-          <label>Email</label>
-          <input id="email" placeholder="email@exemplo.com" autocomplete="email" />
-        </div>
-
-        <div class="field">
-          <label>Senha</label>
-          <input id="senha" type="password" placeholder="mín. 6 chars" autocomplete="new-password" />
-        </div>
-
-        <div class="row" style="margin-top:10px">
-          <button class="btn primary" id="btnReg">Criar</button>
-          <button class="btn" onclick="location.hash='#/login'">Voltar</button>
-        </div>
-
-        <div class="hr"></div>
-        <div class="mini muted">
-          ✅ Envia: <span class="tag">{comando:"/register", username, email, senha}</span> para <span class="tag">/api/v1/cmd</span>.
-        </div>
-      </div>
-
-      <div class="card">
-        <h2>🧠 Token</h2>
-        <div class="muted">
-          Token fica no <span class="tag">localStorage</span> (ok pra dev).<br/>
-          Em produção “real”: cookie HttpOnly.
-        </div>
-      </div>
-    </div>
-  `;
-
-  const username = app.querySelector("#username");
-  const email = app.querySelector("#email");
-  const senha = app.querySelector("#senha");
-  const btnReg = app.querySelector("#btnReg");
-
-  btnReg.onclick = async ()=>{
-    const u = (username.value||"").trim();
-    const e = (email.value||"").trim();
-    const s = (senha.value||"");
-    if(!u || !e || !s){ toast("Ops", "Preenche username, email e senha 😅", "warn"); return; }
-
-    btnReg.disabled = true; btnReg.textContent = "Criando…";
-    try{ await doRegister(u, e, s); }
-    catch(err){ toast("Registro falhou", err?.message || String(err), "bad"); }
-    finally{ btnReg.disabled = false; btnReg.textContent = "Criar"; }
-  };
-}
-
-function viewPanel(app){
-  app.innerHTML = `
-    <div class="grid">
-      <div class="card">
-        <div class="row" style="justify-content:space-between">
-          <div>
-            <h2>🎛️ Painel</h2>
-            <div class="muted">Testes diretos dos comandos do seu backend.</div>
-          </div>
-          <span class="pill ok">Autenticado</span>
-        </div>
-
-        <div class="hr"></div>
-
-        <div class="field">
-          <label>Session Token (salvo)</label>
-          <input value="${escapeHtml(state.token)}" readonly />
-        </div>
-
-        <div class="row" style="margin-top:10px">
-          <button class="btn primary" id="btnWho">👤 /whoami</button>
-          <button class="btn" id="btnPing">🏓 /ping</button>
-          <button class="btn danger" onclick="doLogout()">🚪 Logout</button>
-        </div>
-
-        <div class="hr"></div>
-        <div class="field">
-          <label>Resposta</label>
-          <textarea id="out" readonly></textarea>
-        </div>
-      </div>
-
-      <div class="card">
-        <h2>ℹ️ Envio</h2>
-        <div class="mini muted">
-          Sempre manda JSON para: <span class="tag">POST /api/v1/cmd</span><br/>
-          Header: <span class="tag">Authorization: Bearer {token}</span>
-        </div>
-        <div class="hr"></div>
-        <div class="mini muted"><b>API Base:</b></div>
-        <div class="tag">${escapeHtml(state.apiBase || "—")}</div>
-      </div>
-    </div>
-  `;
-
-  const out = app.querySelector("#out");
-  const btnWho = app.querySelector("#btnWho");
-  const btnPing = app.querySelector("#btnPing");
-
-  btnWho.onclick = async ()=>{
-    btnWho.disabled = true;
-    try{
-      const j = await apiCall({ comando:"/whoami" });
-      out.value = JSON.stringify(j, null, 2);
-      toast("whoami", "OK ✅", "ok");
-    }catch(err){
-      out.value = String(err?.message || err);
-      toast("whoami", err?.message || String(err), "bad");
-    }finally{
-      btnWho.disabled = false;
+  if(delTimer) clearInterval(delTimer);
+  delTimer = setInterval(()=>{
+    delLeft--;
+    if(delLeft <= 0){
+      clearInterval(delTimer);
+      delTimer = null;
+      el("btnConfirmDel").disabled = false;
+      el("btnConfirmDel").textContent = "Confirmar agora";
+      el("countDown").textContent = "⚠️ Clique em confirmar para deletar de verdade.";
+    }else{
+      el("countDown").textContent = `Confirmação disponível em ${delLeft}s…`;
     }
-  };
-
-  btnPing.onclick = async ()=>{
-    btnPing.disabled = true;
-    try{
-      const j = await apiCall({ comando:"/ping" });
-      out.value = JSON.stringify(j, null, 2);
-      toast("ping", "OK ✅", "ok");
-    }catch(err){
-      out.value = String(err?.message || err);
-      toast("ping", err?.message || String(err), "bad");
-    }finally{
-      btnPing.disabled = false;
-    }
-  };
+  }, 1000);
 }
 
-function viewCharacter(app){
-  app.innerHTML = `
-    <div class="grid">
-      <div class="card">
-        <h2>🧩 Criar Personagem</h2>
-        <div class="muted">Comando: <span class="tag">/createcharacter</span> com <span class="tag">nome</span>.</div>
-        <div class="hr"></div>
-
-        <div class="field">
-          <label>Nome do personagem</label>
-          <input id="nome" placeholder="Ex: NihilGuh" />
-        </div>
-
-        <div class="row" style="margin-top:10px">
-          <button class="btn primary" id="btnCreate">Criar</button>
-          <button class="btn" onclick="location.hash='#/panel'">Voltar</button>
-        </div>
-
-        <div class="hr"></div>
-        <div class="field">
-          <label>Resposta</label>
-          <textarea id="out" readonly></textarea>
-        </div>
-      </div>
-
-      <div class="card">
-        <h2>✅ JSON enviado</h2>
-        <div class="mini muted">
-          <span class="tag">{comando:"/createcharacter", nome:"..."}</span><br/>
-          Sempre via <span class="tag">POST /api/v1/cmd</span>.
-        </div>
-      </div>
-    </div>
-  `;
-
-  const nome = app.querySelector("#nome");
-  const out = app.querySelector("#out");
-  const btnCreate = app.querySelector("#btnCreate");
-
-  btnCreate.onclick = async ()=>{
-    const n = (nome.value||"").trim();
-    if(!n){ toast("Ops", "Digite um nome 😅", "warn"); return; }
-
-    btnCreate.disabled = true; btnCreate.textContent = "Criando…";
-    try{
-      const j = await apiCall({ comando:"/createcharacter", nome: n });
-      out.value = JSON.stringify(j, null, 2);
-      toast("Personagem", "Criado ✅", "ok");
-    }catch(err){
-      out.value = String(err?.message || err);
-      toast("Falhou", err?.message || String(err), "bad");
-    }finally{
-      btnCreate.disabled = false; btnCreate.textContent = "Criar";
-    }
-  };
+function closeDeleteModal(){
+  el("modalBack").classList.remove("show");
+  if(delTimer) clearInterval(delTimer);
+  delTimer = null;
 }
 
-/* start */
-boot();
+async function confirmDelete(){
+  const r = await apiCmd({comando:"/deleteaccount"});
+  if(!r.ok){
+    toast("❌ Falhou", r.error || "erro", "bad");
+    closeDeleteModal();
+    return;
+  }
+  toast("✅ Conta deletada", "Você saiu do reino.", "ok");
+  closeDeleteModal();
+  setToken("");
+  showAuth();
+  refreshFeed();
+}
+
+/* =========================
+   7) Token copy
+========================= */
+async function copyToken(){
+  const t = getToken();
+  if(!t){
+    toast("⚠️ Token vazio", "Faça login para gerar token.", "warn");
+    return;
+  }
+  try{
+    await navigator.clipboard.writeText(t);
+    toast("✅ Copiado", "Token no clipboard.", "ok");
+  }catch{
+    // fallback
+    const ta = document.createElement("textarea");
+    ta.value = t;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    ta.remove();
+    toast("✅ Copiado", "Token no clipboard.", "ok");
+  }
+}
+
+/* =========================
+   8) VFX particles (canvas)
+========================= */
+const canvas = el("vfx");
+const ctx = canvas.getContext("2d");
+let W=0,H=0, DPR=1;
+let particles = [];
+function resize(){
+  DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+  W = canvas.width = Math.floor(innerWidth * DPR);
+  H = canvas.height = Math.floor(innerHeight * DPR);
+  canvas.style.width = innerWidth+"px";
+  canvas.style.height = innerHeight+"px";
+}
+window.addEventListener("resize", resize);
+
+function rand(a,b){return a + Math.random()*(b-a);}
+function spawn(n=110){
+  particles = Array.from({length:n}, ()=>({
+    x: rand(0,W), y: rand(0,H),
+    r: rand(0.8, 2.4) * DPR,
+    vx: rand(-0.18, 0.18) * DPR,
+    vy: rand(-0.10, 0.22) * DPR,
+    a: rand(0.15, 0.65),
+    hue: Math.random() < 0.7 ? 270 : 140
+  }));
+}
+function step(){
+  ctx.clearRect(0,0,W,H);
+
+  // soft vignette
+  const g = ctx.createRadialGradient(W*0.5,H*0.55, 0, W*0.5,H*0.55, Math.max(W,H)*0.65);
+  g.addColorStop(0,"rgba(0,0,0,0)");
+  g.addColorStop(1,"rgba(0,0,0,0.55)");
+  ctx.fillStyle = g;
+  ctx.fillRect(0,0,W,H);
+
+  // particles
+  for(const p of particles){
+    p.x += p.vx;
+    p.y += p.vy;
+    if(p.x < -20) p.x = W+20;
+    if(p.x > W+20) p.x = -20;
+    if(p.y < -20) p.y = H+20;
+    if(p.y > H+20) p.y = -20;
+
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fillStyle = `hsla(${p.hue}, 90%, 65%, ${p.a})`;
+    ctx.fill();
+  }
+
+  // links
+  for(let i=0;i<particles.length;i++){
+    const a = particles[i];
+    for(let j=i+1;j<i+8 && j<particles.length;j++){
+      const b = particles[j];
+      const dx=a.x-b.x, dy=a.y-b.y;
+      const d = Math.hypot(dx,dy);
+      if(d < 140*DPR){
+        ctx.strokeStyle = `rgba(139,92,246,${0.08 * (1 - d/(140*DPR))})`;
+        ctx.beginPath();
+        ctx.moveTo(a.x,a.y);
+        ctx.lineTo(b.x,b.y);
+        ctx.stroke();
+      }
+    }
+  }
+
+  requestAnimationFrame(step);
+}
+
+/* =========================
+   9) Boot
+========================= */
+function wire(){
+  el("tabLogin").onclick = ()=>setActiveTab("tabLogin");
+  el("tabRegister").onclick = ()=>setActiveTab("tabRegister");
+  el("tabDashboard").onclick = ()=>setActiveTab("tabDashboard");
+
+  el("btnGoRegister").onclick = ()=>setActiveTab("tabRegister");
+  el("btnGoLogin").onclick = ()=>setActiveTab("tabLogin");
+
+  el("btnDoLogin").onclick = doLogin;
+  el("btnDoRegister").onclick = doRegister;
+
+  el("btnLogout").onclick = doLogout;
+  el("btnRefreshMe").onclick = refreshMe;
+
+  el("btnCopyToken").onclick = copyToken;
+  el("btnSaveAccount").onclick = saveAccount;
+
+  el("btnDeleteAccount").onclick = openDeleteModal;
+  el("btnCancelDel").onclick = closeDeleteModal;
+  el("btnConfirmDel").onclick = confirmDelete;
+
+  el("btnRefreshFeed").onclick = refreshFeed;
+  el("btnForceReloadBase").onclick = async ()=>{ await loadServerStatus(); toast("🔄 API base", apiBase, "ok"); };
+
+  // enter key
+  ["login_login","login_senha"].forEach(id=>{
+    el(id).addEventListener("keydown", (e)=>{ if(e.key==="Enter") doLogin(); });
+  });
+  ["reg_username","reg_email","reg_senha"].forEach(id=>{
+    el(id).addEventListener("keydown", (e)=>{ if(e.key==="Enter") doRegister(); });
+  });
+}
+
+(async function boot(){
+  resize(); spawn(); step();
+  wire(); renderNotes();
+  renderToken();
+
+  await loadServerStatus();
+
+  // tenta auto-login se tiver token
+  const t = getToken();
+  if(t){
+    const sess = await whoami();
+    if(sess){
+      showDashboard();
+      fillProfileFields(sess);
+      toast("🟣 Sessão restaurada", "Token válido. Bem-vindo!", "ok");
+      refreshFeed();
+      return;
+    }else{
+      setToken("");
+    }
+  }
+  // sem token
+  showAuth();
+  refreshFeed(); // vai falhar se /listusers não existir, mas deixa a dica
+})();
 </script>
 </body>
 </html>
