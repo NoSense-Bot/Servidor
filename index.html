@@ -3,172 +3,221 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>OBEARCO • Web</title>
+  <title>OBEARCO • RPG Hub</title>
   <meta name="color-scheme" content="dark light" />
-  <meta name="description" content="Painel web público do OBEARCO (login, conta, admin) consumindo a API via server_status.json no GitHub." />
 
   <style>
     :root{
-      --bg:#0b0d10; --panel:#10141a; --panel2:#0f1318;
-      --text:#e7eef7; --muted:#a6b2c2; --border:#1e2632;
-      --accent:#5aa6ff; --accent2:#8b5cf6; --ok:#22c55e; --bad:#ef4444; --warn:#f59e0b;
-      --shadow: 0 10px 35px rgba(0,0,0,.35);
-      --radius: 16px;
+      --bg:#07090c;
+      --panel: rgba(16,20,26,.72);
+      --panel2: rgba(12,16,21,.58);
+      --glass: rgba(255,255,255,.06);
+      --text:#eaf2ff;
+      --muted:#a7b4c7;
+      --border: rgba(180,210,255,.12);
+      --accent:#5aa6ff;
+      --accent2:#8b5cf6;
+      --ok:#22c55e;
+      --bad:#ef4444;
+      --warn:#f59e0b;
+      --shadow: 0 18px 65px rgba(0,0,0,.45);
+      --radius: 18px;
       --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
       --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
     }
+
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
-      margin:0; font-family:var(--sans);
-      background:
-        radial-gradient(1200px 700px at 10% -10%, rgba(90,166,255,.12), transparent 50%),
-        radial-gradient(900px 600px at 90% 0%, rgba(139,92,246,.10), transparent 45%),
-        var(--bg);
+      margin:0;
+      font-family:var(--sans);
+      background: radial-gradient(1100px 650px at 15% -10%, rgba(90,166,255,.14), transparent 55%),
+                  radial-gradient(900px 650px at 95% 5%, rgba(139,92,246,.14), transparent 55%),
+                  var(--bg);
       color:var(--text);
       overflow-x:hidden;
     }
     a{color:inherit; text-decoration:none}
-    button,input,textarea,select{font-family:inherit}
-    .app{min-height:100vh; display:flex; flex-direction:column}
 
-    /* Topbar */
+    /* ===== Background animado ===== */
+    #bg{
+      position:fixed;
+      inset:0;
+      z-index:-1;
+      opacity:.85;
+      filter: saturate(1.1);
+    }
+    .vignette{
+      position:fixed;
+      inset:0;
+      z-index:-1;
+      pointer-events:none;
+      background: radial-gradient(900px 700px at 50% 35%, transparent 30%, rgba(0,0,0,.55) 78%),
+                  linear-gradient(to bottom, rgba(0,0,0,.55), transparent 30%, rgba(0,0,0,.65));
+    }
+
+    /* ===== App ===== */
+    .app{min-height:100vh; display:flex; flex-direction:column}
     .topbar{
       position:sticky; top:0; z-index:50;
-      background: rgba(11,13,16,.75);
-      backdrop-filter: blur(10px);
+      background: rgba(7,9,12,.65);
+      backdrop-filter: blur(12px);
       border-bottom:1px solid var(--border);
     }
     .topbar-inner{
-      max-width:1100px; margin:0 auto; padding:14px 16px;
-      display:flex; align-items:center; gap:12px; justify-content:space-between;
+      max-width:1120px;
+      margin:0 auto;
+      padding:14px 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
     }
-    .brand{display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:.4px;}
-    .brand .title{display:flex; gap:8px; align-items:baseline}
-    .brand .title span{font-weight:800}
-    .mini{font-size:12px}
-    .muted{color:var(--muted)}
-
-    /* Status dot animado */
+    .brand{
+      display:flex; align-items:center; gap:12px;
+      font-weight:900; letter-spacing:.5px;
+    }
+    .brand .title{display:flex; flex-direction:column; line-height:1.1}
+    .brand .title .sub{font-size:12px; color:var(--muted); font-weight:700}
     .dot{
-      width:10px;height:10px;border-radius:999px;background:var(--warn);
-      box-shadow:0 0 0 4px rgba(245,158,11,.12);
-      position:relative;
-    }
-    .dot.pulse::after{
-      content:"";
-      position:absolute; inset:-10px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.06);
-      animation:pulse 1.8s ease-out infinite;
-    }
-    @keyframes pulse{
-      0%{transform:scale(.45); opacity:.0}
-      30%{opacity:.25}
-      100%{transform:scale(1.1); opacity:0}
+      width:11px;height:11px;border-radius:999px;
+      background:var(--warn);
+      box-shadow:0 0 0 6px rgba(245,158,11,.10);
+      transition: .25s ease;
     }
 
-    /* Nav */
-    .nav{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
-    .chip{
-      border:1px solid var(--border); background:rgba(16,20,26,.6);
-      padding:8px 10px; border-radius:999px; color:var(--muted);
-      font-size:13px;
-      display:inline-flex; gap:8px; align-items:center;
+    .nav{
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+      justify-content:flex-end;
     }
 
-    /* Botões */
     .btn{
       border:1px solid var(--border);
-      background:linear-gradient(180deg, rgba(16,20,26,.85), rgba(16,20,26,.55));
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
       color:var(--text);
-      padding:9px 12px; border-radius:12px;
+      padding:10px 12px;
+      border-radius:14px;
       cursor:pointer;
-      display:inline-flex; align-items:center; gap:8px; font-weight:650;
-      transition: transform .15s ease, filter .15s ease, border-color .15s ease, opacity .15s ease;
-      will-change: transform;
+      transition: transform .15s ease, filter .15s ease, border-color .15s ease;
+      display:inline-flex; align-items:center; gap:8px;
+      font-weight:800;
+      letter-spacing:.2px;
+      user-select:none;
     }
-    .btn:hover{transform:translateY(-1px); filter:brightness(1.06); border-color:#2a3648}
-    .btn:active{transform:translateY(0px) scale(.99)}
-    .btn[disabled]{opacity:.55; cursor:not-allowed; transform:none}
+    .btn:hover{transform:translateY(-1px); filter:brightness(1.06); border-color: rgba(180,210,255,.22)}
+    .btn:active{transform:translateY(0px); filter:brightness(1.02)}
     .btn.primary{
-      border-color: rgba(90,166,255,.35);
+      border-color: rgba(90,166,255,.32);
       background: linear-gradient(180deg, rgba(90,166,255,.22), rgba(90,166,255,.10));
     }
-    .btn.danger{
-      border-color: rgba(239,68,68,.35);
-      background: linear-gradient(180deg, rgba(239,68,68,.22), rgba(239,68,68,.10));
-    }
     .btn.ghost{background:transparent}
+    .btn.danger{
+      border-color: rgba(239,68,68,.30);
+      background: linear-gradient(180deg, rgba(239,68,68,.18), rgba(239,68,68,.08));
+    }
 
-    /* Layout */
     .container{
-      max-width:1100px; width:100%;
+      max-width:1120px; width:100%;
       margin:0 auto; padding:18px 16px 34px;
       display:grid; gap:16px;
     }
-    .grid{display:grid; gap:16px; grid-template-columns: 1.2fr .8fr;}
-    @media (max-width: 920px){ .grid{grid-template-columns:1fr} }
+    .grid{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap:16px;
+      animation: fadeUp .35s ease both;
+    }
+    @media (max-width: 980px){
+      .grid{grid-template-columns:1fr}
+    }
 
-    /* Cards com animação de entrada */
     .card{
-      background:linear-gradient(180deg, rgba(16,20,26,.95), rgba(16,20,26,.70));
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
       border:1px solid var(--border);
       border-radius:var(--radius);
       box-shadow:var(--shadow);
       padding:14px;
-      transform: translateY(6px);
-      opacity:0;
-      animation: cardIn .35s ease forwards;
+      position:relative;
+      overflow:hidden;
     }
-    @keyframes cardIn{to{transform:translateY(0); opacity:1}}
-
+    .card:before{
+      content:"";
+      position:absolute;
+      inset:-1px;
+      background: radial-gradient(800px 220px at 20% 0%, rgba(90,166,255,.14), transparent 55%),
+                  radial-gradient(800px 220px at 80% 0%, rgba(139,92,246,.12), transparent 55%);
+      opacity:.65;
+      pointer-events:none;
+      mix-blend-mode: screen;
+    }
+    .card > *{position:relative}
     .card h2{margin:0 0 8px; font-size:18px}
-    .card h3{margin:0 0 8px; font-size:15px; color:var(--muted); font-weight:700}
+    .card h3{margin:0 0 8px; font-size:14px; color:var(--muted); font-weight:900; letter-spacing:.3px}
+    .muted{color:var(--muted)}
+    .mini{font-size:12px}
+    .tag{font-family:var(--mono); font-size:12px; opacity:.92}
 
     .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
     .col{display:flex; flex-direction:column; gap:10px}
+
     .pill{
       display:inline-flex; align-items:center; gap:8px;
-      padding:6px 10px; border-radius:999px; font-size:12px;
-      border:1px solid var(--border); background:rgba(15,19,24,.65);
+      padding:7px 10px; border-radius:999px; font-size:12px;
+      border:1px solid var(--border);
+      background: rgba(0,0,0,.18);
       color:var(--muted);
+      font-weight:800;
     }
-    .pill.ok{border-color: rgba(34,197,94,.35); color:#b7f7cb; background:rgba(34,197,94,.08)}
-    .pill.bad{border-color: rgba(239,68,68,.35); color:#ffd0d0; background:rgba(239,68,68,.08)}
-    .pill.warn{border-color: rgba(245,158,11,.35); color:#ffe2b3; background:rgba(245,158,11,.08)}
+    .pill.ok{border-color: rgba(34,197,94,.32); color:#b7f7cb; background:rgba(34,197,94,.08)}
+    .pill.bad{border-color: rgba(239,68,68,.32); color:#ffd0d0; background:rgba(239,68,68,.08)}
+    .pill.warn{border-color: rgba(245,158,11,.32); color:#ffe2b3; background:rgba(245,158,11,.08)}
 
     .hr{height:1px; background:var(--border); margin:12px 0}
-
-    .field{display:flex; flex-direction:column; gap:6px}
-    .field label{font-size:12px; color:var(--muted)}
+    .field{display:flex; flex-direction:column; gap:7px}
+    .field label{font-size:12px; color:var(--muted); font-weight:800; letter-spacing:.2px}
     input, textarea, select{
       width:100%;
-      padding:10px 11px;
-      border-radius:12px;
+      padding:11px 12px;
+      border-radius:14px;
       border:1px solid var(--border);
-      background:rgba(15,19,24,.85);
+      background: rgba(0,0,0,.22);
       color:var(--text);
       outline:none;
-      transition:border-color .15s ease, filter .15s ease;
     }
-    input:focus,textarea:focus,select:focus{border-color:rgba(90,166,255,.45); filter:brightness(1.02)}
-    textarea{min-height:110px; resize:vertical; font-family:var(--mono); font-size:12.5px}
+    textarea{min-height:120px; resize:vertical; font-family:var(--mono); font-size:12.5px}
+    input:focus, textarea:focus{border-color: rgba(90,166,255,.32); box-shadow: 0 0 0 4px rgba(90,166,255,.10)}
 
-    .kpi{display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:10px;}
+    .kpi{
+      display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:10px;
+    }
     @media (max-width: 600px){ .kpi{grid-template-columns:1fr} }
     .kpi .box{
       border:1px solid var(--border);
-      background:rgba(15,19,24,.6);
-      border-radius:14px;
+      background: rgba(0,0,0,.18);
+      border-radius:16px;
       padding:10px;
-      transition: transform .15s ease, border-color .15s ease;
     }
-    .kpi .box:hover{transform:translateY(-1px); border-color:#2a3648}
-    .kpi .n{font-weight:900; font-size:16px}
-    .kpi .t{font-size:12px; color:var(--muted)}
+    .kpi .n{font-weight:950; font-size:16px}
+    .kpi .t{font-size:12px; color:var(--muted); font-weight:800}
 
-    /* Toasts com animação */
+    .list{display:flex; flex-direction:column; gap:10px}
+    .item{
+      border:1px solid var(--border);
+      background: rgba(0,0,0,.18);
+      border-radius:16px;
+      padding:12px;
+      transition: transform .12s ease, border-color .12s ease, filter .12s ease;
+    }
+    .item:hover{transform: translateY(-1px); border-color: rgba(180,210,255,.20); filter:brightness(1.04)}
+    .item .title{font-weight:950}
+    .item .sub{color:var(--muted); font-size:12px; font-weight:800}
+
+    .split{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+    @media (max-width: 760px){ .split{grid-template-columns:1fr} }
+
+    .smallnote{font-size:12px; color:var(--muted); line-height:1.45}
+
+    /* ===== Toast ===== */
     .toast-wrap{
       position:fixed; right:16px; bottom:16px; z-index:9999;
       display:flex; flex-direction:column; gap:10px;
@@ -176,151 +225,130 @@
     }
     .toast{
       border:1px solid var(--border);
-      background:rgba(16,20,26,.92);
-      border-radius:14px;
+      background: rgba(7,9,12,.75);
+      backdrop-filter: blur(10px);
+      border-radius:16px;
       padding:10px 12px;
       box-shadow:var(--shadow);
       display:flex; gap:10px; align-items:flex-start;
-      transform: translateY(8px);
-      opacity:0;
-      animation: toastIn .22s ease forwards;
+      animation: toastIn .22s ease both;
     }
-    @keyframes toastIn{to{transform:translateY(0); opacity:1}}
-    .toast.out{animation: toastOut .18s ease forwards}
-    @keyframes toastOut{to{transform:translateY(6px); opacity:0}}
-
     .toast b{display:block; margin-bottom:2px}
-    .tag{font-family:var(--mono); font-size:12px; opacity:.92}
-    .list{display:flex; flex-direction:column; gap:10px}
-    .item{
+    @keyframes toastIn{from{opacity:0; transform: translateY(8px)} to{opacity:1; transform: translateY(0)}}
+    @keyframes fadeUp{from{opacity:0; transform: translateY(6px)} to{opacity:1; transform: translateY(0)}}
+
+    /* ===== Skeleton ===== */
+    .skeleton{
+      position:relative;
+      overflow:hidden;
+      background: rgba(255,255,255,.06);
       border:1px solid var(--border);
-      background:rgba(15,19,24,.6);
-      border-radius:14px;
-      padding:10px;
-      transition: transform .15s ease, border-color .15s ease, filter .15s ease;
-      cursor:pointer;
+      border-radius:16px;
+      min-height: 90px;
     }
-    .item:hover{transform:translateY(-1px); border-color:#2a3648; filter:brightness(1.04)}
-    .item .title{font-weight:800}
-    .item .sub{color:var(--muted); font-size:12px}
-    .split{display:grid; grid-template-columns:1fr 1fr; gap:12px}
-    @media (max-width: 700px){ .split{grid-template-columns:1fr} }
-    .smallnote{font-size:12px; color:var(--muted); line-height:1.35}
-
-    /* Barra de carregamento do topo */
-    .loadingbar{
-      position:absolute; left:0; right:0; bottom:-1px; height:2px;
-      background:linear-gradient(90deg, rgba(90,166,255,.0), rgba(90,166,255,.9), rgba(139,92,246,.9), rgba(90,166,255,.0));
-      background-size: 200% 100%;
-      opacity:0;
-      animation: loadmove 1.2s linear infinite;
-      transform-origin:left;
+    .skeleton:after{
+      content:"";
+      position:absolute;
+      inset:0;
+      transform: translateX(-60%);
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.10), transparent);
+      animation: shimmer 1.2s ease infinite;
     }
-    .loadingbar.on{opacity:.9}
-    @keyframes loadmove{0%{background-position:0% 0}100%{background-position:200% 0}}
+    @keyframes shimmer{to{transform: translateX(60%)}}
 
-    /* Acessibilidade */
-    .sr-only{
-      position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden;
-      clip:rect(0,0,0,0); white-space:nowrap; border:0;
+    /* ===== Footer ===== */
+    .footer{
+      max-width:1120px;
+      margin:0 auto 24px;
+      padding:0 16px;
+      color:var(--muted);
+      font-size:12px;
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      opacity:.9;
     }
   </style>
 </head>
 
 <body>
+<canvas id="bg"></canvas>
+<div class="vignette"></div>
+
 <div class="app">
-  <header class="topbar">
-    <div class="topbar-inner" style="position:relative">
+  <div class="topbar">
+    <div class="topbar-inner">
       <div class="brand">
-        <span class="dot pulse" id="srvDot" aria-hidden="true"></span>
-        <div>
-          <div class="title">
-            <span>OBEARCO</span> <span class="muted">Web</span>
-          </div>
-          <div class="mini muted" id="srvLine">Carregando status…</div>
+        <span class="dot" id="srvDot"></span>
+        <div class="title">
+          <div>OBEARCO <span class="muted">RPG Hub</span></div>
+          <div class="sub" id="srvLine">Carregando status…</div>
         </div>
       </div>
 
-      <nav class="nav" id="nav" aria-label="Navegação">
-        <!-- preenchido via JS -->
-      </nav>
-
-      <div class="loadingbar" id="loadingBar" aria-hidden="true"></div>
+      <div class="nav" id="nav"></div>
     </div>
-  </header>
+  </div>
 
-  <main class="container" id="app" aria-live="polite"></main>
+  <main class="container" id="app"></main>
+
+  <div class="footer">
+    <div>⚔️ OBEARCO • UI para público (GitHub Pages)</div>
+    <div class="muted">Dica: mantenha CORS liberado para o domínio do seu Pages.</div>
+  </div>
 </div>
 
-<div class="toast-wrap" id="toasts" aria-live="polite" aria-relevant="additions"></div>
+<div class="toast-wrap" id="toasts"></div>
 
 <script>
 /* ============================================================
-   OBEARCO Web — versão pública (GitHub Pages)
-   - Consome server_status.json via RAW do GitHub
-   - Mantém suas funções (login/register/me/admin)
-   - Adiciona animações e melhora robustez (retry, polling, cache-bust)
+   CONFIG — SEMPRE BUSCAR API NO server_status.json DO GITHUB
    ============================================================ */
 
-/* =========================
-   1) CONFIGURAÇÃO
-   ========================= */
+// URL que você mandou (corrigindo o .jsonn quando aparecer errado)
+const STATUS_GITHUB_URL = "https://github.com/NoSense-Bot/Servidor/blob/main/server_status.json";
 
-/** URL RAW do status.json (CORRETO para fetch). */
-const STATUS_RAW_URL = "https://raw.githubusercontent.com/NoSense-Bot/Servidor/main/server_status.json";
+function githubBlobToRaw(url){
+  try{
+    const u = String(url||"").trim();
+    if(!u) return u;
+    if(u.includes("raw.githubusercontent.com")) return u;
+    return u.replace("https://github.com/", "https://raw.githubusercontent.com/")
+            .replace("/blob/", "/");
+  }catch{ return url; }
+}
 
-/** Intervalos e timeouts */
-const CFG = {
-  STATUS_POLL_MS: 20_000,     // atualiza status a cada 20s
-  FETCH_TIMEOUT_MS: 7_500,    // timeout do fetch
-  RETRY_MAX: 2,               // tentativas extras (além da 1ª)
-  RETRY_BACKOFF_MS: 600,      // backoff base
-};
-
-/** LocalStorage keys */
 const LS = {
   token: "obearco_session_token",
   apiBase: "obearco_api_base",
   me: "obearco_me_cache",
+  updatesLocal: "obearco_updates_local_v1",
 };
 
-/* =========================
-   2) ESTADO GLOBAL
-   ========================= */
-
+// Estado global
 const state = {
-  booting: true,
+  loading: true,
   status: null,
-  apiBase: localStorage.getItem(LS.apiBase) || "",
+  apiBase: "", // NUNCA mostramos na UI
   token: localStorage.getItem(LS.token) || "",
   me: safeJson(localStorage.getItem(LS.me)) || null,
   isAdmin: false,
   route: location.hash || "#/login",
+  updates: [], // feed público de updates
 };
 
-/* =========================
-   3) UTILITÁRIOS
-   ========================= */
+/* ============================================================
+   Utils
+   ============================================================ */
+function safeJson(s){ try{ return JSON.parse(s); }catch{ return null; } }
 
-/** Faz parse JSON seguro. */
-function safeJson(s){
-  try{ return JSON.parse(s); }catch{ return null; }
-}
-
-/** Escape básico para evitar injeção de HTML via innerHTML. */
 function escapeHtml(s){
   return String(s ?? "").replace(/[&<>"']/g, m => ({
     "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
   }[m]));
 }
 
-/** Controla o “loading bar” no topo. */
-function setLoadingBar(on){
-  const el = document.getElementById("loadingBar");
-  el.classList.toggle("on", !!on);
-}
-
-/** Toast animado. */
 function toast(title, msg, kind="info"){
   const wrap = document.getElementById("toasts");
   const t = document.createElement("div");
@@ -334,130 +362,75 @@ function toast(title, msg, kind="info"){
     </div>
   `;
   wrap.appendChild(t);
-  setTimeout(()=>{ t.classList.add("out"); }, 3200);
-  setTimeout(()=>{ t.remove(); }, 3600);
+  setTimeout(()=>{ t.style.opacity="0"; t.style.transform="translateY(6px)"; }, 3200);
+  setTimeout(()=>{ t.remove(); }, 3800);
 }
 
-/** Timeout wrapper para fetch. */
-async function fetchWithTimeout(url, options={}, timeoutMs=CFG.FETCH_TIMEOUT_MS){
-  const ctrl = new AbortController();
-  const id = setTimeout(()=>ctrl.abort(), timeoutMs);
-  try{
-    return await fetch(url, { ...options, signal: ctrl.signal });
-  }finally{
-    clearTimeout(id);
-  }
-}
+function go(hash){ location.hash = hash; }
 
-/** Retry simples com backoff. */
-async function withRetry(fn, maxRetry=CFG.RETRY_MAX){
-  let lastErr = null;
-  for(let attempt=0; attempt<=maxRetry; attempt++){
-    try{
-      return await fn(attempt);
-    }catch(err){
-      lastErr = err;
-      const wait = CFG.RETRY_BACKOFF_MS * (attempt+1);
-      await new Promise(r=>setTimeout(r, wait));
-    }
-  }
-  throw lastErr;
-}
-
-/** Remove barras no final do base URL. */
-function normalizeBase(base){
-  return String(base || "").trim().replace(/\/+$/,"");
-}
-
-/** Monta URL da API. */
-function apiUrl(path){
-  const base = normalizeBase(state.apiBase);
-  return base + path;
-}
-
-/** Extrai um ID provável de um user. */
 function pickId(user){
   return user?.id ?? user?.user_id ?? user?._id ?? user?.email ?? null;
 }
 
-/** Descobre se é admin pelo payload do /me. */
 function isAdminFromMe(me){
   return !!(me?.is_admin || me?.admin || me?.role === "admin" || me?.nivel === "admin");
 }
 
-/* =========================
-   4) STATUS (GitHub -> API Base)
-   ========================= */
-
-/** Baixa o status.json (RAW) com cache-busting. */
-async function fetchStatus(){
-  const url = STATUS_RAW_URL + "?t=" + Date.now(); // evita cache no GitHub Pages/browser
-  const res = await fetchWithTimeout(url, { cache:"no-store" });
-  if(!res.ok) throw new Error("Não consegui baixar server_status.json");
-  return await res.json();
+/* ============================================================
+   Status + API base
+   ============================================================ */
+async function fetchStatusAlways(){
+  // Sempre busca do GitHub ao abrir (no-store), e tenta 2x se falhar
+  const rawUrl = githubBlobToRaw(STATUS_GITHUB_URL);
+  for(let attempt=1; attempt<=2; attempt++){
+    try{
+      const res = await fetch(rawUrl, { cache:"no-store" });
+      if(!res.ok) throw new Error("Não consegui baixar server_status.json");
+      return await res.json();
+    }catch(err){
+      if(attempt===2) throw err;
+      await sleep(500);
+    }
+  }
 }
 
-/** Atualiza UI do badge (topo) */
 function setServerBadge(online){
   const dot = document.getElementById("srvDot");
   const line = document.getElementById("srvLine");
-
-  dot.classList.add("pulse");
   if(online){
     dot.style.background = "var(--ok)";
-    dot.style.boxShadow = "0 0 0 4px rgba(34,197,94,.12)";
+    dot.style.boxShadow = "0 0 0 6px rgba(34,197,94,.10)";
     line.textContent = "Servidor: Online ✅";
   }else{
     dot.style.background = "var(--bad)";
-    dot.style.boxShadow = "0 0 0 4px rgba(239,68,68,.12)";
+    dot.style.boxShadow = "0 0 0 6px rgba(239,68,68,.10)";
     line.textContent = "Servidor: Offline ❌";
   }
 }
 
-/** Aplica status no state e salva apiBase */
-function applyStatus(st){
-  state.status = st || null;
-  const base = normalizeBase(st?.url_api_base || "");
-  if(base){
-    state.apiBase = base;
-    localStorage.setItem(LS.apiBase, base);
-  }
-  const online = String(st?.status_servidor || "").toLowerCase().includes("online");
-  setServerBadge(online);
-  renderNav();
+function apiUrl(path){
+  const base = (state.apiBase || "").replace(/\/+$/,"");
+  return base + path;
 }
 
-/* =========================
-   5) API (cmd + fallbacks legacy)
-   ========================= */
-
-/** Faz chamada /api/v1/cmd, com fallback para /login e /register legacy. */
 async function apiCmd(payload){
+  // Mantém seu padrão: /api/v1/cmd com fallback legacy (/login, /register)
   const url = apiUrl("/api/v1/cmd");
   const headers = { "Content-Type":"application/json" };
   if(state.token) headers["Authorization"] = "Bearer " + state.token;
 
-  const doMain = async () => {
-    const r = await fetchWithTimeout(url, {
-      method:"POST",
-      headers,
-      body: JSON.stringify(payload),
-    });
+  try{
+    const r = await fetch(url, { method:"POST", headers, body: JSON.stringify(payload) });
     const j = await r.json().catch(()=> ({}));
     if(!r.ok || j.ok === false) throw new Error(j.error || "Falha no cmd");
     return j;
-  };
-
-  try{
-    return await doMain();
   }catch(err){
-    // Fallback apenas para login/register
     if(payload?.comando === "/login" || payload?.comando === "/register"){
       const legacyPath = payload.comando === "/login" ? "/login" : "/register";
-      const rr = await fetchWithTimeout(apiUrl(legacyPath), {
+      const rr = await fetch(apiUrl(legacyPath), {
         method:"POST",
         headers: {"Content-Type":"application/json"},
-        body: JSON.stringify(payload),
+        body: JSON.stringify(payload)
       });
       const jj = await rr.json().catch(()=> ({}));
       if(!rr.ok || jj.ok === false) throw new Error(jj.error || "Falha no login/register");
@@ -467,37 +440,29 @@ async function apiCmd(payload){
   }
 }
 
-/* =========================
-   6) AUTH (Login/Register/Logout)
-   ========================= */
+function sleep(ms){ return new Promise(r=>setTimeout(r, ms)); }
 
-/** Faz login e salva token. */
+/* ============================================================
+   Auth
+   ============================================================ */
 async function doLogin(email, senha){
   const out = await apiCmd({ comando:"/login", email, senha });
-
-  // tenta encontrar token em formatos comuns
-  const token =
-    out.session_token || out.token ||
-    out?.data?.session_token || out?.session?.token ||
-    out?.data?.token;
-
+  const token = out.session_token || out.token || out?.data?.session_token || out?.session?.token;
   if(!token) throw new Error("Login OK mas não veio session_token");
   state.token = token;
   localStorage.setItem(LS.token, token);
-
   toast("Login", "Sessão salva ✅", "ok");
   await loadMe();
+  await loadUpdates(); // carrega feed junto
   go("#/feed");
 }
 
-/** Cria conta (envia usuario conforme seu backend). */
 async function doRegister(email, senha, extra={}){
   await apiCmd({ comando:"/register", email, senha, ...extra });
   toast("Conta criada", "Agora faz login 😉", "ok");
   go("#/login");
 }
 
-/** Limpa sessão. */
 function doLogout(){
   state.token = "";
   state.me = null;
@@ -508,29 +473,31 @@ function doLogout(){
   go("#/login");
 }
 
-/* =========================
-   7) ME (CRUD)
-   ========================= */
-
-/** Carrega /me (tenta 2 comandos diferentes). */
+/* ============================================================
+   Me (CRUD)
+   ============================================================ */
 async function loadMe(){
   if(!state.token) return null;
-
-  const try1 = async () => {
+  try{
     const out = await apiCmd({ comando:"/me/get" });
-    return out.me || out.user || out.account || out.data || out;
-  };
-  const try2 = async () => {
-    const out = await apiCmd({ comando:"/me" });
-    return out.me || out.user || out.account || out.data || out;
-  };
-
-  const me = await try1().catch(()=> try2());
-  state.me = me;
-  state.isAdmin = isAdminFromMe(me);
-  localStorage.setItem(LS.me, JSON.stringify(me));
-  renderNav();
-  return me;
+    const me = out.me || out.user || out.account || out.data || out;
+    state.me = me;
+    state.isAdmin = isAdminFromMe(me);
+    localStorage.setItem(LS.me, JSON.stringify(me));
+    renderNav();
+    return me;
+  }catch(e1){
+    const out2 = await apiCmd({ comando:"/me" }).catch(()=> null);
+    if(out2){
+      const me = out2.me || out2.user || out2.account || out2.data || out2;
+      state.me = me;
+      state.isAdmin = isAdminFromMe(me);
+      localStorage.setItem(LS.me, JSON.stringify(me));
+      renderNav();
+      return me;
+    }
+    throw e1;
+  }
 }
 
 async function updateMe(patch){
@@ -557,10 +524,9 @@ async function removeSkill(skill){
   await loadMe();
 }
 
-/* =========================
-   8) ADMIN (CRUD total)
-   ========================= */
-
+/* ============================================================
+   Admin (CRUD usuários)
+   ============================================================ */
 async function adminListUsers(){
   const out = await apiCmd({ comando:"/admin/users/list" });
   return out.users || out.list || out.data || [];
@@ -582,57 +548,76 @@ async function adminCreateUser(payload){
   toast("Admin", "Usuário criado ✅", "ok");
 }
 
-/* =========================
-   9) ROUTER
-   ========================= */
+/* ============================================================
+   Updates (Público + Editor Admin)
+   ============================================================ */
+/*
+  ✅ Profissional: tenta buscar/salvar por API
+  - Lista pública:  comando "/updates/list"
+  - Criar update (admin): "/admin/updates/create"
+  - (opcional) deletar: "/admin/updates/delete"
 
-function go(hash){ location.hash = hash; }
+  🔁 Fallback: localStorage (para não “quebrar” se backend ainda não existe)
+*/
+function getLocalUpdates(){
+  const arr = safeJson(localStorage.getItem(LS.updatesLocal)) || [];
+  return Array.isArray(arr) ? arr : [];
+}
+function setLocalUpdates(list){
+  localStorage.setItem(LS.updatesLocal, JSON.stringify(list));
+}
 
+async function loadUpdates(){
+  // tenta API primeiro
+  try{
+    const out = await apiCmd({ comando:"/updates/list" });
+    const list = out.updates || out.list || out.data || [];
+    state.updates = Array.isArray(list) ? list : [];
+    return state.updates;
+  }catch{
+    // fallback local
+    state.updates = getLocalUpdates();
+    return state.updates;
+  }
+}
+
+async function createUpdate({ title, body, tags=[] }){
+  const payload = {
+    title: String(title||"").trim(),
+    body: String(body||"").trim(),
+    tags: Array.isArray(tags) ? tags : [],
+    ts: Date.now()
+  };
+  if(!payload.title || !payload.body) throw new Error("Título e texto são obrigatórios.");
+
+  // tenta API
+  try{
+    await apiCmd({ comando:"/admin/updates/create", update: payload });
+    toast("Updates", "Publicado ✅", "ok");
+    await loadUpdates();
+    return;
+  }catch{
+    // fallback local
+    const list = getLocalUpdates();
+    list.unshift({ ...payload, id: "local_" + payload.ts });
+    setLocalUpdates(list);
+    toast("Updates", "Publicado (local) ✅", "ok");
+    await loadUpdates();
+  }
+}
+
+/* ============================================================
+   Router + Nav
+   ============================================================ */
 window.addEventListener("hashchange", ()=>{
   state.route = location.hash || "#/login";
   render();
 });
 
-/* =========================
-   10) NAV + UI HELPERS
-   ========================= */
-
-function btn(label, onClick, cls=""){
-  const b = document.createElement("button");
-  b.className = "btn " + cls;
-  b.type = "button";
-  b.textContent = label;
-  b.onclick = onClick;
-  return b;
-}
-
 function renderNav(){
   const nav = document.getElementById("nav");
   const authed = !!state.token;
   nav.innerHTML = "";
-
-  // Chip com API base
-  const chip = document.createElement("div");
-  chip.className = "chip";
-  chip.innerHTML = `
-    <span class="tag">API</span>
-    <span class="muted">${escapeHtml(state.apiBase || "—")}</span>
-  `;
-  nav.appendChild(chip);
-
-  // Botão de “recarregar status”
-  nav.appendChild(btn("🔄 Status", async ()=>{
-    try{
-      setLoadingBar(true);
-      const st = await withRetry(()=>fetchStatus());
-      applyStatus(st);
-      toast("Status", "Atualizado ✅", "ok");
-    }catch(e){
-      toast("Status", e?.message || String(e), "bad");
-    }finally{
-      setLoadingBar(false);
-    }
-  }));
 
   if(!authed){
     nav.appendChild(btn("🔐 Login", ()=>go("#/login"), "primary"));
@@ -641,56 +626,65 @@ function renderNav(){
   }
 
   nav.appendChild(btn("📰 Feed", ()=>go("#/feed"), "primary"));
+  nav.appendChild(btn("📢 Updates", ()=>go("#/updates")));
   nav.appendChild(btn("⚙️ Config", ()=>go("#/config")));
   if(state.isAdmin) nav.appendChild(btn("🛡️ Admin", ()=>go("#/admin")));
   nav.appendChild(btn("🚪 Sair", doLogout, "ghost"));
 }
 
-/* =========================
-   11) RENDER PRINCIPAL
-   ========================= */
+function btn(label, onClick, cls=""){
+  const b = document.createElement("button");
+  b.className = "btn " + cls;
+  b.textContent = label;
+  b.onclick = onClick;
+  return b;
+}
 
-function render(){
-  const app = document.getElementById("app");
+function guardRoute(){
   const r = state.route;
-
-  // Guardas
-  if(!state.token && (r.startsWith("#/feed") || r.startsWith("#/config") || r.startsWith("#/admin"))){
+  if(!state.token && (r.startsWith("#/feed") || r.startsWith("#/config") || r.startsWith("#/admin") || r.startsWith("#/updates"))){
     go("#/login");
-    return;
+    return false;
   }
   if(state.token && r.startsWith("#/admin") && !state.isAdmin){
     toast("Sem permissão", "Você não é admin 😅", "warn");
     go("#/feed");
-    return;
+    return false;
   }
+  return true;
+}
+
+function render(){
+  if(!guardRoute()) return;
+
+  const app = document.getElementById("app");
+  const r = state.route;
 
   if(r.startsWith("#/login")) return renderLogin(app);
   if(r.startsWith("#/register")) return renderRegister(app);
   if(r.startsWith("#/feed")) return renderFeed(app);
+  if(r.startsWith("#/updates")) return renderUpdates(app);
   if(r.startsWith("#/config")) return renderConfig(app);
   if(r.startsWith("#/admin")) return renderAdmin(app);
 
   go("#/login");
 }
 
-/* =========================
-   12) TELAS
-   ========================= */
-
+/* ============================================================
+   Views
+   ============================================================ */
 function renderLogin(app){
   const st = state.status || {};
-
   app.innerHTML = `
     <div class="grid">
-      <section class="card">
+      <div class="card">
         <h2>🔐 Login</h2>
         <div class="muted">Entre com sua conta (usuário normal ou admin).</div>
         <div class="hr"></div>
 
         <div class="field">
           <label>Email</label>
-          <input id="email" placeholder="email@exemplo.com" autocomplete="email" />
+          <input id="email" placeholder="email@exemplo.com" autocomplete="username" />
         </div>
         <div class="field">
           <label>Senha</label>
@@ -698,37 +692,40 @@ function renderLogin(app){
         </div>
 
         <div class="row" style="margin-top:10px">
-          <button class="btn primary" id="btnLogin" type="button">Entrar</button>
-          <button class="btn" type="button" id="toRegister">Criar conta</button>
+          <button class="btn primary" id="btnLogin">Entrar</button>
+          <button class="btn" onclick="location.hash='#/register'">Criar conta</button>
         </div>
 
         <div class="hr"></div>
         <div class="smallnote">
-          💡 A base da API vem do <span class="tag">server_status.json</span> (GitHub RAW).<br/>
-          Se CORS travar, confirme se o servidor permite <span class="tag">https://nosense-bot.github.io</span>.
+          💡 A base da API é carregada automaticamente do <span class="tag">server_status.json</span> no GitHub, sempre que você abre o site.<br/>
+          ✅ As URLs e chamadas ficam “escondidas” da UI (pra ficar mais público/profissional).
         </div>
-      </section>
+      </div>
 
-      <aside class="card">
-        <h2>📡 Conexão</h2>
+      <div class="card">
+        <h2>📡 Status</h2>
         <div class="kpi">
           <div class="box">
-            <div class="n" id="kpiStatus">${escapeHtml(st.status_servidor ?? "—")}</div>
+            <div class="n">${escapeHtml(st.status_servidor ?? "—")}</div>
             <div class="t">status_servidor</div>
           </div>
           <div class="box">
-            <div class="n" id="kpiApi">${escapeHtml(st.version_api ?? "—")}</div>
+            <div class="n">${escapeHtml(st.version_api ?? "—")}</div>
             <div class="t">version_api</div>
           </div>
           <div class="box">
-            <div class="n" id="kpiPort">${escapeHtml(st.porta ?? "—")}</div>
+            <div class="n">${escapeHtml(st.porta ?? "—")}</div>
             <div class="t">porta</div>
           </div>
         </div>
         <div class="hr"></div>
-        <div class="muted mini"><span class="tag">url_api_base</span></div>
-        <div class="tag" id="kpiBase">${escapeHtml(st.url_api_base ?? "—")}</div>
-      </aside>
+        <div class="smallnote">
+          <b>Conectividade:</b><br/>
+          - Se estiver Offline, o login vai falhar.<br/>
+          - Se CORS travar, libere o domínio do seu GitHub Pages no servidor.
+        </div>
+      </div>
     </div>
   `;
 
@@ -736,46 +733,32 @@ function renderLogin(app){
   const senha = app.querySelector("#senha");
   const btnLogin = app.querySelector("#btnLogin");
 
-  app.querySelector("#toRegister").onclick = ()=>go("#/register");
-
   btnLogin.onclick = async ()=>{
     const e = (email.value || "").trim();
     const s = (senha.value || "");
     if(!e || !s){ toast("Ops", "Preenche email e senha 😅", "warn"); return; }
-
-    btnLogin.disabled = true;
-    btnLogin.textContent = "Entrando…";
-    setLoadingBar(true);
-    try{
-      await doLogin(e, s);
-    }catch(err){
-      toast("Login falhou", err?.message || String(err), "bad");
-    }finally{
-      setLoadingBar(false);
-      btnLogin.disabled = false;
-      btnLogin.textContent = "Entrar";
-    }
+    btnLogin.disabled = true; btnLogin.textContent = "Entrando…";
+    try{ await doLogin(e, s); }
+    catch(err){ toast("Login falhou", err?.message || String(err), "bad"); }
+    finally{ btnLogin.disabled = false; btnLogin.textContent = "Entrar"; }
   };
-
-  // Enter para logar
-  senha.addEventListener("keydown", (ev)=>{ if(ev.key==="Enter") btnLogin.click(); });
 }
 
 function renderRegister(app){
   app.innerHTML = `
     <div class="grid">
-      <section class="card">
+      <div class="card">
         <h2>🧾 Registrar</h2>
-        <div class="muted">Cria conta de usuário normal (admin você define no servidor/banco).</div>
+        <div class="muted">Cria conta de usuário normal.</div>
         <div class="hr"></div>
 
         <div class="field">
           <label>Usuário</label>
-          <input id="usuario" placeholder="seu nick" autocomplete="username" />
+          <input id="usuario" placeholder="seu nick" autocomplete="nickname" />
         </div>
         <div class="field">
           <label>Email</label>
-          <input id="email" placeholder="email@exemplo.com" autocomplete="email" />
+          <input id="email" placeholder="email@exemplo.com" autocomplete="username" />
         </div>
         <div class="field">
           <label>Senha</label>
@@ -783,23 +766,21 @@ function renderRegister(app){
         </div>
 
         <div class="row" style="margin-top:10px">
-          <button class="btn primary" id="btnReg" type="button">Criar</button>
-          <button class="btn" type="button" id="toLogin">Voltar</button>
+          <button class="btn primary" id="btnReg">Criar</button>
+          <button class="btn" onclick="location.hash='#/login'">Voltar</button>
         </div>
 
         <div class="hr"></div>
-        <div class="smallnote">
-          🔧 Backend esperado: comando <span class="tag">/register</span> requer <span class="tag">email</span>, <span class="tag">senha</span>, <span class="tag">usuario</span>.
-        </div>
-      </section>
+        <div class="smallnote">Backend esperado: comando <span class="tag">/register</span> (requer email, senha, usuario).</div>
+      </div>
 
-      <aside class="card">
+      <div class="card">
         <h2>🧠 Segurança</h2>
         <div class="muted">
-          Este site salva token no <span class="tag">localStorage</span> (prático pra dev).<br/>
-          Em produção “forte”, prefira cookie HttpOnly (no backend).
+          O token fica no <span class="tag">localStorage</span> (bom pra dev, simples).<br/>
+          Em produção “real”, o ideal é usar cookie HttpOnly.
         </div>
-      </aside>
+      </div>
     </div>
   `;
 
@@ -807,8 +788,6 @@ function renderRegister(app){
   const email = app.querySelector("#email");
   const senha = app.querySelector("#senha");
   const btnReg = app.querySelector("#btnReg");
-
-  app.querySelector("#toLogin").onclick = ()=>go("#/login");
 
   btnReg.onclick = async ()=>{
     const u = (usuario.value || "").trim();
@@ -818,23 +797,11 @@ function renderRegister(app){
       toast("Ops", "Preenche usuário, email e senha 😅", "warn");
       return;
     }
-
-    btnReg.disabled = true;
-    btnReg.textContent = "Criando…";
-    setLoadingBar(true);
-    try{
-      await doRegister(e, s, { usuario: u });
-    }catch(err){
-      toast("Registro falhou", err?.message || String(err), "bad");
-    }finally{
-      setLoadingBar(false);
-      btnReg.disabled = false;
-      btnReg.textContent = "Criar";
-    }
+    btnReg.disabled = true; btnReg.textContent = "Criando…";
+    try{ await doRegister(e, s, { usuario: u }); }
+    catch(err){ toast("Registro falhou", err?.message || String(err), "bad"); }
+    finally{ btnReg.disabled = false; btnReg.textContent = "Criar"; }
   };
-
-  // Enter para criar
-  senha.addEventListener("keydown", (ev)=>{ if(ev.key==="Enter") btnReg.click(); });
 }
 
 function renderFeed(app){
@@ -843,11 +810,11 @@ function renderFeed(app){
 
   app.innerHTML = `
     <div class="grid">
-      <section class="card">
+      <div class="card">
         <div class="row" style="justify-content:space-between">
           <div>
             <h2>📰 Feed</h2>
-            <div class="muted">Seu perfil aparece no topo (skills etc.).</div>
+            <div class="muted">Hub do jogador (perfil + atualizações públicas).</div>
           </div>
           <div class="row">
             ${state.isAdmin ? `<span class="pill ok">🛡️ Admin</span>` : `<span class="pill warn">👤 User</span>`}
@@ -856,7 +823,7 @@ function renderFeed(app){
 
         <div class="hr"></div>
 
-        <div class="item" style="cursor:default">
+        <div class="item">
           <div class="title">${escapeHtml(me.usuario || me.nome || me.name || me.username || me.email || "—")}</div>
           <div class="sub">${escapeHtml(me.email || "—")}</div>
 
@@ -881,27 +848,176 @@ function renderFeed(app){
 
         <div class="hr"></div>
 
-        <h3>📌 Seu feed (placeholder)</h3>
-        <div class="muted mini">
-          Aqui você pode listar posts, atividades, quests, etc.<br/>
-          Quando criar comandos tipo <span class="tag">/feed/list</span>, é só plugar.
-        </div>
-      </section>
+        <h3>📢 Últimos updates</h3>
+        <div id="updatesPreview" class="list"></div>
+      </div>
 
-      <aside class="card">
+      <div class="card">
         <h2>⚡ Ações rápidas</h2>
         <div class="row">
-          <button class="btn primary" type="button" onclick="location.hash='#/config'">⚙️ Abrir Config</button>
-          ${state.isAdmin ? `<button class="btn" type="button" onclick="location.hash='#/admin'">🛡️ Abrir Admin</button>` : ``}
+          <button class="btn primary" onclick="location.hash='#/updates'">📢 Ver Updates</button>
+          <button class="btn" onclick="location.hash='#/config'">⚙️ Config</button>
+          ${state.isAdmin ? `<button class="btn" onclick="location.hash='#/admin'">🛡️ Admin</button>` : ``}
         </div>
         <div class="hr"></div>
         <div class="smallnote">
-          ✅ Conectado como: <span class="tag">${escapeHtml(me.email || "—")}</span><br/>
-          🌐 API: <span class="tag">${escapeHtml(state.apiBase || "—")}</span>
+          🎲 Dica: use a aba <b>Updates</b> como “patch notes” do seu RPG (mudanças, eventos, temporadas).
         </div>
-      </aside>
+      </div>
     </div>
   `;
+
+  renderUpdatesPreview(app.querySelector("#updatesPreview"));
+}
+
+function renderUpdatesPreview(el){
+  const list = Array.isArray(state.updates) ? state.updates.slice(0,4) : [];
+  if(!list.length){
+    el.innerHTML = `<div class="muted mini">Ainda não há updates publicados.</div>`;
+    return;
+  }
+  el.innerHTML = list.map(u=>{
+    const title = u.title || u.titulo || "Update";
+    const body = u.body || u.texto || u.msg || "";
+    const ts = u.ts || u.created_at || u.time || null;
+    const when = ts ? new Date(Number(ts)).toLocaleString() : "";
+    return `
+      <div class="item">
+        <div class="row" style="justify-content:space-between">
+          <div class="title">${escapeHtml(title)}</div>
+          <span class="pill ok">📌</span>
+        </div>
+        <div class="sub">${escapeHtml(when)}</div>
+        <div class="hr"></div>
+        <div class="mini muted">${escapeHtml(String(body).slice(0,180))}${String(body).length>180 ? "…" : ""}</div>
+      </div>
+    `;
+  }).join("");
+}
+
+function renderUpdates(app){
+  const canPost = !!state.isAdmin;
+
+  app.innerHTML = `
+    <div class="grid">
+      <div class="card">
+        <div class="row" style="justify-content:space-between">
+          <div>
+            <h2>📢 Updates</h2>
+            <div class="muted">Patch notes, eventos, anúncios (público).</div>
+          </div>
+          ${canPost ? `<span class="pill ok">Editor (Admin)</span>` : `<span class="pill warn">Leitor</span>`}
+        </div>
+
+        <div class="hr"></div>
+        <div class="list" id="updatesList">
+          <div class="skeleton"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>✍️ Publicar</h2>
+        <div class="muted">${canPost ? "Somente admin publica." : "Você não é admin."}</div>
+        <div class="hr"></div>
+
+        <div class="field">
+          <label>Título</label>
+          <input id="uTitle" placeholder="Ex: Update 1.0.2 — Balanceamento" ${canPost ? "" : "disabled"} />
+        </div>
+
+        <div class="field">
+          <label>Texto</label>
+          <textarea id="uBody" placeholder="Escreva o update… (markdown simples ok)" ${canPost ? "" : "disabled"}></textarea>
+        </div>
+
+        <div class="field">
+          <label>Tags (separadas por vírgula)</label>
+          <input id="uTags" placeholder="evento, patch, balance" ${canPost ? "" : "disabled"} />
+        </div>
+
+        <div class="row">
+          <button class="btn primary" id="btnPub" ${canPost ? "" : "disabled"}>📌 Publicar</button>
+          <button class="btn" id="btnReload">🔄 Recarregar</button>
+        </div>
+
+        <div class="hr"></div>
+        <div class="smallnote">
+          ✅ O site tenta salvar via API (<span class="tag">/admin/updates/create</span>) e listar via (<span class="tag">/updates/list</span>).<br/>
+          🔁 Se não existir no backend ainda, cai em <span class="tag">localStorage</span>.
+        </div>
+      </div>
+    </div>
+  `;
+
+  const listEl = app.querySelector("#updatesList");
+  const btnReload = app.querySelector("#btnReload");
+  const btnPub = app.querySelector("#btnPub");
+
+  btnReload.onclick = async ()=>{
+    btnReload.disabled = true;
+    try{
+      await loadUpdates();
+      paintUpdates(listEl);
+      toast("Updates", "Recarregado ✅", "ok");
+    }catch(err){
+      toast("Updates", err?.message || String(err), "bad");
+    }finally{
+      btnReload.disabled = false;
+    }
+  };
+
+  if(btnPub){
+    btnPub.onclick = async ()=>{
+      const title = (app.querySelector("#uTitle").value || "").trim();
+      const body = (app.querySelector("#uBody").value || "").trim();
+      const tagsRaw = (app.querySelector("#uTags").value || "").trim();
+      const tags = tagsRaw ? tagsRaw.split(",").map(s=>s.trim()).filter(Boolean) : [];
+      btnPub.disabled = true; btnPub.textContent = "Publicando…";
+      try{
+        await createUpdate({ title, body, tags });
+        paintUpdates(listEl);
+        app.querySelector("#uTitle").value = "";
+        app.querySelector("#uBody").value = "";
+        app.querySelector("#uTags").value = "";
+      }catch(err){
+        toast("Publicar falhou", err?.message || String(err), "bad");
+      }finally{
+        btnPub.disabled = false; btnPub.textContent = "📌 Publicar";
+      }
+    };
+  }
+
+  paintUpdates(listEl);
+}
+
+function paintUpdates(listEl){
+  const list = Array.isArray(state.updates) ? state.updates : [];
+  if(!list.length){
+    listEl.innerHTML = `<div class="muted mini">Nenhum update ainda.</div>`;
+    return;
+  }
+  listEl.innerHTML = list.map(u=>{
+    const title = u.title || u.titulo || "Update";
+    const body = u.body || u.texto || u.msg || "";
+    const tags = u.tags || u.etiquetas || [];
+    const ts = u.ts || u.created_at || u.time || null;
+    const when = ts ? new Date(Number(ts)).toLocaleString() : "";
+    const tagsView = Array.isArray(tags) && tags.length
+      ? `<div class="row" style="margin-top:10px">${tags.slice(0,6).map(t=>`<span class="pill">${escapeHtml(t)}</span>`).join("")}</div>`
+      : "";
+    return `
+      <div class="item">
+        <div class="row" style="justify-content:space-between">
+          <div class="title">${escapeHtml(title)}</div>
+          <span class="pill ok">📢</span>
+        </div>
+        <div class="sub">${escapeHtml(when)}</div>
+        <div class="hr"></div>
+        <div class="mini muted" style="white-space:pre-wrap">${escapeHtml(body)}</div>
+        ${tagsView}
+      </div>
+    `;
+  }).join("");
 }
 
 function renderConfig(app){
@@ -911,9 +1027,9 @@ function renderConfig(app){
 
   app.innerHTML = `
     <div class="grid">
-      <section class="card">
+      <div class="card">
         <h2>⚙️ Config (usuário)</h2>
-        <div class="muted">Seu token + dados da conta com CRUD.</div>
+        <div class="muted">Token + dados da conta + CRUD.</div>
 
         <div class="hr"></div>
 
@@ -950,15 +1066,15 @@ function renderConfig(app){
         </div>
 
         <div class="row" style="margin-top:10px">
-          <button class="btn primary" id="btnSave" type="button">💾 Salvar</button>
-          <button class="btn" id="btnReload" type="button">🔄 Recarregar</button>
-          <button class="btn danger" id="btnDelete" type="button">🗑️ Deletar conta</button>
+          <button class="btn primary" id="btnSave">💾 Salvar</button>
+          <button class="btn" id="btnReload">🔄 Recarregar</button>
+          <button class="btn danger" id="btnDelete">🗑️ Deletar conta</button>
         </div>
-      </section>
+      </div>
 
-      <aside class="card">
+      <div class="card">
         <h2>🧩 Skills rápidas</h2>
-        <div class="muted">Adicionar/remover skill (via comandos dedicados).</div>
+        <div class="muted">Adicionar/remover skill (comandos dedicados).</div>
 
         <div class="hr"></div>
 
@@ -967,17 +1083,10 @@ function renderConfig(app){
           <input id="skillName" placeholder="ex: espada, alquimia…" />
         </div>
         <div class="row">
-          <button class="btn primary" id="btnAddSkill" type="button">➕ Add</button>
-          <button class="btn" id="btnRemSkill" type="button">➖ Remover</button>
+          <button class="btn primary" id="btnAddSkill">➕ Add</button>
+          <button class="btn" id="btnRemSkill">➖ Remover</button>
         </div>
-
-        <div class="hr"></div>
-
-        <div class="smallnote">
-          Backend esperado:<br/>
-          <span class="tag">/me/update</span>, <span class="tag">/me/delete</span>, <span class="tag">/me/skills/add</span>, <span class="tag">/me/skills/remove</span>
-        </div>
-      </aside>
+      </div>
     </div>
   `;
 
@@ -986,32 +1095,20 @@ function renderConfig(app){
   const fEmail = app.querySelector("#fEmail");
   const fBio = app.querySelector("#fBio");
   const fSkills = app.querySelector("#fSkills");
-
   const btnSave = app.querySelector("#btnSave");
   const btnReload = app.querySelector("#btnReload");
   const btnDelete = app.querySelector("#btnDelete");
-
   const skillName = app.querySelector("#skillName");
   const btnAddSkill = app.querySelector("#btnAddSkill");
   const btnRemSkill = app.querySelector("#btnRemSkill");
 
   btnReload.onclick = async ()=>{
-    try{
-      setLoadingBar(true);
-      await loadMe();
-      render();
-      toast("OK", "Recarregado ✅", "ok");
-    }catch(err){
-      toast("Falhou", err?.message || String(err), "bad");
-    }finally{
-      setLoadingBar(false);
-    }
+    try{ await loadMe(); render(); toast("OK", "Recarregado ✅", "ok"); }
+    catch(err){ toast("Falhou", err?.message || String(err), "bad"); }
   };
 
   btnSave.onclick = async ()=>{
-    btnSave.disabled = true;
-    btnSave.textContent = "Salvando…";
-    setLoadingBar(true);
+    btnSave.disabled = true; btnSave.textContent = "Salvando…";
     try{
       let skillsVal = null;
       const raw = (fSkills.value || "").trim();
@@ -1024,55 +1121,41 @@ function renderConfig(app){
         bio: (fBio.value || "").trim(),
         skills: skillsVal,
       };
-
       await updateMe(patch);
       render();
     }catch(err){
       toast("Salvar falhou", err?.message || String(err), "bad");
     }finally{
-      setLoadingBar(false);
-      btnSave.disabled = false;
-      btnSave.textContent = "💾 Salvar";
+      btnSave.disabled = false; btnSave.textContent = "💾 Salvar";
     }
   };
 
   btnDelete.onclick = async ()=>{
     if(!confirm("Tem certeza que quer deletar sua conta?")) return;
     btnDelete.disabled = true;
-    setLoadingBar(true);
-    try{
-      await deleteMe();
-    }catch(err){
-      toast("Delete falhou", err?.message || String(err), "bad");
-      btnDelete.disabled = false;
-    }finally{
-      setLoadingBar(false);
-    }
+    try{ await deleteMe(); }
+    catch(err){ toast("Delete falhou", err?.message || String(err), "bad"); btnDelete.disabled = false; }
   };
 
   btnAddSkill.onclick = async ()=>{
     const sk = (skillName.value||"").trim();
     if(!sk){ toast("Ops", "Digita uma skill 😅", "warn"); return; }
-    setLoadingBar(true);
     try{ await addSkill(sk); render(); }
     catch(err){ toast("Falhou", err?.message || String(err), "bad"); }
-    finally{ setLoadingBar(false); }
   };
 
   btnRemSkill.onclick = async ()=>{
     const sk = (skillName.value||"").trim();
     if(!sk){ toast("Ops", "Digita uma skill 😅", "warn"); return; }
-    setLoadingBar(true);
     try{ await removeSkill(sk); render(); }
     catch(err){ toast("Falhou", err?.message || String(err), "bad"); }
-    finally{ setLoadingBar(false); }
   };
 }
 
 function renderAdmin(app){
   app.innerHTML = `
     <div class="grid">
-      <section class="card">
+      <div class="card">
         <div class="row" style="justify-content:space-between">
           <div>
             <h2>🛡️ Admin</h2>
@@ -1088,17 +1171,17 @@ function renderAdmin(app){
             <label>Buscar (email/id)</label>
             <input id="q" placeholder="ex: user@gmail.com" />
           </div>
-          <div class="row" style="align-items:flex-end; justify-content:flex-end">
-            <button class="btn primary" id="btnLoad" type="button">📥 Carregar lista</button>
-            <button class="btn" id="btnNew" type="button">➕ Novo usuário</button>
+          <div class="row" style="align-items:flex-end">
+            <button class="btn primary" id="btnLoad">📥 Carregar lista</button>
+            <button class="btn" id="btnNew">➕ Novo usuário</button>
           </div>
         </div>
 
         <div class="hr"></div>
         <div class="list" id="usersList"></div>
-      </section>
+      </div>
 
-      <aside class="card">
+      <div class="card">
         <h2>✍️ Editor</h2>
         <div class="muted">Selecione um usuário na lista pra editar.</div>
 
@@ -1112,13 +1195,13 @@ function renderAdmin(app){
         <div class="field">
           <label>JSON (patch)</label>
           <textarea id="patch" placeholder='{"bio":"novo","skills":["a","b"],"is_admin":false}'></textarea>
-          <div class="smallnote">Envia <span class="tag">patch</span> para <span class="tag">/admin/users/update</span></div>
+          <div class="smallnote">Envia <span class="tag">patch</span> para <span class="tag">/admin/users/update</span>.</div>
         </div>
 
         <div class="row">
-          <button class="btn primary" id="btnSaveUser" type="button">💾 Atualizar</button>
-          <button class="btn danger" id="btnDelUser" type="button">🗑️ Deletar</button>
-          <button class="btn" id="btnGetUser" type="button">🔎 Ver detalhes</button>
+          <button class="btn primary" id="btnSaveUser">💾 Atualizar</button>
+          <button class="btn danger" id="btnDelUser">🗑️ Deletar</button>
+          <button class="btn" id="btnGetUser">🔎 Ver detalhes</button>
         </div>
 
         <div class="hr"></div>
@@ -1126,7 +1209,7 @@ function renderAdmin(app){
           <label>Detalhes (read-only)</label>
           <textarea id="details" readonly></textarea>
         </div>
-      </aside>
+      </div>
     </div>
   `;
 
@@ -1153,7 +1236,6 @@ function renderAdmin(app){
       const id = pickId(u);
       const name = u.usuario || u.nome || u.name || u.username || u.email || "—";
       const role = (u.is_admin || u.admin || u.role==="admin") ? "admin" : "user";
-
       const el = document.createElement("div");
       el.className = "item";
       el.innerHTML = `
@@ -1179,22 +1261,18 @@ function renderAdmin(app){
   btnLoad.onclick = async ()=>{
     btnLoad.disabled = true;
     btnLoad.textContent = "Carregando…";
-    setLoadingBar(true);
     try{
       const list = await adminListUsers();
       usersCache = Array.isArray(list) ? list : [];
-
       const term = (q.value||"").trim().toLowerCase();
       const filtered = term
         ? usersCache.filter(u => JSON.stringify(u).toLowerCase().includes(term))
         : usersCache;
-
       renderUsers(filtered);
       toast("Admin", "Lista carregada ✅", "ok");
     }catch(err){
       toast("Admin falhou", err?.message || String(err), "bad");
     }finally{
-      setLoadingBar(false);
       btnLoad.disabled = false;
       btnLoad.textContent = "📥 Carregar lista";
     }
@@ -1208,49 +1286,40 @@ function renderAdmin(app){
     const senha = prompt("Senha:");
     if(!senha) return;
     const isAdmin = confirm("Esse usuário é ADMIN?");
-    setLoadingBar(true);
     try{
       await adminCreateUser({ usuario, email, senha, is_admin: isAdmin });
       await btnLoad.onclick();
     }catch(err){
       toast("Criar falhou", err?.message || String(err), "bad");
-    }finally{
-      setLoadingBar(false);
     }
   };
 
   btnGetUser.onclick = async ()=>{
     const id = (selId.value||"").trim();
     if(!id){ toast("Ops", "Seleciona um usuário 😅", "warn"); return; }
-    setLoadingBar(true);
     try{
       const u = await adminGetUser(id);
       details.value = JSON.stringify(u, null, 2);
       toast("OK", "Detalhes carregados ✅", "ok");
     }catch(err){
       toast("Falhou", err?.message || String(err), "bad");
-    }finally{
-      setLoadingBar(false);
     }
   };
 
   btnSaveUser.onclick = async ()=>{
     const id = (selId.value||"").trim();
     if(!id){ toast("Ops", "Seleciona um usuário 😅", "warn"); return; }
-
     let p = {};
     try{ p = JSON.parse((patch.value||"{}") || "{}"); }
     catch{ toast("JSON inválido", "Corrige o patch 😅", "warn"); return; }
 
     btnSaveUser.disabled = true;
-    setLoadingBar(true);
     try{
       await adminUpdateUser(id, p);
       await btnLoad.onclick();
     }catch(err){
       toast("Update falhou", err?.message || String(err), "bad");
     }finally{
-      setLoadingBar(false);
       btnSaveUser.disabled = false;
     }
   };
@@ -1259,9 +1328,7 @@ function renderAdmin(app){
     const id = (selId.value||"").trim();
     if(!id){ toast("Ops", "Seleciona um usuário 😅", "warn"); return; }
     if(!confirm("Deletar esse usuário?")) return;
-
     btnDelUser.disabled = true;
-    setLoadingBar(true);
     try{
       await adminDeleteUser(id);
       selId.value = "";
@@ -1271,36 +1338,36 @@ function renderAdmin(app){
     }catch(err){
       toast("Delete falhou", err?.message || String(err), "bad");
     }finally{
-      setLoadingBar(false);
       btnDelUser.disabled = false;
     }
   };
 }
 
-/* =========================
-   13) BOOT + POLLING
-   ========================= */
-
-/** Faz boot: baixa status, ajusta apiBase, valida token/me e renderiza. */
+/* ============================================================
+   Boot (sempre busca json do GitHub ao abrir)
+   ============================================================ */
 async function boot(){
   try{
-    state.booting = true;
-    setLoadingBar(true);
+    state.loading = true;
     renderNav();
 
-    const st = await withRetry(()=>fetchStatus());
-    applyStatus(st);
+    const st = await fetchStatusAlways();     // ✅ SEMPRE busca no GitHub ao carregar
+    state.status = st;
 
-    // Se já tem token, tenta carregar /me
+    const base = (st?.url_api_base || "").trim();
+    if(!base) throw new Error("server_status.json sem url_api_base");
+    state.apiBase = base.replace(/\/+$/,"");
+    localStorage.setItem(LS.apiBase, state.apiBase);
+
+    const online = String(st?.status_servidor || "").toLowerCase().includes("online");
+    setServerBadge(online);
+
     if(state.token){
-      try{
-        await loadMe();
-      }catch(e){
-        toast("Sessão", "Token inválido/expirado. Faz login de novo 😉", "warn");
-        doLogout();
-      }
+      try{ await loadMe(); }
+      catch{ toast("Sessão", "Token inválido/expirado. Faz login de novo 😉", "warn"); doLogout(); }
     }
 
+    await loadUpdates(); // carrega updates para público
     renderNav();
     render();
   }catch(err){
@@ -1309,31 +1376,83 @@ async function boot(){
     renderNav();
     render();
   }finally{
-    setLoadingBar(false);
-    state.booting = false;
+    state.loading = false;
   }
 }
-
-/** Poll do status (não interrompe usuário). */
-function startStatusPolling(){
-  setInterval(async ()=>{
-    try{
-      const st = await fetchStatus();
-      // só reaplica se mudou base ou status (evita “piscar”)
-      const old = state.status || {};
-      const changed =
-        normalizeBase(old.url_api_base) !== normalizeBase(st.url_api_base) ||
-        String(old.status_servidor||"") !== String(st.status_servidor||"");
-      if(changed) applyStatus(st);
-    }catch{
-      // Silencioso no polling (sem spam de toast)
-    }
-  }, CFG.STATUS_POLL_MS);
-}
-
-// Start
 boot();
-startStatusPolling();
+
+/* ============================================================
+   Background animado (particles / nebula)
+   ============================================================ */
+(function bgParticles(){
+  const canvas = document.getElementById("bg");
+  const ctx = canvas.getContext("2d");
+  let w=0,h=0, dpr=1;
+  let parts=[];
+  const N = 70;
+
+  function resize(){
+    dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+    w = canvas.width = Math.floor(innerWidth * dpr);
+    h = canvas.height = Math.floor(innerHeight * dpr);
+    canvas.style.width = innerWidth + "px";
+    canvas.style.height = innerHeight + "px";
+  }
+  window.addEventListener("resize", resize, {passive:true});
+  resize();
+
+  function rnd(a,b){ return a + Math.random()*(b-a); }
+
+  function seed(){
+    parts = [];
+    for(let i=0;i<N;i++){
+      parts.push({
+        x: rnd(0,w),
+        y: rnd(0,h),
+        r: rnd(0.8*dpr, 2.4*dpr),
+        vx: rnd(-0.18, 0.18)*dpr,
+        vy: rnd(-0.12, 0.12)*dpr,
+        a: rnd(0.10, 0.22),
+        hue: Math.random() < 0.55 ? 210 : 265
+      });
+    }
+  }
+  seed();
+
+  function step(){
+    ctx.clearRect(0,0,w,h);
+
+    // glow
+    const g = ctx.createRadialGradient(w*0.3, h*0.2, 0, w*0.3, h*0.2, Math.max(w,h)*0.7);
+    g.addColorStop(0, "rgba(90,166,255,.08)");
+    g.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = g;
+    ctx.fillRect(0,0,w,h);
+
+    const g2 = ctx.createRadialGradient(w*0.8, h*0.25, 0, w*0.8, h*0.25, Math.max(w,h)*0.75);
+    g2.addColorStop(0, "rgba(139,92,246,.08)");
+    g2.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = g2;
+    ctx.fillRect(0,0,w,h);
+
+    // particles
+    for(const p of parts){
+      p.x += p.vx; p.y += p.vy;
+      if(p.x < -20) p.x = w+20;
+      if(p.x > w+20) p.x = -20;
+      if(p.y < -20) p.y = h+20;
+      if(p.y > h+20) p.y = -20;
+
+      ctx.beginPath();
+      ctx.fillStyle = `hsla(${p.hue}, 90%, 65%, ${p.a})`;
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      ctx.fill();
+    }
+
+    requestAnimationFrame(step);
+  }
+  step();
+})();
 </script>
 </body>
 </html>
