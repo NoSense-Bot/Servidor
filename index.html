@@ -457,11 +457,13 @@ async function doLogin(email, senha){
   go("#/feed");
 }
 
-async function doRegister(email, senha, extra={}){
-  await apiCmd({ comando:"/register", email, senha, ...extra });
+async function doRegister(username, email, senha){
+  // manda exatamente o que o backend espera
+  await apiCmd({ comando:"/register", username, email, senha });
   toast("Conta criada", "Agora faz login 😉", "ok");
   go("#/login");
 }
+
 
 function doLogout(){
   state.token = "";
@@ -797,10 +799,16 @@ function renderRegister(app){
       toast("Ops", "Preenche usuário, email e senha 😅", "warn");
       return;
     }
-    btnReg.disabled = true; btnReg.textContent = "Criando…";
-    try{ await doRegister(e, s, { usuario: u }); }
-    catch(err){ toast("Registro falhou", err?.message || String(err), "bad"); }
-    finally{ btnReg.disabled = false; btnReg.textContent = "Criar"; }
+    btnReg.disabled = true;
+    btnReg.textContent = "Criando…";
+    try{
+     await doRegister(u, e, s);
+    }catch(err){
+      toast("Registro falhou", err?.message || String(err), "bad");
+    }finally{
+      btnReg.disabled = false;
+      btnReg.textContent = "Criar";
+    }
   };
 }
 
