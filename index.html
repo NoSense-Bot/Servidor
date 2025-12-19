@@ -1,1232 +1,1221 @@
 <!doctype html>
 <html lang="pt-br">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>OBEARCO • RPG Hub</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>OBEARCO • Gate of Accounts</title>
   <style>
     :root{
-      --bg0:#06070b;
-      --bg1:#0a1020;
-      --panel: rgba(14,18,30,.62);
-      --panel2: rgba(10,14,26,.78);
-      --stroke: rgba(140,180,255,.18);
-      --stroke2: rgba(255,255,255,.08);
-      --txt: rgba(236,244,255,.92);
-      --muted: rgba(236,244,255,.62);
-      --good:#46f0a7;
-      --warn:#ffd166;
-      --bad:#ff4d6d;
-      --cyan:#4cc9f0;
-      --vio:#9b5de5;
-      --blue:#3a86ff;
-      --glow: 0 0 18px rgba(76,201,240,.22), 0 0 44px rgba(155,93,229,.16);
-      --radius: 18px;
-      --radius2: 26px;
+      --bg0:#07060a; --bg1:#0b0a12; --panel:rgba(18,16,28,.72);
+      --panel2:rgba(15,12,22,.55);
+      --line:rgba(255,255,255,.10);
+      --text:#e9e6ff; --muted:rgba(233,230,255,.65);
+      --gold:#d7b46a; --gold2:#ffdf8c;
+      --aqua:#62f0ff; --vio:#a66bff; --red:#ff5b6e; --ok:#55ff9a;
       --shadow: 0 18px 60px rgba(0,0,0,.55);
+      --radius: 18px;
+      --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
       --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
     }
-
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
-      margin:0;
-      font-family: var(--sans);
-      color:var(--txt);
-      background: radial-gradient(1200px 900px at 20% 10%, #121a38 0%, rgba(18,26,56,0) 60%),
-                  radial-gradient(900px 900px at 85% 40%, rgba(76,201,240,.18) 0%, rgba(76,201,240,0) 55%),
-                  radial-gradient(900px 700px at 70% 95%, rgba(155,93,229,.16) 0%, rgba(155,93,229,0) 55%),
+      margin:0; font-family:var(--font); color:var(--text);
+      background: radial-gradient(1200px 600px at 20% 10%, rgba(166,107,255,.18), transparent 60%),
+                  radial-gradient(900px 500px at 85% 20%, rgba(98,240,255,.14), transparent 55%),
                   linear-gradient(180deg, var(--bg0), var(--bg1));
       overflow:hidden;
     }
 
-    /* ====== VFX LAYERS ====== */
-    #vfxCanvas{
-      position:fixed; inset:0; z-index:0;
-      width:100vw; height:100vh;
-      filter: blur(.0px) saturate(1.05);
-    }
-    .scanlines{
-      pointer-events:none;
-      position:fixed; inset:0; z-index:1;
-      background:
-        linear-gradient(rgba(255,255,255,.035), rgba(255,255,255,.0) 2px) 0 0/100% 4px,
-        radial-gradient(900px 520px at 25% 15%, rgba(76,201,240,.06), rgba(0,0,0,0) 60%),
-        radial-gradient(820px 480px at 85% 65%, rgba(155,93,229,.06), rgba(0,0,0,0) 60%);
-      mix-blend-mode: overlay;
-      opacity:.55;
-      animation: flicker 6s infinite linear;
-    }
-    @keyframes flicker{
-      0%,100%{opacity:.50}
-      33%{opacity:.58}
-      66%{opacity:.46}
+    /* ======= VFX layers ======= */
+    #vfx, #vfx2{
+      position:fixed; inset:0; width:100%; height:100%;
+      pointer-events:none; z-index:0;
     }
     .grain{
-      pointer-events:none;
-      position:fixed; inset:-20%; z-index:2;
-      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='.28'/%3E%3C/svg%3E");
-      transform: translateZ(0);
-      opacity:.16;
-      animation: grainMove 10s infinite linear;
-      mix-blend-mode: overlay;
+      position:fixed; inset:-40%;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
+      opacity:.08; mix-blend-mode:overlay; animation:grain 8s steps(2,end) infinite;
+      z-index:1; pointer-events:none;
     }
-    @keyframes grainMove{
-      0%{transform:translate(-2%,-3%)}
-      100%{transform:translate(2%,3%)}
+    @keyframes grain{
+      0%{transform:translate(0,0)} 20%{transform:translate(-2%,3%)}
+      40%{transform:translate(3%,-1%)} 60%{transform:translate(-1%,-2%)}
+      80%{transform:translate(2%,2%)} 100%{transform:translate(0,0)}
     }
-    .bloom{
-      pointer-events:none;
-      position:fixed; inset:-10%; z-index:1;
-      background:
-        radial-gradient(700px 380px at 20% 30%, rgba(58,134,255,.10), rgba(0,0,0,0) 60%),
-        radial-gradient(760px 420px at 70% 70%, rgba(155,93,229,.10), rgba(0,0,0,0) 60%),
-        radial-gradient(520px 320px at 80% 20%, rgba(76,201,240,.10), rgba(0,0,0,0) 60%);
-      filter: blur(12px);
-      opacity:.85;
+    .scanlines{
+      position:fixed; inset:0;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(255,255,255,.05), rgba(255,255,255,.05) 1px,
+        transparent 1px, transparent 4px
+      );
+      opacity:.05; mix-blend-mode:soft-light; z-index:1; pointer-events:none;
     }
 
-    /* ====== APP SHELL ====== */
-    .shell{
-      position:relative;
-      z-index:5;
+    /* ======= Layout ======= */
+    .app{
+      position:relative; z-index:2;
       height:100%;
-      display:flex;
-      flex-direction:column;
+      display:grid;
+      grid-template-rows: 74px 1fr;
     }
-
-    .topbar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:18px 18px 10px;
-      gap:12px;
+    header{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:14px 18px;
+      border-bottom:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(0,0,0,.42), rgba(0,0,0,.05));
+      backdrop-filter: blur(10px);
     }
     .brand{
-      display:flex; align-items:center; gap:12px;
-      user-select:none;
+      display:flex; gap:12px; align-items:center;
     }
-    .logo{
-      width:38px; height:38px; border-radius:12px;
-      background: radial-gradient(circle at 30% 30%, rgba(76,201,240,.9), rgba(155,93,229,.45) 55%, rgba(0,0,0,0) 70%),
-                  linear-gradient(135deg, rgba(58,134,255,.35), rgba(0,0,0,0));
+    .sigil{
+      width:42px; height:42px; border-radius:14px;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255,223,140,.75), transparent 55%),
+        radial-gradient(circle at 70% 70%, rgba(166,107,255,.55), transparent 60%),
+        linear-gradient(135deg, rgba(255,255,255,.10), rgba(0,0,0,.25));
       border:1px solid rgba(255,255,255,.14);
-      box-shadow: var(--glow);
+      box-shadow: 0 0 28px rgba(255,223,140,.18);
       position:relative;
       overflow:hidden;
     }
-    .logo:after{
+    .sigil::after{
       content:"";
       position:absolute; inset:-40%;
-      background: conic-gradient(from 180deg, rgba(76,201,240,.0), rgba(76,201,240,.6), rgba(155,93,229,.0), rgba(58,134,255,.5), rgba(76,201,240,.0));
-      animation: spin 3.8s linear infinite;
-      opacity:.55;
+      background: conic-gradient(from 90deg, transparent, rgba(98,240,255,.32), transparent, rgba(255,223,140,.22), transparent);
+      animation:spin 5.5s linear infinite;
+      filter: blur(1px);
+      opacity:.9;
     }
     @keyframes spin{to{transform:rotate(360deg)}}
     .brand h1{
-      font-size:16px; margin:0;
-      letter-spacing:.08em;
-      text-transform:uppercase;
+      margin:0; font-size:15px; letter-spacing:.18em; text-transform:uppercase;
+      color:rgba(255,255,255,.90);
     }
-    .badge{
-      font-family: var(--mono);
-      font-size:12px;
-      padding:6px 10px;
-      border-radius:999px;
-      background: rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.10);
-      color:var(--muted);
-      display:flex; gap:10px; align-items:center;
-      white-space:nowrap;
+    .brand .sub{
+      font-size:12px; color:var(--muted); margin-top:4px;
     }
-    .dot{
-      width:8px; height:8px; border-radius:99px;
-      background: rgba(255,255,255,.25);
-      box-shadow: 0 0 12px rgba(255,255,255,.12);
-    }
-    .dot.ok{ background: var(--good); box-shadow: 0 0 14px rgba(70,240,167,.35)}
-    .dot.bad{ background: var(--bad); box-shadow: 0 0 14px rgba(255,77,109,.35)}
 
-    .actions{
+    .topRight{
       display:flex; gap:10px; align-items:center;
+    }
+    .chip{
+      display:flex; gap:10px; align-items:center;
+      padding:10px 12px; border-radius:999px;
+      background:rgba(18,16,28,.45); border:1px solid rgba(255,255,255,.10);
+      backdrop-filter: blur(10px);
+    }
+    .chip .name{
+      font-weight:700; letter-spacing:.02em;
+    }
+    .chip .email{
+      font-size:12px; color:var(--muted); max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
     }
     .btn{
-      appearance:none;
-      border:none;
-      color:var(--txt);
-      background: rgba(255,255,255,.06);
+      cursor:pointer; user-select:none;
       border:1px solid rgba(255,255,255,.12);
-      border-radius: 14px;
-      padding:10px 12px;
-      font-weight:700;
-      letter-spacing:.02em;
-      cursor:pointer;
-      transition: transform .15s ease, background .15s ease, border .15s ease, box-shadow .15s ease;
-      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.22));
+      color:var(--text);
+      padding:10px 12px; border-radius:12px;
+      box-shadow: 0 10px 26px rgba(0,0,0,.25);
+      transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease, filter .12s ease;
     }
-    .btn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.085); border-color: rgba(76,201,240,.22); box-shadow: var(--glow);}
-    .btn:active{ transform: translateY(0px) scale(.99); }
+    .btn:hover{ transform:translateY(-1px); border-color:rgba(255,223,140,.35); box-shadow: 0 14px 34px rgba(0,0,0,.35); }
+    .btn:active{ transform:translateY(0px) scale(.99); }
     .btn.primary{
-      background: linear-gradient(135deg, rgba(76,201,240,.22), rgba(155,93,229,.18));
-      border-color: rgba(76,201,240,.26);
+      border-color: rgba(255,223,140,.26);
+      background: linear-gradient(180deg, rgba(255,223,140,.20), rgba(0,0,0,.25));
     }
     .btn.danger{
-      background: linear-gradient(135deg, rgba(255,77,109,.18), rgba(155,93,229,.10));
-      border-color: rgba(255,77,109,.22);
+      border-color: rgba(255,91,110,.35);
+      background: linear-gradient(180deg, rgba(255,91,110,.18), rgba(0,0,0,.28));
     }
     .btn.ghost{
       background: transparent;
-      border-color: rgba(255,255,255,.12);
-    }
-    .btn:disabled{
-      opacity:.45;
-      cursor:not-allowed;
-      transform:none;
       box-shadow:none;
     }
 
-    .main{
-      flex:1;
+    main{
+      height:100%;
       display:grid;
-      grid-template-columns: 360px 1fr 360px;
+      grid-template-columns: 290px 1fr 360px;
       gap:14px;
-      padding: 8px 18px 18px;
-      min-height:0;
+      padding:14px;
+      overflow:hidden;
     }
 
-    .card{
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+    .panel{
       border:1px solid rgba(255,255,255,.12);
-      border-radius: var(--radius2);
+      background: linear-gradient(180deg, rgba(18,16,28,.78), rgba(10,8,14,.62));
+      backdrop-filter: blur(14px);
       box-shadow: var(--shadow);
+      border-radius: var(--radius);
       overflow:hidden;
-      min-height:0;
       position:relative;
     }
-    .card:before{
+    .panel::before{
       content:"";
-      position:absolute; inset:0;
-      background: radial-gradient(800px 220px at 50% 0%, rgba(76,201,240,.12), rgba(0,0,0,0) 60%),
-                  radial-gradient(700px 260px at 10% 90%, rgba(155,93,229,.10), rgba(0,0,0,0) 60%);
-      opacity:.85;
+      position:absolute; inset:-1px;
+      background: radial-gradient(420px 200px at 20% 10%, rgba(255,223,140,.12), transparent 60%),
+                  radial-gradient(420px 260px at 80% 0%, rgba(98,240,255,.10), transparent 65%),
+                  radial-gradient(520px 260px at 40% 100%, rgba(166,107,255,.10), transparent 70%);
       pointer-events:none;
     }
-    .card > .inner{
-      position:relative;
-      padding:18px;
-      height:100%;
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-      min-height:0;
-    }
-    .titleRow{
-      display:flex; align-items:center; justify-content:space-between; gap:10px;
-    }
-    .title{
-      margin:0;
-      font-size:14px;
-      letter-spacing:.14em;
-      text-transform:uppercase;
-      color: rgba(236,244,255,.84);
-    }
-    .sub{
-      font-size:12px;
-      color:var(--muted);
-      line-height:1.35;
-    }
-    .sep{
-      height:1px;
-      background: linear-gradient(90deg, rgba(255,255,255,.0), rgba(255,255,255,.14), rgba(255,255,255,.0));
-      margin:6px 0;
-    }
 
-    .kv{
-      display:flex; gap:10px; align-items:center; justify-content:space-between;
-      padding:10px 12px;
-      background: rgba(0,0,0,.18);
-      border:1px solid rgba(255,255,255,.10);
-      border-radius: 16px;
+    .leftNav{
+      display:flex; flex-direction:column;
     }
-    .kv .k{ color:var(--muted); font-size:12px; font-family:var(--mono); }
-    .kv .v{ color:var(--txt); font-size:12px; font-family:var(--mono); max-width:70%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-
-    .input{
-      width:100%;
-      padding:12px 12px;
-      border-radius: 16px;
-      background: rgba(0,0,0,.22);
-      border:1px solid rgba(255,255,255,.12);
-      color:var(--txt);
-      outline:none;
-      transition:border .15s ease, box-shadow .15s ease, transform .15s ease;
+    .navHead{
+      padding:14px 14px 10px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      display:flex; align-items:center; justify-content:space-between;
     }
-    .input:focus{
-      border-color: rgba(76,201,240,.28);
-      box-shadow: 0 0 0 4px rgba(76,201,240,.08);
+    .navHead .title{
+      font-weight:900; letter-spacing:.16em; text-transform:uppercase;
+      font-size:12px; color:rgba(255,255,255,.78);
     }
-    .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-    .grid3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
-
-    .pillRow{
-      display:flex; gap:10px; flex-wrap:wrap;
-    }
-    .pill{
-      font-family:var(--mono);
-      font-size:12px;
-      padding:8px 10px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.05);
-      color: rgba(236,244,255,.78);
-    }
-
-    /* ====== AUTH VIEW ====== */
-    .authWrap{
-      display:grid;
-      grid-template-columns: 1fr 420px;
-      gap:14px;
-      height:100%;
-    }
-    .authBox{
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      min-height:0;
-    }
-    .modeRow{
-      display:flex; gap:10px;
-    }
-    .hint{
-      font-size:12px;
-      color: var(--muted);
-    }
-    .bigBtn{
-      padding:14px 14px;
-      border-radius: 18px;
-      font-size:14px;
-    }
-
-    /* ====== FEED ====== */
-    .feed{
-      flex:1;
-      overflow:auto;
-      padding-right:6px;
-    }
-    .feed::-webkit-scrollbar{ width:10px }
-    .feed::-webkit-scrollbar-thumb{
-      background: rgba(255,255,255,.10);
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:999px;
-    }
-    .tile{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      padding:12px 12px;
-      border-radius: 18px;
-      background: rgba(0,0,0,.18);
-      border:1px solid rgba(255,255,255,.10);
-      margin-bottom:10px;
-      position:relative;
-      overflow:hidden;
-    }
-    .tile:before{
-      content:"";
-      position:absolute; inset:-60% -40%;
-      background: conic-gradient(from 180deg, rgba(76,201,240,.0), rgba(76,201,240,.20), rgba(155,93,229,.0), rgba(58,134,255,.16), rgba(76,201,240,.0));
-      opacity:.22;
-      animation: spin 7.5s linear infinite;
-      filter: blur(1px);
-    }
-    .tile .tInner{ position:relative; display:flex; align-items:center; justify-content:space-between; width:100%; }
-    .avatar{
-      width:34px; height:34px; border-radius:14px;
-      border:1px solid rgba(255,255,255,.16);
-      background: radial-gradient(circle at 30% 20%, rgba(76,201,240,.7), rgba(155,93,229,.25) 55%, rgba(0,0,0,0) 70%);
-      box-shadow: var(--glow);
-    }
-    .nick{
-      font-weight:800;
-      letter-spacing:.02em;
-    }
-    .tag{
-      font-family:var(--mono);
-      font-size:12px;
-      color:var(--muted);
-      padding:6px 10px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.04);
-      white-space:nowrap;
-    }
-    .skeleton{
-      height:60px;
-      border-radius:18px;
-      margin-bottom:10px;
-      border:1px solid rgba(255,255,255,.08);
-      background: linear-gradient(90deg, rgba(255,255,255,.04), rgba(255,255,255,.08), rgba(255,255,255,.04));
-      background-size: 240% 100%;
-      animation: shimmer 1.2s infinite linear;
-    }
-    @keyframes shimmer{
-      0%{background-position:0% 0%}
-      100%{background-position:240% 0%}
-    }
-
-    /* ====== SETTINGS MODAL ====== */
-    .modalBack{
-      position:fixed; inset:0; z-index:50;
-      background: rgba(0,0,0,.55);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding:18px;
-    }
-    .modal{
-      width:min(1100px, 100%);
-      height:min(720px, 92vh);
-      border-radius: 26px;
-      border:1px solid rgba(255,255,255,.14);
-      background: linear-gradient(180deg, rgba(10,14,26,.92), rgba(10,14,26,.78));
-      box-shadow: 0 30px 120px rgba(0,0,0,.65);
-      overflow:hidden;
-      position:relative;
-    }
-    .modalGrid{
-      display:grid;
-      grid-template-columns: 1fr 360px;
-      height:100%;
-    }
-    .modalMain{
-      padding:18px;
-      overflow:auto;
-    }
-    .modalSide{
-      border-left:1px solid rgba(255,255,255,.10);
-      padding:18px;
-      overflow:auto;
-      background: rgba(0,0,0,.18);
-    }
-    .tabs{
-      display:flex; gap:10px; flex-wrap:wrap;
-      margin-bottom:12px;
-    }
+    .navList{ padding:10px; display:flex; flex-direction:column; gap:8px; }
     .tab{
-      font-family:var(--mono);
-      font-size:12px;
-      padding:8px 10px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.05);
-      color: rgba(236,244,255,.78);
+      display:flex; align-items:center; gap:10px;
+      padding:12px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(0,0,0,.18));
       cursor:pointer;
-      user-select:none;
+      transition: transform .12s ease, border-color .12s ease, filter .12s ease;
+      position:relative;
+      overflow:hidden;
     }
+    .tab::after{
+      content:"";
+      position:absolute; inset:-60%;
+      background: conic-gradient(from 220deg, transparent, rgba(98,240,255,.20), transparent, rgba(255,223,140,.16), transparent);
+      opacity:0;
+      transition: opacity .18s ease;
+    }
+    .tab:hover{ transform:translateY(-1px); border-color:rgba(255,223,140,.28); }
+    .tab:hover::after{ opacity:.7; }
     .tab.active{
-      border-color: rgba(76,201,240,.28);
-      box-shadow: 0 0 0 4px rgba(76,201,240,.06);
-      background: rgba(76,201,240,.09);
-      color: rgba(236,244,255,.92);
+      border-color: rgba(255,223,140,.40);
+      filter: drop-shadow(0 0 16px rgba(255,223,140,.12));
     }
-    .row{
-      display:flex; gap:10px; align-items:center;
+    .tab .ic{
+      width:26px; height:26px; border-radius:10px;
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+      display:grid; place-items:center;
+      font-size:13px;
     }
+    .tab .label{ font-weight:800; letter-spacing:.02em; }
+    .tab .hint{ font-size:12px; color:var(--muted); margin-top:2px; }
+
+    .center{
+      display:flex; flex-direction:column; overflow:hidden;
+    }
+    .centerHead{
+      padding:14px 14px 12px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      display:flex; align-items:center; justify-content:space-between;
+      gap:12px;
+    }
+    .centerHead .title{
+      font-size:14px; font-weight:900; letter-spacing:.12em; text-transform:uppercase;
+      color:rgba(255,255,255,.88);
+    }
+    .centerBody{
+      padding:14px;
+      overflow:auto;
+      height:100%;
+    }
+
+    .right{
+      display:flex; flex-direction:column; overflow:hidden;
+    }
+    .rightHead{
+      padding:14px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      display:flex; align-items:center; justify-content:space-between;
+      gap:10px;
+    }
+    .rightHead .title{
+      font-size:12px; font-weight:900; letter-spacing:.18em; text-transform:uppercase;
+      color:rgba(255,255,255,.75);
+    }
+    .rightBody{ padding:14px; overflow:auto; height:100%; }
+
+    /* ======= Forms ======= */
+    .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .field{ display:flex; flex-direction:column; gap:6px; }
+    label{ font-size:12px; color:var(--muted); letter-spacing:.06em; text-transform:uppercase; }
+    input, textarea, select{
+      width:100%;
+      border-radius:14px;
+      padding:12px 12px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.25);
+      color:var(--text);
+      outline:none;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.02);
+    }
+    input:focus, textarea:focus{
+      border-color: rgba(98,240,255,.38);
+      box-shadow: 0 0 0 4px rgba(98,240,255,.10);
+    }
+
+    .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .sep{ height:1px; background:rgba(255,255,255,.10); margin:14px 0; }
+
     .note{
       font-size:12px; color:var(--muted); line-height:1.45;
     }
-    .toast{
-      position:fixed; z-index:80;
-      left:18px; bottom:18px;
-      padding:12px 14px;
-      border-radius: 16px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(10,14,26,.86);
-      box-shadow: var(--shadow);
-      display:none;
-      max-width:min(520px, 90vw);
-      backdrop-filter: blur(10px);
-    }
-    .toast strong{display:block; margin-bottom:4px;}
-    .toast.ok{ border-color: rgba(70,240,167,.28) }
-    .toast.bad{ border-color: rgba(255,77,109,.28) }
 
-    /* Responsive */
-    @media (max-width: 1100px){
-      .main{ grid-template-columns: 1fr; }
+    .banner{
+      padding:12px 12px;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:16px;
+      background: linear-gradient(180deg, rgba(255,223,140,.10), rgba(0,0,0,.20));
+      display:flex; gap:10px; align-items:flex-start;
+      position:relative; overflow:hidden;
     }
-    @media (max-width: 900px){
-      .authWrap{ grid-template-columns: 1fr; }
-      .modalGrid{ grid-template-columns: 1fr; }
-      .modalSide{ border-left:none; border-top:1px solid rgba(255,255,255,.10); }
+    .banner::after{
+      content:"";
+      position:absolute; inset:-60%;
+      background: radial-gradient(circle at 30% 30%, rgba(98,240,255,.18), transparent 55%),
+                  radial-gradient(circle at 70% 60%, rgba(166,107,255,.14), transparent 60%);
+      animation:float 6.2s ease-in-out infinite;
+      opacity:.9;
+    }
+    @keyframes float{
+      0%,100%{transform:translate(0,0)}
+      50%{transform:translate(2.2%, -1.4%)}
+    }
+    .banner > *{ position:relative; z-index:1; }
+
+    .toastWrap{
+      position:fixed; right:16px; bottom:16px;
+      display:flex; flex-direction:column; gap:10px; z-index:99;
+      pointer-events:none;
+    }
+    .toast{
+      pointer-events:auto;
+      max-width: 420px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(10,8,14,.78);
+      backdrop-filter: blur(12px);
+      padding:12px 12px;
+      box-shadow: 0 18px 55px rgba(0,0,0,.45);
+      transform: translateY(10px);
+      opacity:0;
+      animation:toastIn .22s ease forwards;
+    }
+    @keyframes toastIn{to{transform:translateY(0); opacity:1}}
+    .toast .t{ font-weight:900; letter-spacing:.04em; }
+    .toast .m{ margin-top:4px; font-size:12px; color:var(--muted); line-height:1.35; }
+    .toast.ok{ border-color: rgba(85,255,154,.25) }
+    .toast.err{ border-color: rgba(255,91,110,.30) }
+
+    /* Feed list */
+    .list{
+      display:flex; flex-direction:column; gap:10px;
+    }
+    .card{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.22);
+      border-radius:16px;
+      padding:12px;
+      position:relative;
+      overflow:hidden;
+    }
+    .card::before{
+      content:"";
+      position:absolute; inset:-40%;
+      background: conic-gradient(from 90deg, transparent, rgba(255,223,140,.12), transparent, rgba(98,240,255,.10), transparent);
+      opacity:.35;
+      animation:spin 10s linear infinite;
+    }
+    .card > *{ position:relative; z-index:1; }
+    .nick{ font-weight:900; letter-spacing:.02em; }
+    .meta{ font-size:12px; color:var(--muted); margin-top:4px; }
+
+    .tokenBox{
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.25);
+      padding:12px;
+      font-family: var(--mono);
+      font-size:12px;
+      line-height:1.35;
+      word-break: break-all;
+      position:relative; overflow:hidden;
+    }
+    .tokenBox::after{
+      content:"";
+      position:absolute; inset:-40%;
+      background: radial-gradient(circle at 30% 30%, rgba(255,223,140,.12), transparent 55%),
+                  radial-gradient(circle at 70% 70%, rgba(98,240,255,.10), transparent 60%);
+      opacity:.9;
+      animation:float 7s ease-in-out infinite;
+      pointer-events:none;
+    }
+    .tokenBox code{ position:relative; z-index:1; }
+
+    /* Mobile */
+    @media (max-width: 1020px){
+      main{ grid-template-columns:1fr; grid-template-rows:auto auto auto; overflow:auto; }
+      body{ overflow:auto; }
+      #vfx,#vfx2,.grain,.scanlines{ position:fixed; }
     }
   </style>
 </head>
 <body>
-  <canvas id="vfxCanvas"></canvas>
-  <div class="bloom"></div>
-  <div class="scanlines"></div>
+  <canvas id="vfx"></canvas>
+  <canvas id="vfx2"></canvas>
   <div class="grain"></div>
+  <div class="scanlines"></div>
 
-  <div class="shell">
-    <div class="topbar">
+  <div class="app">
+    <header>
       <div class="brand">
-        <div class="logo"></div>
+        <div class="sigil" aria-hidden="true"></div>
         <div>
-          <h1>OBEARCO • RPG Hub</h1>
-          <div class="hint" id="hintApi">Carregando server_status.json…</div>
+          <h1>OBEARCO • Gate of Accounts</h1>
+          <div class="sub" id="subLine">Conectando ao grimório do servidor...</div>
         </div>
       </div>
 
-      <div class="badge" id="serverBadge">
-        <span class="dot" id="serverDot"></span>
-        <span id="serverText">offline</span>
-        <span style="opacity:.35">•</span>
-        <span id="serverVer">api ?</span>
-      </div>
-
-      <div class="actions">
-        <button class="btn ghost" id="btnReload">↻ Recarregar status</button>
-        <button class="btn primary" id="btnOpenSettings" style="display:none">⚙️ Configurações</button>
-        <button class="btn" id="btnLogout" style="display:none">Sair</button>
-      </div>
-    </div>
-
-    <div class="main" id="viewAuth">
-      <div class="card">
-        <div class="inner">
-          <div class="titleRow">
-            <h2 class="title">Login / Registro</h2>
-            <div class="pill" id="modePill">modo: login</div>
+      <div class="topRight">
+        <div class="chip" id="userChip" style="display:none">
+          <div>
+            <div class="name" id="chipName">—</div>
+            <div class="email" id="chipEmail">—</div>
           </div>
-          <div class="sep"></div>
+        </div>
+        <button class="btn ghost" id="btnReloadBase">🔄 Sync status.json</button>
+        <button class="btn" id="btnLogout" style="display:none">🚪 Logout</button>
+      </div>
+    </header>
 
-          <div class="authWrap">
-            <div class="authBox">
-              <div class="modeRow">
-                <button class="btn" id="btnModeLogin">Login</button>
-                <button class="btn" id="btnModeRegister">Registrar</button>
-              </div>
-
-              <div class="hint">Usa seu servidor via <span class="pill">/api/v1/cmd</span> com comandos <span class="pill">/login</span> e <span class="pill">/register</span>.</div>
-
-              <input class="input" id="inpUser" placeholder="username (no registro) — letras/números/espaço/_ (3-32)"/>
-              <input class="input" id="inpEmailOrLogin" placeholder="email ou username (no login)"/>
-              <input class="input" id="inpPass" placeholder="senha (6-72)" type="password"/>
-
-              <button class="btn primary bigBtn" id="btnForge">⚔️ Forjar!</button>
-              <div class="note" id="authNote">
-                Dica: no login, pode usar email ou username. No registro, preenche username + email + senha.
-              </div>
-
-              <div class="sep"></div>
-              <div class="titleRow">
-                <h2 class="title">Patch Notes</h2>
-                <div class="pill">lado a lado</div>
-              </div>
-              <div class="sub" id="patchNotes">
-                • v0.1 — UI AAA + VFX<br/>
-                • v0.2 — Login/Registro<br/>
-                • v0.3 — Configurações + exclusão com confirmação<br/>
-                <br/>
-                (Pode trocar isso por um fetch do seu arquivo de patch notes quando quiser.)
-              </div>
-            </div>
-
-            <div class="card" style="background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02)); border-radius:26px;">
-              <div class="inner">
-                <div class="titleRow">
-                  <h2 class="title">Status do Servidor</h2>
-                  <div class="pill" id="statusPill">…</div>
-                </div>
-                <div class="sep"></div>
-
-                <div class="kv"><div class="k">url_api_base</div><div class="v" id="kvApiBase">…</div></div>
-                <div class="kv"><div class="k">porta</div><div class="v" id="kvPort">…</div></div>
-                <div class="kv"><div class="k">status_servidor</div><div class="v" id="kvOnline">…</div></div>
-                <div class="kv"><div class="k">version_api</div><div class="v" id="kvVer">…</div></div>
-
-                <div class="sep"></div>
-                <button class="btn" id="btnPing">Ping (cmd)</button>
-                <div class="note" id="pingOut">—</div>
-              </div>
+    <main>
+      <!-- Left Nav -->
+      <section class="panel leftNav">
+        <div class="navHead">
+          <div class="title">Abas</div>
+          <div class="title" id="baseBadge" style="opacity:.7"></div>
+        </div>
+        <div class="navList">
+          <div class="tab active" data-tab="auth">
+            <div class="ic">🗝️</div>
+            <div>
+              <div class="label">Portal</div>
+              <div class="hint">login / registro</div>
             </div>
           </div>
-
+          <div class="tab" data-tab="feed">
+            <div class="ic">📜</div>
+            <div>
+              <div class="label">Taverna</div>
+              <div class="hint">nicks registrados</div>
+            </div>
+          </div>
+          <div class="tab" data-tab="profile">
+            <div class="ic">🛡️</div>
+            <div>
+              <div class="label">Perfil</div>
+              <div class="hint">token / dados</div>
+            </div>
+          </div>
+          <div class="tab" data-tab="account">
+            <div class="ic">⚙️</div>
+            <div>
+              <div class="label">Conta</div>
+              <div class="hint">editar / deletar</div>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <div class="card">
-        <div class="inner">
-          <div class="titleRow">
-            <h2 class="title">Preview • Lobby</h2>
-            <div class="pill">placeholder</div>
-          </div>
-          <div class="sep"></div>
-          <div class="sub">
-            Esse painel vira o “conteúdo principal” depois do login. Por agora: só vibe + VFX.
-          </div>
-          <div style="flex:1"></div>
-          <div class="pillRow">
-            <span class="pill">VFX: partículas</span>
-            <span class="pill">scanlines</span>
-            <span class="pill">bloom</span>
-            <span class="pill">shimmer</span>
+      <!-- Center -->
+      <section class="panel center">
+        <div class="centerHead">
+          <div class="title" id="centerTitle">Portal</div>
+          <div class="row">
+            <button class="btn primary" id="btnPing">🫀 Ping</button>
+            <button class="btn" id="btnWhoami">👁️ Whoami</button>
           </div>
         </div>
-      </div>
+        <div class="centerBody" id="centerBody"></div>
+      </section>
 
-      <div class="card">
-        <div class="inner">
-          <div class="titleRow">
-            <h2 class="title">Notas</h2>
-            <div class="pill">warframe-ish</div>
-          </div>
-          <div class="sep"></div>
-          <div class="sub">
-            • Botão “Forjar!” envia pro servidor.<br/>
-            • Se der erro, eu mostro toast com a mensagem do JSON.<br/>
-            • O site sempre busca o status no GitHub na abertura (cache-bust).<br/>
-          </div>
-          <div style="flex:1"></div>
-          <button class="btn" id="btnOpenRaw">Abrir server_status.json (raw)</button>
+      <!-- Right -->
+      <section class="panel right">
+        <div class="rightHead">
+          <div class="title">Patch Notes</div>
+          <button class="btn ghost" id="btnLoadNotes">✨ Atualizar</button>
         </div>
-      </div>
-    </div>
-
-    <!-- APP VIEW -->
-    <div class="main" id="viewApp" style="display:none;">
-      <!-- left token -->
-      <div class="card">
-        <div class="inner">
-          <div class="titleRow">
-            <h2 class="title">Perfil</h2>
-            <span class="pill" id="pillNick">—</span>
-          </div>
-          <div class="sep"></div>
-
-          <div class="kv"><div class="k">email</div><div class="v" id="meEmail">—</div></div>
-          <div class="kv"><div class="k">conta_id</div><div class="v" id="meId">—</div></div>
-
-          <div class="sep"></div>
-
-          <div class="sub">Token de login (visível):</div>
-          <input class="input" id="tokenBox" readonly style="font-family:var(--mono)"/>
-          <div class="grid2">
-            <button class="btn primary" id="btnCopyToken">Copiar token</button>
-            <button class="btn" id="btnWhoAmI">whoami</button>
-          </div>
-
-          <div class="sep"></div>
-          <div class="sub">Servidor:</div>
-          <div class="kv"><div class="k">api_base</div><div class="v" id="appApiBase">—</div></div>
-          <div class="kv"><div class="k">udp_lobby</div><div class="v" id="appUdp">—</div></div>
-
-          <div style="flex:1"></div>
-          <div class="note">Dica: o token também vai no header <span class="pill">Authorization: Bearer TOKEN</span>.</div>
-        </div>
-      </div>
-
-      <!-- center feed -->
-      <div class="card">
-        <div class="inner">
-          <div class="titleRow">
-            <h2 class="title">Feed</h2>
-            <div class="row">
-              <button class="btn" id="btnRefreshFeed">Atualizar</button>
-              <span class="pill">nicks registrados</span>
+        <div class="rightBody">
+          <div class="banner">
+            <div style="font-size:18px">🧙</div>
+            <div>
+              <div style="font-weight:900; letter-spacing:.05em">Crônicas do Reino</div>
+              <div class="note">Essa coluna sempre fica do lado, estilo “site AAA”. Você pode trocar o texto quando quiser.</div>
             </div>
           </div>
           <div class="sep"></div>
-
-          <div class="feed" id="feed"></div>
+          <div id="notesBox" class="note">Carregando patch notes...</div>
         </div>
-      </div>
-
-      <!-- right userbar -->
-      <div class="card">
-        <div class="inner">
-          <div class="titleRow">
-            <h2 class="title">Conta</h2>
-            <div class="row">
-              <button class="btn primary" id="btnSettings">⚙️ Abrir configurações</button>
-            </div>
-          </div>
-          <div class="sep"></div>
-
-          <div class="sub">
-            Aqui você mexe em username/email/senha e pode deletar conta (com confirmação + delay).
-          </div>
-
-          <div style="flex:1"></div>
-
-          <div class="sep"></div>
-          <button class="btn danger" id="btnHardLogout">Sair agora</button>
-        </div>
-      </div>
-    </div>
+      </section>
+    </main>
   </div>
 
-  <!-- SETTINGS MODAL -->
-  <div class="modalBack" id="modalBack">
-    <div class="modal">
-      <div class="modalGrid">
-        <div class="modalMain">
-          <div class="titleRow">
-            <h2 class="title">Configurações da Conta</h2>
-            <div class="row">
-              <button class="btn" id="btnCloseModal">Fechar</button>
-            </div>
-          </div>
-          <div class="sep"></div>
-
-          <div class="tabs">
-            <div class="tab active" data-tab="profile">Perfil</div>
-            <div class="tab" data-tab="security">Segurança</div>
-            <div class="tab" data-tab="danger">Danger Zone</div>
-          </div>
-
-          <div id="tab_profile">
-            <div class="sub">Atualizar username e email.</div>
-            <div class="sep"></div>
-
-            <div class="grid2">
-              <input class="input" id="setUsername" placeholder="novo username"/>
-              <input class="input" id="setEmail" placeholder="novo email"/>
-            </div>
-
-            <div class="row" style="margin-top:10px;">
-              <input class="input" id="setPassConfirmA" type="password" placeholder="confirme sua senha atual (obrigatório)"/>
-              <button class="btn primary" id="btnSaveProfile">Salvar</button>
-            </div>
-
-            <div class="note" style="margin-top:10px;">
-              O servidor valida username/email. Se você não quiser mudar um campo, deixa em branco.
-            </div>
-          </div>
-
-          <div id="tab_security" style="display:none;">
-            <div class="sub">Trocar senha (recomendado sempre confirmar a senha atual).</div>
-            <div class="sep"></div>
-
-            <input class="input" id="curPass" type="password" placeholder="senha atual"/>
-            <div style="height:10px"></div>
-            <input class="input" id="newPass" type="password" placeholder="nova senha"/>
-            <div style="height:10px"></div>
-            <input class="input" id="newPass2" type="password" placeholder="repita a nova senha"/>
-
-            <div class="row" style="margin-top:10px;">
-              <button class="btn primary" id="btnChangePass">Atualizar senha</button>
-            </div>
-          </div>
-
-          <div id="tab_danger" style="display:none;">
-            <div class="sub" style="color:rgba(255,77,109,.92); font-weight:800;">
-              Excluir conta é permanente.
-            </div>
-            <div class="sep"></div>
-
-            <input class="input" id="delPass" type="password" placeholder="digite sua senha para confirmar"/>
-            <div style="height:10px"></div>
-
-            <div class="kv">
-              <div class="k">Confirmação</div>
-              <div class="v" id="delTimer">botão habilita em 5s</div>
-            </div>
-
-            <div class="row" style="margin-top:10px;">
-              <button class="btn danger" id="btnDelete" disabled>✅ Confirmar exclusão (5s)</button>
-            </div>
-
-            <div class="note" style="margin-top:10px;">
-              Você vai sair e o token será invalidado.
-            </div>
-          </div>
-
-        </div>
-
-        <div class="modalSide">
-          <div class="titleRow">
-            <h2 class="title">Patch Notes</h2>
-            <div class="pill">ao lado</div>
-          </div>
-          <div class="sep"></div>
-          <div class="sub" id="patchNotesSide">
-            • v0.1 — UI AAA + VFX<br/>
-            • v0.2 — Auth + Token copy<br/>
-            • v0.3 — Feed + Settings + Delete confirm<br/>
-            <br/>
-            Quer buscar patch notes do GitHub também? Só me fala o arquivo/URL.
-          </div>
-
-          <div class="sep"></div>
-          <div class="titleRow">
-            <h2 class="title">Debug</h2>
-            <div class="pill">api</div>
-          </div>
-          <div class="sep"></div>
-          <div class="kv"><div class="k">api_base</div><div class="v" id="dbgBase">—</div></div>
-          <div class="kv"><div class="k">status_json</div><div class="v" id="dbgStatusUrl">—</div></div>
-          <div class="note" style="margin-top:10px;">
-            Se der 400/401, normalmente é payload faltando ou sessão inválida.
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="toast" id="toast"></div>
+  <div class="toastWrap" id="toastWrap"></div>
 
 <script>
-/* =========================
-   0) Config / status.json
-========================= */
-const STATUS_GH = "https://raw.githubusercontent.com/NoSense-Bot/Servidor/main/server_status.json";
-let API_BASE = "";          // vem do status.json (url_api_base)
-let SESSION_TOKEN = "";     // setado no login
-let ME = null;              // conta pública
-let MODE = "login";         // login | register
+/* ==========================
+   CONFIG: server_status.json
+   ========================== */
+const STATUS_JSON_URL = "https://github.com/NoSense-Bot/Servidor/blob/main/server_status.json"; // você pediu assim
+const FALLBACK_BASE = "http://127.0.0.1:7776";
+const API_PREFIX = "/api/v1";
 
-const $ = (id)=>document.getElementById(id);
-
-function toast(type, title, msg){
-  const t = $("toast");
-  t.className = "toast " + (type==="ok" ? "ok" : "bad");
-  t.innerHTML = `<strong>${title}</strong><div style="color:var(--muted); font-size:12px; line-height:1.35">${msg}</div>`;
-  t.style.display = "block";
-  clearTimeout(window.__toastTimer);
-  window.__toastTimer = setTimeout(()=>t.style.display="none", 3200);
+function toRawGithub(url){
+  // aceita "blob" e converte pra raw
+  try{
+    if(url.includes("github.com") && url.includes("/blob/")){
+      const u = new URL(url);
+      const parts = u.pathname.split("/").filter(Boolean);
+      // /{owner}/{repo}/blob/{branch}/{...path}
+      const owner = parts[0], repo = parts[1], branch = parts[3];
+      const path = parts.slice(4).join("/");
+      return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}`;
+    }
+  }catch{}
+  return url;
 }
 
-async function loadServerStatus(){
-  $("hintApi").textContent = "Buscando status no GitHub…";
-  $("statusPill").textContent = "fetching…";
-  const url = STATUS_GH + "?t=" + Date.now();
-  $("dbgStatusUrl").textContent = url;
+let apiBase = FALLBACK_BASE;
+let sessionToken = localStorage.getItem("obearco_token") || "";
+let cachedConta = null;
 
+/* ==========================
+   UI helpers
+   ========================== */
+const $ = (q)=>document.querySelector(q);
+const centerBody = $("#centerBody");
+
+function toast(kind, title, msg){
+  const wrap = $("#toastWrap");
+  const el = document.createElement("div");
+  el.className = `toast ${kind}`;
+  el.innerHTML = `<div class="t">${title}</div><div class="m">${msg}</div>`;
+  wrap.appendChild(el);
+  setTimeout(()=>{ el.style.opacity="0"; el.style.transform="translateY(10px)"; }, 2800);
+  setTimeout(()=>{ el.remove(); }, 3300);
+}
+
+function setSubtitle(text){
+  $("#subLine").textContent = text;
+}
+
+function setChip(conta){
+  const chip = $("#userChip");
+  const btnLogout = $("#btnLogout");
+  if(conta){
+    chip.style.display = "";
+    btnLogout.style.display = "";
+    $("#chipName").textContent = conta.username || "—";
+    $("#chipEmail").textContent = conta.email || "—";
+  }else{
+    chip.style.display = "none";
+    btnLogout.style.display = "none";
+    $("#chipName").textContent = "—";
+    $("#chipEmail").textContent = "—";
+  }
+}
+
+function setBaseBadge(){
   try{
-    const r = await fetch(url, {cache:"no-store"});
+    const u = new URL(apiBase);
+    $("#baseBadge").textContent = `${u.hostname}:${u.port || (u.protocol==="https:"?"443":"80")}`;
+  }catch{
+    $("#baseBadge").textContent = apiBase;
+  }
+}
+
+/* ==========================
+   API wrapper
+   ========================== */
+async function cmd(payload){
+  const url = apiBase.replace(/\/$/,"") + API_PREFIX + "/cmd";
+  const headers = { "Content-Type":"application/json" };
+  if(sessionToken) headers["Authorization"] = "Bearer " + sessionToken;
+
+  const r = await fetch(url, { method:"POST", headers, body: JSON.stringify(payload) });
+  const data = await r.json().catch(()=>({ok:false,error:"Resposta não é JSON"}));
+  if(!data.ok){
+    throw new Error(data.error || "Erro desconhecido");
+  }
+  return data;
+}
+
+async function syncFromStatusJson(){
+  const raw = toRawGithub(STATUS_JSON_URL);
+  const bust = raw + (raw.includes("?")?"&":"?") + "ts=" + Date.now();
+  setSubtitle("Sincronizando status.json...");
+  try{
+    const r = await fetch(bust, { cache:"no-store" });
     const j = await r.json();
-
-    API_BASE = (j.url_api_base || "").replace(/\/+$/,"");
-    $("kvApiBase").textContent = API_BASE || "—";
-    $("kvPort").textContent = String(j.porta ?? "—");
-    $("kvOnline").textContent = String(j.status_servidor ?? "—");
-    $("kvVer").textContent = String(j.version_api ?? "—");
-
-    $("appApiBase").textContent = API_BASE || "—";
-    const udp = j.UDP_LOBBY ? `${j.UDP_LOBBY.host}:${j.UDP_LOBBY.port}` : "—";
-    $("appUdp").textContent = udp;
-
-    $("serverVer").textContent = "api " + (j.version_api || "?");
-    const isOn = String(j.status_servidor||"").toLowerCase().includes("online");
-
-    $("serverDot").className = "dot " + (isOn ? "ok" : "bad");
-    $("serverText").textContent = isOn ? "online" : "offline";
-    $("statusPill").textContent = isOn ? "Online" : "Offline";
-
-    $("hintApi").textContent = API_BASE ? `API base: ${API_BASE}` : "Sem url_api_base no status.json";
-    $("dbgBase").textContent = API_BASE || "—";
-
-  }catch(e){
-    $("serverDot").className = "dot bad";
-    $("serverText").textContent = "status fetch FAIL";
-    $("serverVer").textContent = "api ?";
-    $("hintApi").textContent = "Falha ao ler server_status.json (raw).";
-    $("statusPill").textContent = "erro";
-    toast("bad","Status FAIL","Não consegui parsear o server_status.json do GitHub (raw).");
-  }
-}
-
-/* =========================
-   1) API helper
-========================= */
-async function apiCmd(payload, {token} = {}){
-  if(!API_BASE) throw new Error("API_BASE vazio. status.json não carregou.");
-  const url = API_BASE + "/api/v1/cmd";
-  const headers = {"Content-Type":"application/json"};
-  const tk = token || SESSION_TOKEN;
-  if(tk) headers["Authorization"] = "Bearer " + tk;
-
-  const r = await fetch(url, {method:"POST", headers, body: JSON.stringify(payload)});
-  const j = await r.json().catch(()=>({ok:false, error:"Resposta inválida (não-JSON)"}));
-
-  if(!r.ok || j.ok === false){
-    const msg = j.error || ("HTTP " + r.status);
-    const extra = (j && typeof j === "object") ? JSON.stringify(j) : "";
-    throw new Error(msg + (extra ? ` • ${extra}` : ""));
-  }
-  return j;
-}
-
-/* =========================
-   2) Auth flow
-========================= */
-function setMode(m){
-  MODE = m;
-  $("modePill").textContent = "modo: " + m;
-  $("btnModeLogin").classList.toggle("primary", m==="login");
-  $("btnModeRegister").classList.toggle("primary", m==="register");
-  $("inpUser").style.display = (m==="register") ? "block" : "none";
-  $("inpEmailOrLogin").placeholder = (m==="login") ? "email ou username" : "email";
-}
-async function doForge(){
-  const username = $("inpUser").value.trim();
-  const emailOrLogin = $("inpEmailOrLogin").value.trim();
-  const senha = $("inpPass").value;
-
-  try{
-    if(MODE==="register"){
-      const out = await apiCmd({comando:"/register", username, email: emailOrLogin, senha});
-      toast("ok","Conta criada", out.message || "Registro OK.");
-      // auto-login
-      setMode("login");
-      $("inpEmailOrLogin").value = emailOrLogin;
-      $("inpPass").value = senha;
-      await doForge();
-      return;
-    }else{
-      const out = await apiCmd({comando:"/login", login: emailOrLogin, senha});
-      SESSION_TOKEN = out.session_token || "";
-      ME = out.conta || null;
-
-      if(!SESSION_TOKEN){
-        throw new Error("Login OK mas sem session_token no retorno.");
-      }
-
-      $("tokenBox").value = SESSION_TOKEN;
-      $("pillNick").textContent = (ME?.username || "—");
-      $("meEmail").textContent = (ME?.email || "—");
-      $("meId").textContent = String(ME?.conta_id ?? "—");
-
-      $("btnOpenSettings").style.display = "inline-block";
-      $("btnLogout").style.display = "inline-block";
-
-      $("viewAuth").style.display = "none";
-      $("viewApp").style.display = "grid";
-
-      toast("ok","Login OK","Sessão iniciada.");
-      await refreshFeed();
-    }
-  }catch(e){
-    toast("bad","Falhou", String(e.message || e));
-  }
-}
-function logout(){
-  SESSION_TOKEN = "";
-  ME = null;
-  $("tokenBox").value = "";
-  $("viewApp").style.display = "none";
-  $("viewAuth").style.display = "grid";
-  $("btnOpenSettings").style.display = "none";
-  $("btnLogout").style.display = "none";
-}
-
-/* =========================
-   3) Feed: lista de users
-   Precisa do comando /listusers no Comandos.py
-========================= */
-function feedSkeleton(){
-  const el = $("feed");
-  el.innerHTML = "";
-  for(let i=0;i<8;i++){
-    const d = document.createElement("div");
-    d.className="skeleton";
-    el.appendChild(d);
-  }
-}
-async function refreshFeed(){
-  feedSkeleton();
-  try{
-    const out = await apiCmd({comando:"/listusers"});
-    const list = out.users || out.usernames || [];
-    const el = $("feed");
-    el.innerHTML = "";
-
-    if(!Array.isArray(list) || list.length===0){
-      el.innerHTML = `<div class="sub">Nenhum usuário retornado (ou comando não implementado).</div>`;
+    if(j && j.url_api_base){
+      apiBase = String(j.url_api_base).replace(/\/$/,"");
+      localStorage.setItem("obearco_api_base", apiBase);
+      setSubtitle("Conectado ao portal: " + apiBase);
+      setBaseBadge();
+      toast("ok","Portal sincronizado","API base carregada do server_status.json.");
       return;
     }
-
-    list.forEach((u, idx)=>{
-      const tile = document.createElement("div");
-      tile.className = "tile";
-      tile.innerHTML = `
-        <div class="tInner">
-          <div class="row">
-            <div class="avatar"></div>
-            <div>
-              <div class="nick">${escapeHtml(String(u))}</div>
-              <div class="sub">Registrado • #${idx+1}</div>
-            </div>
-          </div>
-          <div class="tag">OBEARCO</div>
-        </div>
-      `;
-      el.appendChild(tile);
-    });
+    throw new Error("status.json sem url_api_base");
   }catch(e){
-    $("feed").innerHTML = `<div class="sub">Feed erro: ${escapeHtml(String(e.message||e))}</div>`;
+    apiBase = localStorage.getItem("obearco_api_base") || FALLBACK_BASE;
+    setSubtitle("Falha no status.json. Usando fallback: " + apiBase);
+    setBaseBadge();
+    toast("err","Falha no status.json", String(e.message||e));
   }
 }
 
-/* =========================
-   4) Settings: update / pass / delete
-   Precisa dos comandos /updateaccount e /deleteaccount
-========================= */
-function openModal(){
-  $("modalBack").style.display = "flex";
-  // prefill
-  $("setUsername").value = "";
-  $("setEmail").value = "";
-  $("setPassConfirmA").value = "";
-  $("curPass").value = "";
-  $("newPass").value = "";
-  $("newPass2").value = "";
-  $("delPass").value = "";
-  startDeleteTimer();
-}
-function closeModal(){ $("modalBack").style.display = "none"; }
-
-function setTab(name){
-  document.querySelectorAll(".tab").forEach(t=>{
-    t.classList.toggle("active", t.dataset.tab===name);
+/* ==========================
+   Tabs
+   ========================== */
+const tabs = document.querySelectorAll(".tab");
+tabs.forEach(t=>{
+  t.addEventListener("click", ()=>{
+    tabs.forEach(x=>x.classList.remove("active"));
+    t.classList.add("active");
+    const id = t.dataset.tab;
+    renderTab(id);
   });
-  ["profile","security","danger"].forEach(n=>{
-    $("tab_"+n).style.display = (n===name) ? "block" : "none";
-  });
-}
-
-async function saveProfile(){
-  try{
-    const newUsername = $("setUsername").value.trim();
-    const newEmail = $("setEmail").value.trim();
-    const senha_atual = $("setPassConfirmA").value;
-
-    const payload = {comando:"/updateaccount", senha_atual};
-    if(newUsername) payload.username = newUsername;
-    if(newEmail) payload.email = newEmail;
-
-    const out = await apiCmd(payload, {token: SESSION_TOKEN});
-    ME = out.conta || ME;
-
-    $("pillNick").textContent = (ME?.username || "—");
-    $("meEmail").textContent = (ME?.email || "—");
-
-    toast("ok","Salvo", out.message || "Conta atualizada.");
-  }catch(e){
-    toast("bad","Falhou", String(e.message||e));
-  }
-}
-
-async function changePassword(){
-  try{
-    const cur = $("curPass").value;
-    const n1 = $("newPass").value;
-    const n2 = $("newPass2").value;
-    if(n1 !== n2) throw new Error("Nova senha e confirmação não batem.");
-
-    const out = await apiCmd({comando:"/updateaccount", senha_atual: cur, senha_nova: n1}, {token: SESSION_TOKEN});
-    toast("ok","Senha atualizada", out.message || "OK.");
-  }catch(e){
-    toast("bad","Falhou", String(e.message||e));
-  }
-}
-
-let delTimer = null;
-function startDeleteTimer(){
-  const btn = $("btnDelete");
-  const label = $("delTimer");
-  btn.disabled = true;
-  btn.textContent = "✅ Confirmar exclusão (5s)";
-  let s = 5;
-  label.textContent = "botão habilita em 5s";
-  clearInterval(delTimer);
-  delTimer = setInterval(()=>{
-    s--;
-    if(s<=0){
-      clearInterval(delTimer);
-      btn.disabled = false;
-      btn.textContent = "✅ Confirmar exclusão (AGORA)";
-      label.textContent = "habilitado";
-    }else{
-      btn.textContent = `✅ Confirmar exclusão (${s}s)`;
-      label.textContent = `aguarde ${s}s…`;
-    }
-  }, 1000);
-}
-
-async function deleteAccount(){
-  try{
-    const senha = $("delPass").value;
-    const out = await apiCmd({comando:"/deleteaccount", senha}, {token: SESSION_TOKEN});
-    toast("ok","Conta excluída", out.message || "OK.");
-    closeModal();
-    logout();
-  }catch(e){
-    toast("bad","Falhou", String(e.message||e));
-  }
-}
-
-/* =========================
-   5) Utils
-========================= */
-function escapeHtml(s){
-  return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-}
-async function copyText(t){
-  await navigator.clipboard.writeText(t);
-  toast("ok","Copiado","Texto copiado para a área de transferência.");
-}
-
-/* =========================
-   6) VFX canvas (particles + streaks)
-========================= */
-const canvas = $("vfxCanvas");
-const ctx = canvas.getContext("2d");
-let W=0,H=0, DPR=1;
-const particles = [];
-const streaks = [];
-
-function resize(){
-  DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
-  W = canvas.width = Math.floor(innerWidth * DPR);
-  H = canvas.height = Math.floor(innerHeight * DPR);
-  canvas.style.width = innerWidth+"px";
-  canvas.style.height = innerHeight+"px";
-}
-window.addEventListener("resize", resize);
-
-function rand(a,b){ return a + Math.random()*(b-a); }
-
-function seed(){
-  particles.length=0;
-  streaks.length=0;
-  const n = Math.floor((innerWidth*innerHeight)/12000);
-  for(let i=0;i<n;i++){
-    particles.push({
-      x: rand(0,W), y: rand(0,H),
-      r: rand(0.8,2.2)*DPR,
-      vx: rand(-.10,.12)*DPR,
-      vy: rand(-.06,.16)*DPR,
-      a: rand(.15,.55),
-      hue: Math.random() < .5 ? 195 : 270
-    });
-  }
-  for(let i=0;i<14;i++){
-    streaks.push({
-      x: rand(-W*0.2, W*1.2),
-      y: rand(-H*0.2, H*1.2),
-      w: rand(120, 360)*DPR,
-      h: rand(1.2, 2.6)*DPR,
-      s: rand(.25, .75)*DPR,
-      a: rand(.05,.12),
-      hue: Math.random() < .5 ? 195 : 250
-    });
-  }
-}
-
-function loop(t){
-  ctx.clearRect(0,0,W,H);
-
-  // soft vignette
-  const g = ctx.createRadialGradient(W*0.5,H*0.5,0, W*0.5,H*0.5, Math.max(W,H)*0.65);
-  g.addColorStop(0, "rgba(0,0,0,0)");
-  g.addColorStop(1, "rgba(0,0,0,.55)");
-  ctx.fillStyle = g;
-  ctx.fillRect(0,0,W,H);
-
-  // streaks
-  streaks.forEach(s=>{
-    s.x += s.s;
-    if(s.x - s.w > W) s.x = -s.w;
-    ctx.save();
-    ctx.globalAlpha = s.a;
-    ctx.fillStyle = `hsla(${s.hue}, 95%, 60%, 1)`;
-    ctx.translate(s.x, s.y);
-    ctx.rotate(0.12);
-    ctx.fillRect(0,0,s.w,s.h);
-    ctx.restore();
-  });
-
-  // particles
-  particles.forEach(p=>{
-    p.x += p.vx;
-    p.y += p.vy;
-    if(p.x< -20) p.x=W+20;
-    if(p.x> W+20) p.x=-20;
-    if(p.y< -20) p.y=H+20;
-    if(p.y> H+20) p.y=-20;
-
-    ctx.beginPath();
-    ctx.globalAlpha = p.a;
-    ctx.fillStyle = `hsla(${p.hue}, 95%, 62%, 1)`;
-    ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-    ctx.fill();
-  });
-
-  // subtle pulse glow
-  ctx.globalAlpha = 0.06 + 0.02*Math.sin(t/900);
-  ctx.fillStyle = "rgba(76,201,240,1)";
-  ctx.fillRect(0,0,W,H);
-
-  requestAnimationFrame(loop);
-}
-
-/* =========================
-   7) Wire UI
-========================= */
-$("btnReload").onclick = loadServerStatus;
-$("btnModeLogin").onclick = ()=>setMode("login");
-$("btnModeRegister").onclick = ()=>setMode("register");
-$("btnForge").onclick = doForge;
-
-$("btnPing").onclick = async ()=>{
-  try{
-    const out = await apiCmd({comando:"/ping"});
-    $("pingOut").textContent = JSON.stringify(out).slice(0,160) + "…";
-    toast("ok","Ping", "Servidor respondeu.");
-  }catch(e){
-    toast("bad","Ping FAIL", String(e.message||e));
-  }
-};
-
-$("btnOpenRaw").onclick = ()=>window.open(STATUS_GH, "_blank");
-
-$("btnLogout").onclick = logout;
-$("btnHardLogout").onclick = logout;
-
-$("btnOpenSettings").onclick = openModal;
-$("btnSettings").onclick = openModal;
-$("btnCloseModal").onclick = closeModal;
-$("modalBack").addEventListener("click",(e)=>{ if(e.target === $("modalBack")) closeModal(); });
-
-document.querySelectorAll(".tab").forEach(t=>{
-  t.addEventListener("click", ()=>setTab(t.dataset.tab));
 });
 
-$("btnSaveProfile").onclick = saveProfile;
-$("btnChangePass").onclick = changePassword;
-$("btnDelete").onclick = deleteAccount;
-
-$("btnCopyToken").onclick = ()=>copyText($("tokenBox").value || "");
-$("btnWhoAmI").onclick = async ()=>{
-  try{
-    const out = await apiCmd({comando:"/whoami"}, {token: SESSION_TOKEN});
-    toast("ok","whoami", JSON.stringify(out.session||out).slice(0,160)+"…");
-  }catch(e){
-    toast("bad","whoami FAIL", String(e.message||e));
+function mustBeLogged(){
+  if(!sessionToken){
+    toast("err","Sem sessão","Faça login primeiro.");
+    renderTab("auth");
+    return false;
   }
+  return true;
+}
+
+function setTitle(t){ $("#centerTitle").textContent = t; }
+
+function renderTab(id){
+  if(id==="auth"){ setTitle("Portal"); renderAuth(); return; }
+  if(id==="feed"){ setTitle("Taverna"); renderFeed(); return; }
+  if(id==="profile"){ setTitle("Perfil"); renderProfile(); return; }
+  if(id==="account"){ setTitle("Conta"); renderAccount(); return; }
+}
+
+function setActiveTab(id){
+  tabs.forEach(x=>x.classList.toggle("active", x.dataset.tab===id));
+  renderTab(id);
+}
+
+/* ==========================
+   AUTH TAB
+   ========================== */
+function renderAuth(){
+  centerBody.innerHTML = `
+    <div class="banner">
+      <div style="font-size:18px">⚔️</div>
+      <div>
+        <div style="font-weight:900; letter-spacing:.06em">Portal do Aventureiro</div>
+        <div class="note">Registre sua conta ou entre no reino. Tudo usa <b>/api/v1/cmd</b>.</div>
+      </div>
+    </div>
+
+    <div class="sep"></div>
+
+    <div class="grid2">
+      <div class="card">
+        <div class="nick">Login</div>
+        <div class="meta">Use <b>username</b> ou <b>email</b> no campo “login”.</div>
+        <div class="sep"></div>
+
+        <div class="field">
+          <label>Login (email ou username)</label>
+          <input id="login_login" placeholder="ex: Gustavo ou gustavo@email.com" autocomplete="username" />
+        </div>
+        <div class="field" style="margin-top:10px">
+          <label>Senha</label>
+          <input id="login_senha" type="password" placeholder="••••••••" autocomplete="current-password" />
+        </div>
+
+        <div class="row" style="margin-top:12px">
+          <button class="btn primary" id="doLogin">🗝️ Entrar</button>
+          <button class="btn" id="clearToken">🧹 Limpar token</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="nick">Registro</div>
+        <div class="meta">Cria a conta usando os campos da sua tabela <b>contas</b>.</div>
+        <div class="sep"></div>
+
+        <div class="field">
+          <label>Username</label>
+          <input id="reg_user" placeholder="ex: Gustavo_42" autocomplete="username" />
+        </div>
+        <div class="field" style="margin-top:10px">
+          <label>Email</label>
+          <input id="reg_email" placeholder="ex: voce@email.com" autocomplete="email" />
+        </div>
+        <div class="field" style="margin-top:10px">
+          <label>Senha</label>
+          <input id="reg_senha" type="password" placeholder="mínimo 6 chars" autocomplete="new-password" />
+        </div>
+
+        <div class="row" style="margin-top:12px">
+          <button class="btn primary" id="doRegister">🧾 Registrar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="sep"></div>
+
+    <div class="card">
+      <div class="nick">API / Token</div>
+      <div class="meta">Base atual: <span style="color:var(--gold)">${apiBase}</span></div>
+      <div class="sep"></div>
+      <div class="row">
+        <button class="btn" id="copyBase">📋 Copiar API Base</button>
+        <button class="btn" id="openBase">🌐 Abrir API</button>
+      </div>
+    </div>
+  `;
+
+  $("#doLogin").onclick = async ()=>{
+    const login = $("#login_login").value.trim();
+    const senha = $("#login_senha").value.trim();
+    if(!login || !senha){ toast("err","Campos","Preencha login e senha."); return; }
+    try{
+      const out = await cmd({ comando:"/login", login, senha });
+      sessionToken = out.session_token || "";
+      localStorage.setItem("obearco_token", sessionToken);
+      cachedConta = out.conta || null;
+      setChip(cachedConta);
+      toast("ok","Login ok","Sessão criada. Bem-vindo ao reino.");
+      setActiveTab("profile");
+    }catch(e){
+      toast("err","Falha no login", e.message);
+    }
+  };
+
+  $("#doRegister").onclick = async ()=>{
+    const username = $("#reg_user").value.trim();
+    const email = $("#reg_email").value.trim();
+    const senha = $("#reg_senha").value.trim();
+    if(!username || !email || !senha){ toast("err","Campos","Preencha username, email e senha."); return; }
+    try{
+      await cmd({ comando:"/register", username, email, senha });
+      toast("ok","Conta criada","Agora faça login.");
+    }catch(e){
+      toast("err","Falha no registro", e.message);
+    }
+  };
+
+  $("#clearToken").onclick = ()=>{
+    sessionToken = "";
+    cachedConta = null;
+    localStorage.removeItem("obearco_token");
+    setChip(null);
+    toast("ok","Token limpo","Sessão removida do navegador.");
+  };
+
+  $("#copyBase").onclick = async ()=>{
+    try{ await navigator.clipboard.writeText(apiBase); toast("ok","Copiado","API Base copiada."); }
+    catch{ toast("err","Erro","Não deu pra copiar (permissão do navegador)."); }
+  };
+
+  $("#openBase").onclick = ()=> window.open(apiBase + API_PREFIX + "/status", "_blank");
+}
+
+/* ==========================
+   FEED TAB (nicks registrados)
+   Requer backend: /listusers
+   ========================== */
+async function renderFeed(){
+  centerBody.innerHTML = `
+    <div class="banner">
+      <div style="font-size:18px">🍻</div>
+      <div>
+        <div style="font-weight:900; letter-spacing:.06em">Taverna</div>
+        <div class="note">Mostra o nick de todos registrados. (Requer comando <b>/listusers</b> no backend.)</div>
+      </div>
+    </div>
+    <div class="sep"></div>
+    <div class="row">
+      <button class="btn primary" id="btnLoadUsers">📜 Carregar nicks</button>
+    </div>
+    <div class="sep"></div>
+    <div id="usersList" class="list"></div>
+  `;
+
+  $("#btnLoadUsers").onclick = async ()=>{
+    const box = $("#usersList");
+    box.innerHTML = `
+      <div class="card"><div class="nick">⏳ Consultando o reino...</div><div class="meta">carregando</div></div>
+      <div class="card"><div class="nick">⏳ Consultando o reino...</div><div class="meta">carregando</div></div>
+      <div class="card"><div class="nick">⏳ Consultando o reino...</div><div class="meta">carregando</div></div>
+    `;
+    try{
+      const out = await cmd({ comando:"/listusers" });
+      const users = out.users || [];
+      box.innerHTML = users.map((u,i)=>`
+        <div class="card">
+          <div class="nick">🗡️ ${escapeHtml(u.username || ("User_"+i))}</div>
+          <div class="meta">${u.created_at ? ("Criado em: " + escapeHtml(u.created_at)) : "—"}</div>
+        </div>
+      `).join("") || `<div class="card"><div class="nick">Vazio</div><div class="meta">Nenhuma conta encontrada.</div></div>`;
+      toast("ok","Ok","Lista carregada.");
+    }catch(e){
+      toast("err","Falha ao listar","Falta implementar /listusers no Comandos.py. " + e.message);
+      box.innerHTML = `<div class="card"><div class="nick">⚠️ Backend faltando</div><div class="meta">Implemente /listusers no Comandos.py.</div></div>`;
+    }
+  };
+}
+
+/* ==========================
+   PROFILE TAB (token visível + copiar)
+   ========================== */
+async function renderProfile(){
+  if(!mustBeLogged()) return;
+
+  centerBody.innerHTML = `
+    <div class="banner">
+      <div style="font-size:18px">🛡️</div>
+      <div>
+        <div style="font-weight:900; letter-spacing:.06em">Perfil do Aventureiro</div>
+        <div class="note">Seu token fica visível (pra copiar) e você pode checar quem você é.</div>
+      </div>
+    </div>
+
+    <div class="sep"></div>
+
+    <div class="card">
+      <div class="nick">Token de Sessão</div>
+      <div class="meta">Use como <code>Authorization: Bearer &lt;token&gt;</code></div>
+      <div class="sep"></div>
+      <div class="tokenBox"><code id="tokenText"></code></div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn primary" id="copyToken">📋 Copiar token</button>
+        <button class="btn" id="revealToken">👁️ Alternar máscara</button>
+      </div>
+    </div>
+
+    <div class="sep"></div>
+
+    <div class="grid2">
+      <div class="card">
+        <div class="nick">Whoami</div>
+        <div class="meta">Puxa os dados da sessão no server.</div>
+        <div class="sep"></div>
+        <button class="btn primary" id="doWhoami">👁️ Consultar</button>
+        <div class="sep"></div>
+        <pre id="whoamiOut" class="tokenBox" style="white-space:pre-wrap"></pre>
+      </div>
+
+      <div class="card">
+        <div class="nick">Logout</div>
+        <div class="meta">Invalida o token no banco (se /logout usar session).</div>
+        <div class="sep"></div>
+        <button class="btn danger" id="doLogout">🚪 Sair do reino</button>
+        <div class="sep"></div>
+        <div class="note">Obs: se você quiser logout “de verdade”, seu backend precisa limpar o token na tabela <b>contas</b> (você já tem cmd_logout).</div>
+      </div>
+    </div>
+  `;
+
+  const tokenEl = $("#tokenText");
+  let masked = true;
+
+  function paintToken(){
+    if(!sessionToken){ tokenEl.textContent = "—"; return; }
+    if(!masked){ tokenEl.textContent = sessionToken; return; }
+    tokenEl.textContent = sessionToken.slice(0,6) + "••••••••••••••••••••••••" + sessionToken.slice(-6);
+  }
+  paintToken();
+
+  $("#copyToken").onclick = async ()=>{
+    try{ await navigator.clipboard.writeText(sessionToken); toast("ok","Copiado","Token copiado."); }
+    catch{ toast("err","Erro","Não deu pra copiar (permissão do navegador)."); }
+  };
+  $("#revealToken").onclick = ()=>{ masked = !masked; paintToken(); };
+
+  $("#doWhoami").onclick = async ()=>{
+    try{
+      const out = await cmd({ comando:"/whoami" });
+      $("#whoamiOut").textContent = JSON.stringify(out, null, 2);
+      // tenta atualizar chip
+      if(out.session){ cachedConta = out.session; setChip(cachedConta); }
+      toast("ok","Ok","Whoami carregado.");
+    }catch(e){
+      toast("err","Falhou", e.message);
+    }
+  };
+
+  $("#doLogout").onclick = async ()=>{
+    try{
+      // seu cmd_logout exige payload.session (Server.py só passa se PASS_SESSION_INFO_TO_COMMAND + token válido)
+      const out = await cmd({ comando:"/logout" });
+      sessionToken = "";
+      cachedConta = null;
+      localStorage.removeItem("obearco_token");
+      setChip(null);
+      toast("ok","Logout","Você saiu.");
+      setActiveTab("auth");
+    }catch(e){
+      toast("err","Falha no logout", e.message);
+    }
+  };
+}
+
+/* ==========================
+   ACCOUNT TAB (update + delete com 5s)
+   Requer backend: /updateaccount + /deleteaccount
+   ========================== */
+async function renderAccount(){
+  if(!mustBeLogged()) return;
+
+  centerBody.innerHTML = `
+    <div class="banner">
+      <div style="font-size:18px">⚙️</div>
+      <div>
+        <div style="font-weight:900; letter-spacing:.06em">Gestão da Conta</div>
+        <div class="note">Editar username/email/senha e deletar com confirmação + delay de 5 segundos.</div>
+      </div>
+    </div>
+
+    <div class="sep"></div>
+
+    <div class="grid2">
+      <div class="card">
+        <div class="nick">Atualizar Dados</div>
+        <div class="meta">Requer comando <b>/updateaccount</b> no backend.</div>
+        <div class="sep"></div>
+
+        <div class="field">
+          <label>Novo username (opcional)</label>
+          <input id="up_user" placeholder="ex: NovoNome" />
+        </div>
+
+        <div class="field" style="margin-top:10px">
+          <label>Novo email (opcional)</label>
+          <input id="up_email" placeholder="ex: novo@email.com" />
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="field">
+          <label>Senha atual (obrigatória p/ trocar senha)</label>
+          <input id="up_oldpass" type="password" placeholder="••••••••" />
+        </div>
+        <div class="field" style="margin-top:10px">
+          <label>Nova senha (opcional)</label>
+          <input id="up_newpass" type="password" placeholder="mínimo 6 chars" />
+        </div>
+
+        <div class="row" style="margin-top:12px">
+          <button class="btn primary" id="doUpdate">✨ Salvar</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="nick">Deletar Conta</div>
+        <div class="meta">Requer comando <b>/deleteaccount</b> no backend.</div>
+        <div class="sep"></div>
+
+        <div class="note">Ao confirmar, o botão fica bloqueado por <b>5 segundos</b> (pra evitar clique no susto).</div>
+
+        <div class="sep"></div>
+        <div class="field">
+          <label>Digite: DELETAR</label>
+          <input id="del_word" placeholder="DELETAR" />
+        </div>
+        <div class="row" style="margin-top:12px">
+          <button class="btn danger" id="doDelete" disabled>🩸 Confirmar Deleção (5s)</button>
+          <button class="btn" id="armDelete">⚠️ Quero deletar</button>
+        </div>
+        <div class="sep"></div>
+        <div class="note" id="delHint">Ainda não armado.</div>
+      </div>
+    </div>
+  `;
+
+  $("#doUpdate").onclick = async ()=>{
+    const username = $("#up_user").value.trim();
+    const email = $("#up_email").value.trim();
+    const old_password = $("#up_oldpass").value.trim();
+    const new_password = $("#up_newpass").value.trim();
+
+    if(!username && !email && !new_password){
+      toast("err","Nada pra salvar","Preencha pelo menos 1 campo.");
+      return;
+    }
+    try{
+      const out = await cmd({ comando:"/updateaccount", username, email, old_password, new_password });
+      toast("ok","Salvo","Conta atualizada.");
+      if(out.conta){ cachedConta = out.conta; setChip(cachedConta); }
+    }catch(e){
+      toast("err","Falha ao salvar", e.message);
+    }
+  };
+
+  let armed = false;
+  let timer = null;
+  $("#armDelete").onclick = ()=>{
+    armed = true;
+    $("#delHint").textContent = "Armado. Agora digite DELETAR e espere 5 segundos para o botão liberar.";
+    $("#doDelete").textContent = "🩸 Confirmar Deleção (5s)";
+    $("#doDelete").disabled = true;
+    let left = 5;
+    if(timer) clearInterval(timer);
+    timer = setInterval(()=>{
+      left--;
+      $("#doDelete").textContent = `🩸 Confirmar Deleção (${left}s)`;
+      if(left<=0){
+        clearInterval(timer);
+        $("#doDelete").textContent = "🩸 Confirmar Deleção";
+        // só libera se palavra certa
+        if($("#del_word").value.trim().toUpperCase()==="DELETAR"){
+          $("#doDelete").disabled = false;
+          $("#delHint").textContent = "Pronto. Clique para deletar (última chance!).";
+        }else{
+          $("#delHint").textContent = "Tempo passou, mas a palavra não está certa. Digite DELETAR.";
+        }
+      }
+    }, 1000);
+  };
+
+  $("#del_word").addEventListener("input", ()=>{
+    if(!armed) return;
+    if($("#del_word").value.trim().toUpperCase()==="DELETAR" && $("#doDelete").textContent==="🩸 Confirmar Deleção"){
+      $("#doDelete").disabled = false;
+    }else{
+      $("#doDelete").disabled = true;
+    }
+  });
+
+  $("#doDelete").onclick = async ()=>{
+    if($("#del_word").value.trim().toUpperCase()!=="DELETAR"){
+      toast("err","Confirmação","Digite DELETAR.");
+      return;
+    }
+    try{
+      await cmd({ comando:"/deleteaccount" });
+      toast("ok","Deletado","Sua conta foi removida.");
+      sessionToken = "";
+      cachedConta = null;
+      localStorage.removeItem("obearco_token");
+      setChip(null);
+      setActiveTab("auth");
+    }catch(e){
+      toast("err","Falha ao deletar", e.message);
+    }
+  };
+}
+
+/* ==========================
+   Patch notes (front-end)
+   ========================== */
+function loadNotes(){
+  const box = $("#notesBox");
+  // Você pode trocar isso por fetch de um .md depois.
+  const now = new Date().toLocaleString("pt-BR");
+  box.innerHTML = `
+    <div class="card">
+      <div class="nick">✨ Atualizado em ${escapeHtml(now)}</div>
+      <div class="meta">• Portal de contas (medieval/anime) <br>• Tabs + VFX <br>• Token visível + copiar <br>• Delete com delay 5s</div>
+    </div>
+    <div class="card">
+      <div class="nick">🧪 Próximo</div>
+      <div class="meta">• Personagens /createcharacter <br>• Feed com presença online <br>• Inventário / loja</div>
+    </div>
+  `;
+}
+
+/* ==========================
+   Top buttons
+   ========================== */
+$("#btnReloadBase").onclick = syncFromStatusJson;
+
+$("#btnPing").onclick = async ()=>{
+  try{
+    const out = await cmd({ comando:"/ping" });
+    toast("ok","Pong", "ts=" + (out.ts || "—"));
+  }catch(e){ toast("err","Ping falhou", e.message); }
 };
 
-$("btnRefreshFeed").onclick = refreshFeed;
+$("#btnWhoami").onclick = ()=>{
+  setActiveTab("profile");
+  setTimeout(()=> $("#doWhoami")?.click(), 80);
+};
 
-/* boot */
-setMode("login");
-resize(); seed(); requestAnimationFrame(loop);
-loadServerStatus();
+$("#btnLogout").onclick = ()=>{
+  setActiveTab("profile");
+  setTimeout(()=> $("#doLogout")?.click(), 80);
+};
+
+$("#btnLoadNotes").onclick = loadNotes;
+
+/* ==========================
+   Init
+   ========================== */
+function escapeHtml(s){
+  return String(s ?? "").replace(/[&<>"']/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+}
+
+async function boot(){
+  // background vfx start
+  startVFX();
+
+  await syncFromStatusJson();
+  loadNotes();
+
+  if(sessionToken){
+    setSubtitle("Sessão encontrada. Tentando validar...");
+    try{
+      const out = await cmd({ comando:"/whoami" });
+      cachedConta = out.session || null;
+      setChip(cachedConta);
+      toast("ok","Sessão ok","Token válido.");
+      setActiveTab("profile");
+    }catch(e){
+      toast("err","Sessão inválida","Faça login novamente. " + e.message);
+      sessionToken = "";
+      localStorage.removeItem("obearco_token");
+      setChip(null);
+      setActiveTab("auth");
+    }
+  }else{
+    setChip(null);
+    setActiveTab("auth");
+  }
+}
+boot();
+
+/* ==========================
+   VFX (canvas)
+   ========================== */
+function startVFX(){
+  const c1 = document.getElementById("vfx");
+  const c2 = document.getElementById("vfx2");
+  const ctx1 = c1.getContext("2d");
+  const ctx2 = c2.getContext("2d");
+  let w=0,h=0, dpr=1;
+
+  function resize(){
+    dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+    w = Math.floor(window.innerWidth);
+    h = Math.floor(window.innerHeight);
+    [c1,c2].forEach(c=>{
+      c.width = Math.floor(w*dpr);
+      c.height = Math.floor(h*dpr);
+      c.style.width = w+"px";
+      c.style.height = h+"px";
+    });
+    ctx1.setTransform(dpr,0,0,dpr,0,0);
+    ctx2.setTransform(dpr,0,0,dpr,0,0);
+  }
+  window.addEventListener("resize", resize);
+  resize();
+
+  // Particles (embers)
+  const P = [];
+  const N = 140;
+  for(let i=0;i<N;i++){
+    P.push({
+      x: Math.random()*w,
+      y: Math.random()*h,
+      r: 0.8 + Math.random()*2.4,
+      vx: -0.15 + Math.random()*0.3,
+      vy: -0.35 + Math.random()*0.25,
+      a: 0.12 + Math.random()*0.25,
+      hue: Math.random()<0.55 ? "gold" : "aqua"
+    });
+  }
+
+  // Runes (glow lines)
+  const R = [];
+  const RN = 26;
+  for(let i=0;i<RN;i++){
+    R.push({
+      x: Math.random()*w,
+      y: Math.random()*h,
+      len: 60 + Math.random()*220,
+      ang: Math.random()*Math.PI*2,
+      sp: 0.002 + Math.random()*0.004,
+      ph: Math.random()*10
+    });
+  }
+
+  let t=0;
+  function tick(){
+    t += 0.016;
+    ctx1.clearRect(0,0,w,h);
+    ctx2.clearRect(0,0,w,h);
+
+    // layer 1: embers
+    for(const p of P){
+      p.x += p.vx;
+      p.y += p.vy;
+      p.y += Math.sin(t*0.8 + p.x*0.01)*0.08;
+      if(p.x< -20) p.x = w+20;
+      if(p.x> w+20) p.x = -20;
+      if(p.y< -40) p.y = h+40;
+
+      const glow = p.hue==="gold" ? "rgba(255,223,140,"+p.a+")" : "rgba(98,240,255,"+p.a+")";
+      ctx1.beginPath();
+      ctx1.fillStyle = glow;
+      ctx1.shadowBlur = 18;
+      ctx1.shadowColor = glow;
+      ctx1.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      ctx1.fill();
+    }
+    ctx1.shadowBlur = 0;
+
+    // layer 2: runes
+    ctx2.globalCompositeOperation = "lighter";
+    for(const r of R){
+      r.ang += r.sp;
+      const x2 = r.x + Math.cos(r.ang)*r.len;
+      const y2 = r.y + Math.sin(r.ang)*r.len;
+
+      const a = 0.06 + (Math.sin(t + r.ph)*0.04);
+      ctx2.lineWidth = 1;
+      ctx2.strokeStyle = "rgba(166,107,255,"+a+")";
+      ctx2.shadowBlur = 22;
+      ctx2.shadowColor = "rgba(166,107,255,"+(a+0.08)+")";
+
+      ctx2.beginPath();
+      ctx2.moveTo(r.x, r.y);
+      ctx2.lineTo(x2, y2);
+      ctx2.stroke();
+
+      // small glyph
+      ctx2.fillStyle = "rgba(255,223,140,"+(a*1.2)+")";
+      ctx2.shadowColor = "rgba(255,223,140,"+(a+0.08)+")";
+      ctx2.shadowBlur = 18;
+      ctx2.beginPath();
+      ctx2.arc(x2, y2, 1.3, 0, Math.PI*2);
+      ctx2.fill();
+    }
+    ctx2.shadowBlur = 0;
+    ctx2.globalCompositeOperation = "source-over";
+
+    requestAnimationFrame(tick);
+  }
+  tick();
+}
 </script>
 </body>
 </html>
