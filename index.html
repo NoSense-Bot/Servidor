@@ -1,1221 +1,1016 @@
 <!doctype html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>OBEARCO • Gate of Accounts</title>
   <style>
     :root{
-      --bg0:#07060a; --bg1:#0b0a12; --panel:rgba(18,16,28,.72);
-      --panel2:rgba(15,12,22,.55);
-      --line:rgba(255,255,255,.10);
-      --text:#e9e6ff; --muted:rgba(233,230,255,.65);
-      --gold:#d7b46a; --gold2:#ffdf8c;
-      --aqua:#62f0ff; --vio:#a66bff; --red:#ff5b6e; --ok:#55ff9a;
+      --bg0:#07060b;
+      --bg1:#0b0a12;
+      --panel: rgba(22, 20, 32, .62);
+      --panel2: rgba(14, 13, 22, .55);
+      --stroke: rgba(255,255,255,.10);
+      --stroke2: rgba(255,255,255,.06);
+      --text:#e9e7ff;
+      --muted: rgba(233,231,255,.68);
+      --gold:#d6b46a;
+      --vio:#9d7bff;
+      --teal:#5ce0d8;
+      --danger:#ff5a7a;
+      --ok:#48f0a6;
       --shadow: 0 18px 60px rgba(0,0,0,.55);
-      --radius: 18px;
-      --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      --r: 18px;
+      --r2: 26px;
     }
+
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
-      margin:0; font-family:var(--font); color:var(--text);
-      background: radial-gradient(1200px 600px at 20% 10%, rgba(166,107,255,.18), transparent 60%),
-                  radial-gradient(900px 500px at 85% 20%, rgba(98,240,255,.14), transparent 55%),
-                  linear-gradient(180deg, var(--bg0), var(--bg1));
+      margin:0;
+      color:var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background:
+        radial-gradient(1200px 600px at 15% 0%, rgba(157,123,255,.22), transparent 60%),
+        radial-gradient(1000px 520px at 85% 10%, rgba(92,224,216,.14), transparent 55%),
+        radial-gradient(900px 520px at 50% 120%, rgba(214,180,106,.10), transparent 55%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
       overflow:hidden;
     }
 
-    /* ======= VFX layers ======= */
-    #vfx, #vfx2{
-      position:fixed; inset:0; width:100%; height:100%;
-      pointer-events:none; z-index:0;
+    /* VFX */
+    #vfx{
+      position:fixed; inset:0; z-index:0;
+      pointer-events:none;
+      filter: blur(.0px);
+      opacity:.95;
     }
     .grain{
-      position:fixed; inset:-40%;
-      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
-      opacity:.08; mix-blend-mode:overlay; animation:grain 8s steps(2,end) infinite;
-      z-index:1; pointer-events:none;
+      position:fixed; inset:-30%;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
+      mix-blend-mode: overlay;
+      opacity:.18;
+      animation: grain 10s steps(6) infinite;
+      z-index:1;
+      pointer-events:none;
     }
     @keyframes grain{
-      0%{transform:translate(0,0)} 20%{transform:translate(-2%,3%)}
-      40%{transform:translate(3%,-1%)} 60%{transform:translate(-1%,-2%)}
-      80%{transform:translate(2%,2%)} 100%{transform:translate(0,0)}
-    }
-    .scanlines{
-      position:fixed; inset:0;
-      background: repeating-linear-gradient(
-        to bottom,
-        rgba(255,255,255,.05), rgba(255,255,255,.05) 1px,
-        transparent 1px, transparent 4px
-      );
-      opacity:.05; mix-blend-mode:soft-light; z-index:1; pointer-events:none;
+      0%{transform:translate(0,0)}
+      15%{transform:translate(-2%,3%)}
+      35%{transform:translate(4%,-2%)}
+      55%{transform:translate(-3%,-4%)}
+      75%{transform:translate(3%,2%)}
+      100%{transform:translate(0,0)}
     }
 
-    /* ======= Layout ======= */
-    .app{
-      position:relative; z-index:2;
-      height:100%;
-      display:grid;
-      grid-template-rows: 74px 1fr;
-    }
-    header{
-      display:flex; align-items:center; justify-content:space-between;
-      padding:14px 18px;
-      border-bottom:1px solid var(--line);
-      background: linear-gradient(180deg, rgba(0,0,0,.42), rgba(0,0,0,.05));
-      backdrop-filter: blur(10px);
-    }
-    .brand{
-      display:flex; gap:12px; align-items:center;
-    }
-    .sigil{
-      width:42px; height:42px; border-radius:14px;
-      background:
-        radial-gradient(circle at 30% 30%, rgba(255,223,140,.75), transparent 55%),
-        radial-gradient(circle at 70% 70%, rgba(166,107,255,.55), transparent 60%),
-        linear-gradient(135deg, rgba(255,255,255,.10), rgba(0,0,0,.25));
-      border:1px solid rgba(255,255,255,.14);
-      box-shadow: 0 0 28px rgba(255,223,140,.18);
+    .wrap{
       position:relative;
-      overflow:hidden;
-    }
-    .sigil::after{
-      content:"";
-      position:absolute; inset:-40%;
-      background: conic-gradient(from 90deg, transparent, rgba(98,240,255,.32), transparent, rgba(255,223,140,.22), transparent);
-      animation:spin 5.5s linear infinite;
-      filter: blur(1px);
-      opacity:.9;
-    }
-    @keyframes spin{to{transform:rotate(360deg)}}
-    .brand h1{
-      margin:0; font-size:15px; letter-spacing:.18em; text-transform:uppercase;
-      color:rgba(255,255,255,.90);
-    }
-    .brand .sub{
-      font-size:12px; color:var(--muted); margin-top:4px;
-    }
-
-    .topRight{
-      display:flex; gap:10px; align-items:center;
-    }
-    .chip{
-      display:flex; gap:10px; align-items:center;
-      padding:10px 12px; border-radius:999px;
-      background:rgba(18,16,28,.45); border:1px solid rgba(255,255,255,.10);
-      backdrop-filter: blur(10px);
-    }
-    .chip .name{
-      font-weight:700; letter-spacing:.02em;
-    }
-    .chip .email{
-      font-size:12px; color:var(--muted); max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-    }
-    .btn{
-      cursor:pointer; user-select:none;
-      border:1px solid rgba(255,255,255,.12);
-      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.22));
-      color:var(--text);
-      padding:10px 12px; border-radius:12px;
-      box-shadow: 0 10px 26px rgba(0,0,0,.25);
-      transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease, filter .12s ease;
-    }
-    .btn:hover{ transform:translateY(-1px); border-color:rgba(255,223,140,.35); box-shadow: 0 14px 34px rgba(0,0,0,.35); }
-    .btn:active{ transform:translateY(0px) scale(.99); }
-    .btn.primary{
-      border-color: rgba(255,223,140,.26);
-      background: linear-gradient(180deg, rgba(255,223,140,.20), rgba(0,0,0,.25));
-    }
-    .btn.danger{
-      border-color: rgba(255,91,110,.35);
-      background: linear-gradient(180deg, rgba(255,91,110,.18), rgba(0,0,0,.28));
-    }
-    .btn.ghost{
-      background: transparent;
-      box-shadow:none;
-    }
-
-    main{
+      z-index:2;
       height:100%;
-      display:grid;
-      grid-template-columns: 290px 1fr 360px;
-      gap:14px;
-      padding:14px;
-      overflow:hidden;
+      padding:18px;
+      display:flex;
+      gap:18px;
     }
 
-    .panel{
-      border:1px solid rgba(255,255,255,.12);
-      background: linear-gradient(180deg, rgba(18,16,28,.78), rgba(10,8,14,.62));
-      backdrop-filter: blur(14px);
-      box-shadow: var(--shadow);
-      border-radius: var(--radius);
-      overflow:hidden;
-      position:relative;
-    }
-    .panel::before{
-      content:"";
-      position:absolute; inset:-1px;
-      background: radial-gradient(420px 200px at 20% 10%, rgba(255,223,140,.12), transparent 60%),
-                  radial-gradient(420px 260px at 80% 0%, rgba(98,240,255,.10), transparent 65%),
-                  radial-gradient(520px 260px at 40% 100%, rgba(166,107,255,.10), transparent 70%);
-      pointer-events:none;
-    }
-
-    .leftNav{
-      display:flex; flex-direction:column;
-    }
-    .navHead{
-      padding:14px 14px 10px;
-      border-bottom:1px solid rgba(255,255,255,.08);
-      display:flex; align-items:center; justify-content:space-between;
-    }
-    .navHead .title{
-      font-weight:900; letter-spacing:.16em; text-transform:uppercase;
-      font-size:12px; color:rgba(255,255,255,.78);
-    }
-    .navList{ padding:10px; display:flex; flex-direction:column; gap:8px; }
-    .tab{
-      display:flex; align-items:center; gap:10px;
-      padding:12px 12px;
-      border-radius:14px;
-      border:1px solid rgba(255,255,255,.10);
-      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(0,0,0,.18));
-      cursor:pointer;
-      transition: transform .12s ease, border-color .12s ease, filter .12s ease;
-      position:relative;
-      overflow:hidden;
-    }
-    .tab::after{
-      content:"";
-      position:absolute; inset:-60%;
-      background: conic-gradient(from 220deg, transparent, rgba(98,240,255,.20), transparent, rgba(255,223,140,.16), transparent);
-      opacity:0;
-      transition: opacity .18s ease;
-    }
-    .tab:hover{ transform:translateY(-1px); border-color:rgba(255,223,140,.28); }
-    .tab:hover::after{ opacity:.7; }
-    .tab.active{
-      border-color: rgba(255,223,140,.40);
-      filter: drop-shadow(0 0 16px rgba(255,223,140,.12));
-    }
-    .tab .ic{
-      width:26px; height:26px; border-radius:10px;
-      background: rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.10);
-      display:grid; place-items:center;
-      font-size:13px;
-    }
-    .tab .label{ font-weight:800; letter-spacing:.02em; }
-    .tab .hint{ font-size:12px; color:var(--muted); margin-top:2px; }
-
-    .center{
-      display:flex; flex-direction:column; overflow:hidden;
-    }
-    .centerHead{
-      padding:14px 14px 12px;
-      border-bottom:1px solid rgba(255,255,255,.08);
-      display:flex; align-items:center; justify-content:space-between;
-      gap:12px;
-    }
-    .centerHead .title{
-      font-size:14px; font-weight:900; letter-spacing:.12em; text-transform:uppercase;
-      color:rgba(255,255,255,.88);
-    }
-    .centerBody{
-      padding:14px;
-      overflow:auto;
-      height:100%;
-    }
-
-    .right{
-      display:flex; flex-direction:column; overflow:hidden;
-    }
-    .rightHead{
-      padding:14px;
-      border-bottom:1px solid rgba(255,255,255,.08);
-      display:flex; align-items:center; justify-content:space-between;
-      gap:10px;
-    }
-    .rightHead .title{
-      font-size:12px; font-weight:900; letter-spacing:.18em; text-transform:uppercase;
-      color:rgba(255,255,255,.75);
-    }
-    .rightBody{ padding:14px; overflow:auto; height:100%; }
-
-    /* ======= Forms ======= */
-    .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-    .field{ display:flex; flex-direction:column; gap:6px; }
-    label{ font-size:12px; color:var(--muted); letter-spacing:.06em; text-transform:uppercase; }
-    input, textarea, select{
-      width:100%;
-      border-radius:14px;
-      padding:12px 12px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.25);
-      color:var(--text);
-      outline:none;
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,.02);
-    }
-    input:focus, textarea:focus{
-      border-color: rgba(98,240,255,.38);
-      box-shadow: 0 0 0 4px rgba(98,240,255,.10);
-    }
-
-    .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
-    .sep{ height:1px; background:rgba(255,255,255,.10); margin:14px 0; }
-
-    .note{
-      font-size:12px; color:var(--muted); line-height:1.45;
-    }
-
-    .banner{
-      padding:12px 12px;
-      border:1px solid rgba(255,255,255,.12);
-      border-radius:16px;
-      background: linear-gradient(180deg, rgba(255,223,140,.10), rgba(0,0,0,.20));
-      display:flex; gap:10px; align-items:flex-start;
-      position:relative; overflow:hidden;
-    }
-    .banner::after{
-      content:"";
-      position:absolute; inset:-60%;
-      background: radial-gradient(circle at 30% 30%, rgba(98,240,255,.18), transparent 55%),
-                  radial-gradient(circle at 70% 60%, rgba(166,107,255,.14), transparent 60%);
-      animation:float 6.2s ease-in-out infinite;
-      opacity:.9;
-    }
-    @keyframes float{
-      0%,100%{transform:translate(0,0)}
-      50%{transform:translate(2.2%, -1.4%)}
-    }
-    .banner > *{ position:relative; z-index:1; }
-
-    .toastWrap{
-      position:fixed; right:16px; bottom:16px;
-      display:flex; flex-direction:column; gap:10px; z-index:99;
-      pointer-events:none;
-    }
-    .toast{
-      pointer-events:auto;
-      max-width: 420px;
-      border-radius:16px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(10,8,14,.78);
-      backdrop-filter: blur(12px);
-      padding:12px 12px;
-      box-shadow: 0 18px 55px rgba(0,0,0,.45);
-      transform: translateY(10px);
-      opacity:0;
-      animation:toastIn .22s ease forwards;
-    }
-    @keyframes toastIn{to{transform:translateY(0); opacity:1}}
-    .toast .t{ font-weight:900; letter-spacing:.04em; }
-    .toast .m{ margin-top:4px; font-size:12px; color:var(--muted); line-height:1.35; }
-    .toast.ok{ border-color: rgba(85,255,154,.25) }
-    .toast.err{ border-color: rgba(255,91,110,.30) }
-
-    /* Feed list */
-    .list{
-      display:flex; flex-direction:column; gap:10px;
-    }
     .card{
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.22);
-      border-radius:16px;
-      padding:12px;
-      position:relative;
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border: 1px solid var(--stroke);
+      border-radius: var(--r2);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       overflow:hidden;
+      position:relative;
     }
     .card::before{
       content:"";
-      position:absolute; inset:-40%;
-      background: conic-gradient(from 90deg, transparent, rgba(255,223,140,.12), transparent, rgba(98,240,255,.10), transparent);
-      opacity:.35;
-      animation:spin 10s linear infinite;
-    }
-    .card > *{ position:relative; z-index:1; }
-    .nick{ font-weight:900; letter-spacing:.02em; }
-    .meta{ font-size:12px; color:var(--muted); margin-top:4px; }
-
-    .tokenBox{
-      border-radius:16px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.25);
-      padding:12px;
-      font-family: var(--mono);
-      font-size:12px;
-      line-height:1.35;
-      word-break: break-all;
-      position:relative; overflow:hidden;
-    }
-    .tokenBox::after{
-      content:"";
-      position:absolute; inset:-40%;
-      background: radial-gradient(circle at 30% 30%, rgba(255,223,140,.12), transparent 55%),
-                  radial-gradient(circle at 70% 70%, rgba(98,240,255,.10), transparent 60%);
-      opacity:.9;
-      animation:float 7s ease-in-out infinite;
+      position:absolute; inset:0;
+      background:
+        radial-gradient(700px 220px at 20% 0%, rgba(157,123,255,.20), transparent 55%),
+        radial-gradient(700px 220px at 80% 0%, rgba(92,224,216,.12), transparent 55%),
+        radial-gradient(800px 340px at 50% 120%, rgba(214,180,106,.10), transparent 60%);
+      opacity:.95;
       pointer-events:none;
     }
-    .tokenBox code{ position:relative; z-index:1; }
+    .card > *{position:relative; z-index:1;}
 
-    /* Mobile */
-    @media (max-width: 1020px){
-      main{ grid-template-columns:1fr; grid-template-rows:auto auto auto; overflow:auto; }
-      body{ overflow:auto; }
-      #vfx,#vfx2,.grain,.scanlines{ position:fixed; }
+    /* Layout */
+    .sidebar{
+      width:320px;
+      padding:18px;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+    .main{
+      flex:1;
+      min-width:520px;
+      padding:16px;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+    .right{
+      width:360px;
+      padding:16px;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+
+    /* Header */
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      padding:14px 16px;
+      border:1px solid var(--stroke2);
+      border-radius: var(--r2);
+      background: rgba(0,0,0,.16);
+    }
+    .brand{
+      display:flex; align-items:center; gap:12px;
+    }
+    .orb{
+      width:42px; height:42px; border-radius:14px;
+      background:
+        radial-gradient(18px 18px at 30% 30%, rgba(255,255,255,.55), transparent 55%),
+        radial-gradient(40px 40px at 70% 80%, rgba(157,123,255,.55), transparent 60%),
+        radial-gradient(40px 40px at 20% 70%, rgba(92,224,216,.35), transparent 60%),
+        linear-gradient(135deg, rgba(214,180,106,.20), rgba(0,0,0,0));
+      border:1px solid rgba(255,255,255,.14);
+      box-shadow: 0 10px 34px rgba(0,0,0,.55);
+      position:relative;
+    }
+    .orb::after{
+      content:"";
+      position:absolute; inset:-1px;
+      border-radius:14px;
+      background: radial-gradient(18px 18px at 40% 20%, rgba(255,255,255,.35), transparent 60%);
+      opacity:.7;
+      filter: blur(.2px);
+      pointer-events:none;
+    }
+    .brand h1{
+      margin:0;
+      font-size:14px;
+      letter-spacing:.22em;
+      text-transform:uppercase;
+      opacity:.95;
+    }
+    .brand .sub{
+      margin-top:2px;
+      font-size:12px;
+      color:var(--muted);
+    }
+    .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+
+    /* Buttons */
+    .btn{
+      appearance:none;
+      border:1px solid rgba(255,255,255,.14);
+      color:var(--text);
+      background: rgba(0,0,0,.22);
+      padding:10px 12px;
+      border-radius:14px;
+      cursor:pointer;
+      transition: transform .12s ease, border-color .12s ease, background .12s ease, box-shadow .12s ease;
+      display:inline-flex; align-items:center; gap:8px;
+      user-select:none;
+    }
+    .btn:hover{
+      transform: translateY(-1px);
+      border-color: rgba(214,180,106,.35);
+      box-shadow: 0 14px 30px rgba(0,0,0,.35);
+      background: rgba(0,0,0,.28);
+    }
+    .btn:active{transform: translateY(0px) scale(.99)}
+    .btn.gold{
+      background: linear-gradient(180deg, rgba(214,180,106,.22), rgba(0,0,0,.20));
+      border-color: rgba(214,180,106,.38);
+    }
+    .btn.ghost{
+      background: rgba(0,0,0,.14);
+      border-color: rgba(255,255,255,.10);
+    }
+    .btn.danger{
+      background: linear-gradient(180deg, rgba(255,90,122,.20), rgba(0,0,0,.20));
+      border-color: rgba(255,90,122,.35);
+    }
+    .pill{
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.18);
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    /* Sidebar */
+    .sideTitle{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:12px 12px 6px;
+      opacity:.92;
+    }
+    .sideTitle .small{font-size:12px;color:var(--muted)}
+    .nav{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      padding:6px 4px 10px;
+    }
+    .navItem{
+      padding:14px 14px;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.18);
+      cursor:pointer;
+      transition: transform .12s ease, border-color .12s ease, background .12s ease;
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .navItem:hover{
+      transform: translateY(-1px);
+      border-color: rgba(157,123,255,.30);
+      background: rgba(0,0,0,.22);
+    }
+    .navItem.active{
+      border-color: rgba(214,180,106,.40);
+      background: linear-gradient(180deg, rgba(214,180,106,.14), rgba(0,0,0,.16));
+      box-shadow: 0 18px 38px rgba(0,0,0,.35);
+    }
+    .navItem .label{display:flex; flex-direction:column; gap:4px;}
+    .navItem .label b{font-size:18px; letter-spacing:.02em;}
+    .navItem .label span{font-size:12px; color:var(--muted);}
+
+    /* Sections */
+    .section{
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(0,0,0,.16);
+      border-radius: var(--r2);
+      overflow:hidden;
+    }
+    .sectionHead{
+      padding:14px 16px;
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      background: rgba(0,0,0,.12);
+    }
+    .sectionHead h2{margin:0;font-size:18px;letter-spacing:.02em;}
+    .sectionHead p{margin:4px 0 0; font-size:12px; color:var(--muted);}
+    .sectionBody{padding:16px;}
+
+    /* Portal */
+    .portalHero{
+      border:1px solid rgba(255,255,255,.10);
+      border-radius: 20px;
+      padding:16px;
+      background:
+        radial-gradient(600px 180px at 10% 0%, rgba(157,123,255,.22), transparent 60%),
+        radial-gradient(600px 180px at 90% 0%, rgba(92,224,216,.12), transparent 60%),
+        rgba(0,0,0,.14);
+      margin-bottom:14px;
+      display:flex; align-items:flex-start; justify-content:space-between; gap:14px;
+    }
+    .portalHero .t{
+      display:flex; flex-direction:column; gap:4px;
+    }
+    .portalHero .t b{font-size:22px}
+    .portalHero .t span{color:var(--muted); font-size:13px}
+
+    /* Red area replacement: One container + tabs */
+    .authShell{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.16);
+      border-radius: 22px;
+      overflow:hidden;
+      position:relative;
+    }
+    .authShell::after{
+      content:"";
+      position:absolute; inset:0;
+      background:
+        radial-gradient(520px 220px at 18% 0%, rgba(214,180,106,.12), transparent 60%),
+        radial-gradient(520px 220px at 82% 0%, rgba(157,123,255,.12), transparent 60%);
+      pointer-events:none;
+      opacity:.9;
+    }
+    .authShell > *{position:relative; z-index:1;}
+    .authTabs{
+      display:flex;
+      gap:10px;
+      padding:12px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      background: rgba(0,0,0,.14);
+    }
+    .tabBtn{
+      flex:1;
+      padding:12px 12px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.18);
+      color:var(--text);
+      cursor:pointer;
+      transition: transform .12s ease, border-color .12s ease, background .12s ease;
+      display:flex; align-items:center; justify-content:center; gap:8px;
+      font-weight:650;
+      letter-spacing:.02em;
+    }
+    .tabBtn:hover{transform: translateY(-1px); border-color: rgba(214,180,106,.30)}
+    .tabBtn.active{
+      background: linear-gradient(180deg, rgba(214,180,106,.18), rgba(0,0,0,.18));
+      border-color: rgba(214,180,106,.40);
+      box-shadow: 0 16px 40px rgba(0,0,0,.35);
+    }
+    .authInner{
+      padding:16px;
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:14px;
+    }
+    .pane{
+      border:1px solid rgba(255,255,255,.10);
+      border-radius: 20px;
+      background: rgba(0,0,0,.14);
+      padding:16px;
+      min-height: 260px;
+      position:relative;
+      overflow:hidden;
+      animation: paneIn .28s ease both;
+    }
+    @keyframes paneIn{
+      from{opacity:0; transform: translateY(6px)}
+      to{opacity:1; transform: translateY(0)}
+    }
+    .pane h3{margin:0 0 8px; font-size:20px;}
+    .pane p{margin:0 0 14px; font-size:12px; color:var(--muted); line-height:1.35}
+    .form{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+    .field label{
+      font-size:11px;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      color:rgba(233,231,255,.70);
+    }
+    .input{
+      padding:12px 12px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.20);
+      color:var(--text);
+      outline:none;
+      transition: border-color .12s ease, box-shadow .12s ease;
+    }
+    .input:focus{
+      border-color: rgba(157,123,255,.38);
+      box-shadow: 0 0 0 3px rgba(157,123,255,.12);
+    }
+    .actions{
+      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+      margin-top:4px;
+    }
+
+    /* For single-tab feel: hide right pane, expand left */
+    .authInner.oneCol{
+      grid-template-columns: 1fr;
+    }
+    .hidden{display:none !important;}
+
+    /* Right panel */
+    .notesCard{
+      border-radius: 22px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.14);
+      padding:16px;
+    }
+    .notesCard h3{margin:0 0 8px; letter-spacing:.14em; text-transform:uppercase; font-size:12px; color:rgba(233,231,255,.75)}
+    .noteBox{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.16);
+      border-radius: 18px;
+      padding:14px;
+      display:flex; gap:10px;
+    }
+    .noteBox b{display:block; margin-bottom:4px}
+    .noteBox span{color:var(--muted); font-size:12px; line-height:1.35}
+    .smallList{
+      margin:10px 0 0;
+      padding-left:16px;
+      color:rgba(233,231,255,.78);
+      font-size:12px;
+      line-height:1.5;
+    }
+
+    /* Toast */
+    .toast{
+      position:fixed;
+      left:50%; bottom:18px;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,.55);
+      border:1px solid rgba(255,255,255,.16);
+      padding:10px 12px;
+      border-radius: 14px;
+      color:var(--text);
+      box-shadow: 0 18px 60px rgba(0,0,0,.55);
+      opacity:0;
+      pointer-events:none;
+      transition: opacity .18s ease, transform .18s ease;
+      z-index:9;
+      backdrop-filter: blur(10px);
+    }
+    .toast.show{
+      opacity:1;
+      transform: translateX(-50%) translateY(-2px);
+    }
+    .muted{color:var(--muted)}
+    .ok{color:var(--ok)}
+    .bad{color:var(--danger)}
+
+    /* Responsive */
+    @media (max-width: 1100px){
+      body{overflow:auto}
+      .wrap{flex-direction:column; height:auto}
+      .sidebar,.right{width:100%}
+      .main{min-width:auto}
+      .authInner{grid-template-columns:1fr}
     }
   </style>
 </head>
 <body>
   <canvas id="vfx"></canvas>
-  <canvas id="vfx2"></canvas>
   <div class="grain"></div>
-  <div class="scanlines"></div>
 
-  <div class="app">
-    <header>
-      <div class="brand">
-        <div class="sigil" aria-hidden="true"></div>
+  <div class="wrap">
+    <!-- SIDEBAR -->
+    <div class="card sidebar">
+      <div class="sideTitle">
         <div>
-          <h1>OBEARCO • Gate of Accounts</h1>
-          <div class="sub" id="subLine">Conectando ao grimório do servidor...</div>
+          <div style="font-weight:800; letter-spacing:.16em; opacity:.9;">ABAS</div>
+          <div class="small">navegação</div>
         </div>
+        <div class="pill" id="pillBase">—</div>
       </div>
 
-      <div class="topRight">
-        <div class="chip" id="userChip" style="display:none">
+      <div class="nav" id="nav">
+        <div class="navItem active" data-tab="portal">
+          <div class="label">
+            <b>Portal</b>
+            <span>login / registro</span>
+          </div>
+          <div class="pill">🗝️</div>
+        </div>
+
+        <div class="navItem" data-tab="taverna">
+          <div class="label">
+            <b>Taverna</b>
+            <span>nicks registrados</span>
+          </div>
+          <div class="pill">🍻</div>
+        </div>
+
+        <div class="navItem" data-tab="perfil">
+          <div class="label">
+            <b>Perfil</b>
+            <span>token / dados</span>
+          </div>
+          <div class="pill">🛡️</div>
+        </div>
+
+        <div class="navItem" data-tab="conta">
+          <div class="label">
+            <b>Conta</b>
+            <span>editar / deletar</span>
+          </div>
+          <div class="pill">⚙️</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="card main">
+      <div class="topbar">
+        <div class="brand">
+          <div class="orb"></div>
           <div>
-            <div class="name" id="chipName">—</div>
-            <div class="email" id="chipEmail">—</div>
+            <h1>OBEARCO • Gate of Accounts</h1>
+            <div class="sub">Conectado ao portal: <span id="baseLabel" class="muted">—</span></div>
           </div>
         </div>
-        <button class="btn ghost" id="btnReloadBase">🔄 Sync status.json</button>
-        <button class="btn" id="btnLogout" style="display:none">🚪 Logout</button>
+
+        <div class="row">
+          <button class="btn ghost" id="btnSync">🔄 Sync status.json</button>
+          <button class="btn" id="btnPing">☐ Ping</button>
+          <button class="btn" id="btnWho">👁️ Whoami</button>
+        </div>
       </div>
-    </header>
 
-    <main>
-      <!-- Left Nav -->
-      <section class="panel leftNav">
-        <div class="navHead">
-          <div class="title">Abas</div>
-          <div class="title" id="baseBadge" style="opacity:.7"></div>
-        </div>
-        <div class="navList">
-          <div class="tab active" data-tab="auth">
-            <div class="ic">🗝️</div>
-            <div>
-              <div class="label">Portal</div>
-              <div class="hint">login / registro</div>
-            </div>
+      <!-- PORTAL TAB -->
+      <div class="section" data-view="portal">
+        <div class="sectionHead">
+          <div>
+            <h2>PORTAL</h2>
+            <p>Login/Registro usando <b>/api/v1/cmd</b>. (Base vem do server_status.json)</p>
           </div>
-          <div class="tab" data-tab="feed">
-            <div class="ic">📜</div>
-            <div>
-              <div class="label">Taverna</div>
-              <div class="hint">nicks registrados</div>
-            </div>
-          </div>
-          <div class="tab" data-tab="profile">
-            <div class="ic">🛡️</div>
-            <div>
-              <div class="label">Perfil</div>
-              <div class="hint">token / dados</div>
-            </div>
-          </div>
-          <div class="tab" data-tab="account">
-            <div class="ic">⚙️</div>
-            <div>
-              <div class="label">Conta</div>
-              <div class="hint">editar / deletar</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Center -->
-      <section class="panel center">
-        <div class="centerHead">
-          <div class="title" id="centerTitle">Portal</div>
           <div class="row">
-            <button class="btn primary" id="btnPing">🫀 Ping</button>
-            <button class="btn" id="btnWhoami">👁️ Whoami</button>
+            <span class="pill" id="statusServer">status: ?</span>
           </div>
         </div>
-        <div class="centerBody" id="centerBody"></div>
-      </section>
-
-      <!-- Right -->
-      <section class="panel right">
-        <div class="rightHead">
-          <div class="title">Patch Notes</div>
-          <button class="btn ghost" id="btnLoadNotes">✨ Atualizar</button>
-        </div>
-        <div class="rightBody">
-          <div class="banner">
-            <div style="font-size:18px">🧙</div>
-            <div>
-              <div style="font-weight:900; letter-spacing:.05em">Crônicas do Reino</div>
-              <div class="note">Essa coluna sempre fica do lado, estilo “site AAA”. Você pode trocar o texto quando quiser.</div>
+        <div class="sectionBody">
+          <div class="portalHero">
+            <div class="t">
+              <b>⚔️ Portal do Aventureiro</b>
+              <span>Escolha <b>Login</b> ou <b>Registro</b> e forje sua entrada no reino.</span>
+            </div>
+            <div class="row">
+              <button class="btn gold" id="tabLoginBtn">🔑 Login</button>
+              <button class="btn ghost" id="tabRegisterBtn">🧾 Registro</button>
             </div>
           </div>
-          <div class="sep"></div>
-          <div id="notesBox" class="note">Carregando patch notes...</div>
+
+          <!-- ✅ AQUI: UMA TELA SÓ + ABAS -->
+          <div class="authShell">
+            <div class="authTabs">
+              <button class="tabBtn active" id="innerTabLogin">🔑 Login</button>
+              <button class="tabBtn" id="innerTabRegister">🧾 Registro</button>
+            </div>
+
+            <div class="authInner oneCol" id="authInner">
+              <!-- LOGIN PANE -->
+              <div class="pane" id="paneLogin">
+                <h3>Login</h3>
+                <p>Use username ou email no campo <b>login</b>.</p>
+
+                <div class="form">
+                  <div class="field">
+                    <label>LOGIN (EMAIL OU USERNAME)</label>
+                    <input class="input" id="login_login" placeholder="ex: Gustavo ou gustavo@email.com" />
+                  </div>
+                  <div class="field">
+                    <label>SENHA</label>
+                    <input class="input" id="login_senha" type="password" placeholder="••••••" />
+                  </div>
+                  <div class="actions">
+                    <button class="btn gold" id="doLogin">🔑 Entrar</button>
+                    <button class="btn" id="clearToken">🧹 Limpar token</button>
+                  </div>
+                  <div class="muted" style="font-size:12px;">
+                    Token será salvo localmente (localStorage) para as abas Perfil/Conta.
+                  </div>
+                </div>
+              </div>
+
+              <!-- REGISTER PANE -->
+              <div class="pane hidden" id="paneRegister">
+                <h3>Registro</h3>
+                <p>Cria conta na tabela <b>contas</b> usando os campos do teu backend.</p>
+
+                <div class="form">
+                  <div class="field">
+                    <label>USERNAME</label>
+                    <input class="input" id="reg_user" placeholder="ex: Gustavo_42" />
+                  </div>
+                  <div class="field">
+                    <label>EMAIL</label>
+                    <input class="input" id="reg_email" placeholder="ex: voce@email.com" />
+                  </div>
+                  <div class="field">
+                    <label>SENHA</label>
+                    <input class="input" id="reg_senha" type="password" placeholder="mínimo 6 chars" />
+                  </div>
+                  <div class="actions">
+                    <button class="btn gold" id="doRegister">🧾 Registrar</button>
+                  </div>
+                  <div class="muted" style="font-size:12px;">
+                    Depois do registro, volte pro Login e entre.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="height:12px"></div>
+
+          <div class="section" style="border-radius:22px;">
+            <div class="sectionHead">
+              <div>
+                <h2>API / Token</h2>
+                <p class="muted">Base atual (do status.json): <span id="baseEcho">—</span></p>
+              </div>
+              <div class="row">
+                <span class="pill" id="apiPrefix">/api/v1</span>
+              </div>
+            </div>
+            <div class="sectionBody">
+              <div class="muted" style="font-size:12px; line-height:1.5">
+                Se o botão <b>Sync status.json</b> não atualizar, o problema quase sempre é:
+                <b>URL errada (blob)</b> ou <b>cache</b>. Aqui já está corrigido (RAW + cache-bust).
+              </div>
+            </div>
+          </div>
+
         </div>
-      </section>
-    </main>
+      </div>
+
+      <!-- TAVERNA TAB -->
+      <div class="section hidden" data-view="taverna">
+        <div class="sectionHead">
+          <div>
+            <h2>TAVERNA</h2>
+            <p>Lista de nicks (precisa endpoint no servidor pra listar contas).</p>
+          </div>
+          <div class="row">
+            <button class="btn ghost" id="refreshTaverna">🔄 Atualizar</button>
+          </div>
+        </div>
+        <div class="sectionBody">
+          <div class="muted" style="font-size:12px;">
+            Hoje teu backend não tem “/list users”. Quando você criar um comando tipo <b>/listusers</b>,
+            eu ligo aqui em 30s.
+          </div>
+        </div>
+      </div>
+
+      <!-- PERFIL TAB -->
+      <div class="section hidden" data-view="perfil">
+        <div class="sectionHead">
+          <div>
+            <h2>PERFIL</h2>
+            <p>Token visível + botão copiar + whoami.</p>
+          </div>
+          <div class="row">
+            <button class="btn ghost" id="btnCopyToken">📋 Copiar token</button>
+          </div>
+        </div>
+        <div class="sectionBody">
+          <div class="field" style="max-width:780px;">
+            <label>TOKEN (VISÍVEL)</label>
+            <input class="input" id="tokenBox" placeholder="(faça login para gerar)" />
+          </div>
+          <div style="height:10px"></div>
+          <button class="btn" id="btnWho2">👁️ Whoami</button>
+          <pre id="whoOut" style="
+            margin-top:12px;
+            padding:14px;
+            border-radius:18px;
+            background: rgba(0,0,0,.22);
+            border:1px solid rgba(255,255,255,.10);
+            overflow:auto;
+            max-height:260px;
+          " class="muted">{}</pre>
+        </div>
+      </div>
+
+      <!-- CONTA TAB -->
+      <div class="section hidden" data-view="conta">
+        <div class="sectionHead">
+          <div>
+            <h2>CONTA</h2>
+            <p>Editar email/senha/nome + deletar (quando existir comando no servidor).</p>
+          </div>
+        </div>
+        <div class="sectionBody">
+          <div class="muted" style="font-size:12px; line-height:1.6">
+            No teu <b>Comandos.py</b> atual você ainda não tem os comandos de update/delete.
+            Quando você adicionar algo como:
+            <b>/updateaccount</b> e <b>/deleteaccount</b>,
+            eu conecto aqui com confirmação + delay 5s do botão.
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="card right">
+      <div class="notesCard">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+          <h3>PATCH NOTES</h3>
+          <button class="btn gold" id="btnPatch">✨ Atualizar</button>
+        </div>
+
+        <div style="height:10px"></div>
+
+        <div class="noteBox">
+          <div style="font-size:18px;">🐧</div>
+          <div>
+            <b>Crônicas do Reino</b>
+            <span>Coluna fixa do lado, estilo “site AAA”. Você troca o texto quando quiser.</span>
+          </div>
+        </div>
+
+        <ul class="smallList" id="patchList">
+          <li class="muted">Carregando…</li>
+        </ul>
+      </div>
+    </div>
   </div>
 
-  <div class="toastWrap" id="toastWrap"></div>
+  <div class="toast" id="toast"></div>
 
 <script>
-/* ==========================
-   CONFIG: server_status.json
-   ========================== */
-const STATUS_JSON_URL = "https://github.com/NoSense-Bot/Servidor/blob/main/server_status.json"; // você pediu assim
-const FALLBACK_BASE = "http://127.0.0.1:7776";
+/* =========================
+   CONFIG: status.json RAW
+   =========================
+   Troque apenas se mudar repo/arquivo.
+*/
+const STATUS_RAW_URL = "https://raw.githubusercontent.com/NoSense-Bot/Servidor/main/server_status.json";
+
+/* =========================
+   State
+   ========================= */
+let API_BASE = "http://127.0.0.1:7776";
 const API_PREFIX = "/api/v1";
+const LS_TOKEN_KEY = "obearco_token";
 
-function toRawGithub(url){
-  // aceita "blob" e converte pra raw
+/* =========================
+   Helpers UI
+   ========================= */
+const $ = (id)=>document.getElementById(id);
+function toast(msg, good=true){
+  const t = $("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  t.style.borderColor = good ? "rgba(72,240,166,.35)" : "rgba(255,90,122,.35)";
+  setTimeout(()=>t.classList.remove("show"), 1800);
+}
+function setBase(base){
+  API_BASE = (base||"").replace(/\/+$/,"") || API_BASE;
+  $("baseLabel").textContent = API_BASE;
+  $("baseEcho").textContent = API_BASE;
+  $("pillBase").textContent = API_BASE.replace(/^https?:\/\//,"");
+}
+function getToken(){ return localStorage.getItem(LS_TOKEN_KEY) || ""; }
+function setToken(t){
+  if(!t){ localStorage.removeItem(LS_TOKEN_KEY); }
+  else{ localStorage.setItem(LS_TOKEN_KEY, t); }
+  $("tokenBox").value = getToken();
+}
+function authHeaders(){
+  const tok = getToken();
+  return tok ? { "Authorization": "Bearer " + tok } : {};
+}
+
+/* =========================
+   Fetch status.json (RAW + cache-bust)
+   ========================= */
+async function syncStatus(){
   try{
-    if(url.includes("github.com") && url.includes("/blob/")){
-      const u = new URL(url);
-      const parts = u.pathname.split("/").filter(Boolean);
-      // /{owner}/{repo}/blob/{branch}/{...path}
-      const owner = parts[0], repo = parts[1], branch = parts[3];
-      const path = parts.slice(4).join("/");
-      return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}`;
-    }
-  }catch{}
-  return url;
-}
+    const url = STATUS_RAW_URL + "?t=" + Date.now();
+    const r = await fetch(url, { cache:"no-store" });
+    if(!r.ok) throw new Error("HTTP " + r.status);
+    const js = await r.json();
 
-let apiBase = FALLBACK_BASE;
-let sessionToken = localStorage.getItem("obearco_token") || "";
-let cachedConta = null;
+    // teu status.json tem url_api_base
+    if(js.url_api_base) setBase(js.url_api_base);
+    $("statusServer").textContent = "status: " + (js.status_servidor || "??");
+    toast("status.json sincronizado ✅", true);
 
-/* ==========================
-   UI helpers
-   ========================== */
-const $ = (q)=>document.querySelector(q);
-const centerBody = $("#centerBody");
-
-function toast(kind, title, msg){
-  const wrap = $("#toastWrap");
-  const el = document.createElement("div");
-  el.className = `toast ${kind}`;
-  el.innerHTML = `<div class="t">${title}</div><div class="m">${msg}</div>`;
-  wrap.appendChild(el);
-  setTimeout(()=>{ el.style.opacity="0"; el.style.transform="translateY(10px)"; }, 2800);
-  setTimeout(()=>{ el.remove(); }, 3300);
-}
-
-function setSubtitle(text){
-  $("#subLine").textContent = text;
-}
-
-function setChip(conta){
-  const chip = $("#userChip");
-  const btnLogout = $("#btnLogout");
-  if(conta){
-    chip.style.display = "";
-    btnLogout.style.display = "";
-    $("#chipName").textContent = conta.username || "—";
-    $("#chipEmail").textContent = conta.email || "—";
-  }else{
-    chip.style.display = "none";
-    btnLogout.style.display = "none";
-    $("#chipName").textContent = "—";
-    $("#chipEmail").textContent = "—";
-  }
-}
-
-function setBaseBadge(){
-  try{
-    const u = new URL(apiBase);
-    $("#baseBadge").textContent = `${u.hostname}:${u.port || (u.protocol==="https:"?"443":"80")}`;
-  }catch{
-    $("#baseBadge").textContent = apiBase;
-  }
-}
-
-/* ==========================
-   API wrapper
-   ========================== */
-async function cmd(payload){
-  const url = apiBase.replace(/\/$/,"") + API_PREFIX + "/cmd";
-  const headers = { "Content-Type":"application/json" };
-  if(sessionToken) headers["Authorization"] = "Bearer " + sessionToken;
-
-  const r = await fetch(url, { method:"POST", headers, body: JSON.stringify(payload) });
-  const data = await r.json().catch(()=>({ok:false,error:"Resposta não é JSON"}));
-  if(!data.ok){
-    throw new Error(data.error || "Erro desconhecido");
-  }
-  return data;
-}
-
-async function syncFromStatusJson(){
-  const raw = toRawGithub(STATUS_JSON_URL);
-  const bust = raw + (raw.includes("?")?"&":"?") + "ts=" + Date.now();
-  setSubtitle("Sincronizando status.json...");
-  try{
-    const r = await fetch(bust, { cache:"no-store" });
-    const j = await r.json();
-    if(j && j.url_api_base){
-      apiBase = String(j.url_api_base).replace(/\/$/,"");
-      localStorage.setItem("obearco_api_base", apiBase);
-      setSubtitle("Conectado ao portal: " + apiBase);
-      setBaseBadge();
-      toast("ok","Portal sincronizado","API base carregada do server_status.json.");
-      return;
-    }
-    throw new Error("status.json sem url_api_base");
-  }catch(e){
-    apiBase = localStorage.getItem("obearco_api_base") || FALLBACK_BASE;
-    setSubtitle("Falha no status.json. Usando fallback: " + apiBase);
-    setBaseBadge();
-    toast("err","Falha no status.json", String(e.message||e));
-  }
-}
-
-/* ==========================
-   Tabs
-   ========================== */
-const tabs = document.querySelectorAll(".tab");
-tabs.forEach(t=>{
-  t.addEventListener("click", ()=>{
-    tabs.forEach(x=>x.classList.remove("active"));
-    t.classList.add("active");
-    const id = t.dataset.tab;
-    renderTab(id);
-  });
-});
-
-function mustBeLogged(){
-  if(!sessionToken){
-    toast("err","Sem sessão","Faça login primeiro.");
-    renderTab("auth");
-    return false;
-  }
-  return true;
-}
-
-function setTitle(t){ $("#centerTitle").textContent = t; }
-
-function renderTab(id){
-  if(id==="auth"){ setTitle("Portal"); renderAuth(); return; }
-  if(id==="feed"){ setTitle("Taverna"); renderFeed(); return; }
-  if(id==="profile"){ setTitle("Perfil"); renderProfile(); return; }
-  if(id==="account"){ setTitle("Conta"); renderAccount(); return; }
-}
-
-function setActiveTab(id){
-  tabs.forEach(x=>x.classList.toggle("active", x.dataset.tab===id));
-  renderTab(id);
-}
-
-/* ==========================
-   AUTH TAB
-   ========================== */
-function renderAuth(){
-  centerBody.innerHTML = `
-    <div class="banner">
-      <div style="font-size:18px">⚔️</div>
-      <div>
-        <div style="font-weight:900; letter-spacing:.06em">Portal do Aventureiro</div>
-        <div class="note">Registre sua conta ou entre no reino. Tudo usa <b>/api/v1/cmd</b>.</div>
-      </div>
-    </div>
-
-    <div class="sep"></div>
-
-    <div class="grid2">
-      <div class="card">
-        <div class="nick">Login</div>
-        <div class="meta">Use <b>username</b> ou <b>email</b> no campo “login”.</div>
-        <div class="sep"></div>
-
-        <div class="field">
-          <label>Login (email ou username)</label>
-          <input id="login_login" placeholder="ex: Gustavo ou gustavo@email.com" autocomplete="username" />
-        </div>
-        <div class="field" style="margin-top:10px">
-          <label>Senha</label>
-          <input id="login_senha" type="password" placeholder="••••••••" autocomplete="current-password" />
-        </div>
-
-        <div class="row" style="margin-top:12px">
-          <button class="btn primary" id="doLogin">🗝️ Entrar</button>
-          <button class="btn" id="clearToken">🧹 Limpar token</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="nick">Registro</div>
-        <div class="meta">Cria a conta usando os campos da sua tabela <b>contas</b>.</div>
-        <div class="sep"></div>
-
-        <div class="field">
-          <label>Username</label>
-          <input id="reg_user" placeholder="ex: Gustavo_42" autocomplete="username" />
-        </div>
-        <div class="field" style="margin-top:10px">
-          <label>Email</label>
-          <input id="reg_email" placeholder="ex: voce@email.com" autocomplete="email" />
-        </div>
-        <div class="field" style="margin-top:10px">
-          <label>Senha</label>
-          <input id="reg_senha" type="password" placeholder="mínimo 6 chars" autocomplete="new-password" />
-        </div>
-
-        <div class="row" style="margin-top:12px">
-          <button class="btn primary" id="doRegister">🧾 Registrar</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="sep"></div>
-
-    <div class="card">
-      <div class="nick">API / Token</div>
-      <div class="meta">Base atual: <span style="color:var(--gold)">${apiBase}</span></div>
-      <div class="sep"></div>
-      <div class="row">
-        <button class="btn" id="copyBase">📋 Copiar API Base</button>
-        <button class="btn" id="openBase">🌐 Abrir API</button>
-      </div>
-    </div>
-  `;
-
-  $("#doLogin").onclick = async ()=>{
-    const login = $("#login_login").value.trim();
-    const senha = $("#login_senha").value.trim();
-    if(!login || !senha){ toast("err","Campos","Preencha login e senha."); return; }
-    try{
-      const out = await cmd({ comando:"/login", login, senha });
-      sessionToken = out.session_token || "";
-      localStorage.setItem("obearco_token", sessionToken);
-      cachedConta = out.conta || null;
-      setChip(cachedConta);
-      toast("ok","Login ok","Sessão criada. Bem-vindo ao reino.");
-      setActiveTab("profile");
-    }catch(e){
-      toast("err","Falha no login", e.message);
-    }
-  };
-
-  $("#doRegister").onclick = async ()=>{
-    const username = $("#reg_user").value.trim();
-    const email = $("#reg_email").value.trim();
-    const senha = $("#reg_senha").value.trim();
-    if(!username || !email || !senha){ toast("err","Campos","Preencha username, email e senha."); return; }
-    try{
-      await cmd({ comando:"/register", username, email, senha });
-      toast("ok","Conta criada","Agora faça login.");
-    }catch(e){
-      toast("err","Falha no registro", e.message);
-    }
-  };
-
-  $("#clearToken").onclick = ()=>{
-    sessionToken = "";
-    cachedConta = null;
-    localStorage.removeItem("obearco_token");
-    setChip(null);
-    toast("ok","Token limpo","Sessão removida do navegador.");
-  };
-
-  $("#copyBase").onclick = async ()=>{
-    try{ await navigator.clipboard.writeText(apiBase); toast("ok","Copiado","API Base copiada."); }
-    catch{ toast("err","Erro","Não deu pra copiar (permissão do navegador)."); }
-  };
-
-  $("#openBase").onclick = ()=> window.open(apiBase + API_PREFIX + "/status", "_blank");
-}
-
-/* ==========================
-   FEED TAB (nicks registrados)
-   Requer backend: /listusers
-   ========================== */
-async function renderFeed(){
-  centerBody.innerHTML = `
-    <div class="banner">
-      <div style="font-size:18px">🍻</div>
-      <div>
-        <div style="font-weight:900; letter-spacing:.06em">Taverna</div>
-        <div class="note">Mostra o nick de todos registrados. (Requer comando <b>/listusers</b> no backend.)</div>
-      </div>
-    </div>
-    <div class="sep"></div>
-    <div class="row">
-      <button class="btn primary" id="btnLoadUsers">📜 Carregar nicks</button>
-    </div>
-    <div class="sep"></div>
-    <div id="usersList" class="list"></div>
-  `;
-
-  $("#btnLoadUsers").onclick = async ()=>{
-    const box = $("#usersList");
-    box.innerHTML = `
-      <div class="card"><div class="nick">⏳ Consultando o reino...</div><div class="meta">carregando</div></div>
-      <div class="card"><div class="nick">⏳ Consultando o reino...</div><div class="meta">carregando</div></div>
-      <div class="card"><div class="nick">⏳ Consultando o reino...</div><div class="meta">carregando</div></div>
+    // patch notes simples (exemplo)
+    const now = new Date();
+    $("patchList").innerHTML = `
+      <li><b>Atualizado</b> em ${now.toLocaleString("pt-BR")}</li>
+      <li>• Portal de contas (medieval/anime)</li>
+      <li>• Abas internas Login/Registro (1 tela)</li>
+      <li>• RAW status.json + anti-cache</li>
+      <li class="muted">Próximo: /listusers, /updateaccount, /deleteaccount</li>
     `;
-    try{
-      const out = await cmd({ comando:"/listusers" });
-      const users = out.users || [];
-      box.innerHTML = users.map((u,i)=>`
-        <div class="card">
-          <div class="nick">🗡️ ${escapeHtml(u.username || ("User_"+i))}</div>
-          <div class="meta">${u.created_at ? ("Criado em: " + escapeHtml(u.created_at)) : "—"}</div>
-        </div>
-      `).join("") || `<div class="card"><div class="nick">Vazio</div><div class="meta">Nenhuma conta encontrada.</div></div>`;
-      toast("ok","Ok","Lista carregada.");
-    }catch(e){
-      toast("err","Falha ao listar","Falta implementar /listusers no Comandos.py. " + e.message);
-      box.innerHTML = `<div class="card"><div class="nick">⚠️ Backend faltando</div><div class="meta">Implemente /listusers no Comandos.py.</div></div>`;
-    }
-  };
-}
-
-/* ==========================
-   PROFILE TAB (token visível + copiar)
-   ========================== */
-async function renderProfile(){
-  if(!mustBeLogged()) return;
-
-  centerBody.innerHTML = `
-    <div class="banner">
-      <div style="font-size:18px">🛡️</div>
-      <div>
-        <div style="font-weight:900; letter-spacing:.06em">Perfil do Aventureiro</div>
-        <div class="note">Seu token fica visível (pra copiar) e você pode checar quem você é.</div>
-      </div>
-    </div>
-
-    <div class="sep"></div>
-
-    <div class="card">
-      <div class="nick">Token de Sessão</div>
-      <div class="meta">Use como <code>Authorization: Bearer &lt;token&gt;</code></div>
-      <div class="sep"></div>
-      <div class="tokenBox"><code id="tokenText"></code></div>
-      <div class="row" style="margin-top:12px">
-        <button class="btn primary" id="copyToken">📋 Copiar token</button>
-        <button class="btn" id="revealToken">👁️ Alternar máscara</button>
-      </div>
-    </div>
-
-    <div class="sep"></div>
-
-    <div class="grid2">
-      <div class="card">
-        <div class="nick">Whoami</div>
-        <div class="meta">Puxa os dados da sessão no server.</div>
-        <div class="sep"></div>
-        <button class="btn primary" id="doWhoami">👁️ Consultar</button>
-        <div class="sep"></div>
-        <pre id="whoamiOut" class="tokenBox" style="white-space:pre-wrap"></pre>
-      </div>
-
-      <div class="card">
-        <div class="nick">Logout</div>
-        <div class="meta">Invalida o token no banco (se /logout usar session).</div>
-        <div class="sep"></div>
-        <button class="btn danger" id="doLogout">🚪 Sair do reino</button>
-        <div class="sep"></div>
-        <div class="note">Obs: se você quiser logout “de verdade”, seu backend precisa limpar o token na tabela <b>contas</b> (você já tem cmd_logout).</div>
-      </div>
-    </div>
-  `;
-
-  const tokenEl = $("#tokenText");
-  let masked = true;
-
-  function paintToken(){
-    if(!sessionToken){ tokenEl.textContent = "—"; return; }
-    if(!masked){ tokenEl.textContent = sessionToken; return; }
-    tokenEl.textContent = sessionToken.slice(0,6) + "••••••••••••••••••••••••" + sessionToken.slice(-6);
+  }catch(e){
+    toast("Falhou puxar status.json: " + e.message, false);
   }
-  paintToken();
-
-  $("#copyToken").onclick = async ()=>{
-    try{ await navigator.clipboard.writeText(sessionToken); toast("ok","Copiado","Token copiado."); }
-    catch{ toast("err","Erro","Não deu pra copiar (permissão do navegador)."); }
-  };
-  $("#revealToken").onclick = ()=>{ masked = !masked; paintToken(); };
-
-  $("#doWhoami").onclick = async ()=>{
-    try{
-      const out = await cmd({ comando:"/whoami" });
-      $("#whoamiOut").textContent = JSON.stringify(out, null, 2);
-      // tenta atualizar chip
-      if(out.session){ cachedConta = out.session; setChip(cachedConta); }
-      toast("ok","Ok","Whoami carregado.");
-    }catch(e){
-      toast("err","Falhou", e.message);
-    }
-  };
-
-  $("#doLogout").onclick = async ()=>{
-    try{
-      // seu cmd_logout exige payload.session (Server.py só passa se PASS_SESSION_INFO_TO_COMMAND + token válido)
-      const out = await cmd({ comando:"/logout" });
-      sessionToken = "";
-      cachedConta = null;
-      localStorage.removeItem("obearco_token");
-      setChip(null);
-      toast("ok","Logout","Você saiu.");
-      setActiveTab("auth");
-    }catch(e){
-      toast("err","Falha no logout", e.message);
-    }
-  };
 }
 
-/* ==========================
-   ACCOUNT TAB (update + delete com 5s)
-   Requer backend: /updateaccount + /deleteaccount
-   ========================== */
-async function renderAccount(){
-  if(!mustBeLogged()) return;
-
-  centerBody.innerHTML = `
-    <div class="banner">
-      <div style="font-size:18px">⚙️</div>
-      <div>
-        <div style="font-weight:900; letter-spacing:.06em">Gestão da Conta</div>
-        <div class="note">Editar username/email/senha e deletar com confirmação + delay de 5 segundos.</div>
-      </div>
-    </div>
-
-    <div class="sep"></div>
-
-    <div class="grid2">
-      <div class="card">
-        <div class="nick">Atualizar Dados</div>
-        <div class="meta">Requer comando <b>/updateaccount</b> no backend.</div>
-        <div class="sep"></div>
-
-        <div class="field">
-          <label>Novo username (opcional)</label>
-          <input id="up_user" placeholder="ex: NovoNome" />
-        </div>
-
-        <div class="field" style="margin-top:10px">
-          <label>Novo email (opcional)</label>
-          <input id="up_email" placeholder="ex: novo@email.com" />
-        </div>
-
-        <div class="sep"></div>
-
-        <div class="field">
-          <label>Senha atual (obrigatória p/ trocar senha)</label>
-          <input id="up_oldpass" type="password" placeholder="••••••••" />
-        </div>
-        <div class="field" style="margin-top:10px">
-          <label>Nova senha (opcional)</label>
-          <input id="up_newpass" type="password" placeholder="mínimo 6 chars" />
-        </div>
-
-        <div class="row" style="margin-top:12px">
-          <button class="btn primary" id="doUpdate">✨ Salvar</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="nick">Deletar Conta</div>
-        <div class="meta">Requer comando <b>/deleteaccount</b> no backend.</div>
-        <div class="sep"></div>
-
-        <div class="note">Ao confirmar, o botão fica bloqueado por <b>5 segundos</b> (pra evitar clique no susto).</div>
-
-        <div class="sep"></div>
-        <div class="field">
-          <label>Digite: DELETAR</label>
-          <input id="del_word" placeholder="DELETAR" />
-        </div>
-        <div class="row" style="margin-top:12px">
-          <button class="btn danger" id="doDelete" disabled>🩸 Confirmar Deleção (5s)</button>
-          <button class="btn" id="armDelete">⚠️ Quero deletar</button>
-        </div>
-        <div class="sep"></div>
-        <div class="note" id="delHint">Ainda não armado.</div>
-      </div>
-    </div>
-  `;
-
-  $("#doUpdate").onclick = async ()=>{
-    const username = $("#up_user").value.trim();
-    const email = $("#up_email").value.trim();
-    const old_password = $("#up_oldpass").value.trim();
-    const new_password = $("#up_newpass").value.trim();
-
-    if(!username && !email && !new_password){
-      toast("err","Nada pra salvar","Preencha pelo menos 1 campo.");
-      return;
-    }
-    try{
-      const out = await cmd({ comando:"/updateaccount", username, email, old_password, new_password });
-      toast("ok","Salvo","Conta atualizada.");
-      if(out.conta){ cachedConta = out.conta; setChip(cachedConta); }
-    }catch(e){
-      toast("err","Falha ao salvar", e.message);
-    }
-  };
-
-  let armed = false;
-  let timer = null;
-  $("#armDelete").onclick = ()=>{
-    armed = true;
-    $("#delHint").textContent = "Armado. Agora digite DELETAR e espere 5 segundos para o botão liberar.";
-    $("#doDelete").textContent = "🩸 Confirmar Deleção (5s)";
-    $("#doDelete").disabled = true;
-    let left = 5;
-    if(timer) clearInterval(timer);
-    timer = setInterval(()=>{
-      left--;
-      $("#doDelete").textContent = `🩸 Confirmar Deleção (${left}s)`;
-      if(left<=0){
-        clearInterval(timer);
-        $("#doDelete").textContent = "🩸 Confirmar Deleção";
-        // só libera se palavra certa
-        if($("#del_word").value.trim().toUpperCase()==="DELETAR"){
-          $("#doDelete").disabled = false;
-          $("#delHint").textContent = "Pronto. Clique para deletar (última chance!).";
-        }else{
-          $("#delHint").textContent = "Tempo passou, mas a palavra não está certa. Digite DELETAR.";
-        }
-      }
-    }, 1000);
-  };
-
-  $("#del_word").addEventListener("input", ()=>{
-    if(!armed) return;
-    if($("#del_word").value.trim().toUpperCase()==="DELETAR" && $("#doDelete").textContent==="🩸 Confirmar Deleção"){
-      $("#doDelete").disabled = false;
-    }else{
-      $("#doDelete").disabled = true;
-    }
+/* =========================
+   API helpers
+   ========================= */
+async function apiCmd(payload){
+  const url = API_BASE + API_PREFIX + "/cmd";
+  const r = await fetch(url, {
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      ...authHeaders(),
+    },
+    body: JSON.stringify(payload),
   });
-
-  $("#doDelete").onclick = async ()=>{
-    if($("#del_word").value.trim().toUpperCase()!=="DELETAR"){
-      toast("err","Confirmação","Digite DELETAR.");
-      return;
-    }
-    try{
-      await cmd({ comando:"/deleteaccount" });
-      toast("ok","Deletado","Sua conta foi removida.");
-      sessionToken = "";
-      cachedConta = null;
-      localStorage.removeItem("obearco_token");
-      setChip(null);
-      setActiveTab("auth");
-    }catch(e){
-      toast("err","Falha ao deletar", e.message);
-    }
-  };
+  const js = await r.json().catch(()=>({ok:false,error:"Resposta inválida"}));
+  return { ok: r.ok && js.ok, http_ok:r.ok, data: js };
 }
 
-/* ==========================
-   Patch notes (front-end)
-   ========================== */
-function loadNotes(){
-  const box = $("#notesBox");
-  // Você pode trocar isso por fetch de um .md depois.
-  const now = new Date().toLocaleString("pt-BR");
-  box.innerHTML = `
-    <div class="card">
-      <div class="nick">✨ Atualizado em ${escapeHtml(now)}</div>
-      <div class="meta">• Portal de contas (medieval/anime) <br>• Tabs + VFX <br>• Token visível + copiar <br>• Delete com delay 5s</div>
-    </div>
-    <div class="card">
-      <div class="nick">🧪 Próximo</div>
-      <div class="meta">• Personagens /createcharacter <br>• Feed com presença online <br>• Inventário / loja</div>
-    </div>
-  `;
+/* =========================
+   Tabs (sidebar)
+   ========================= */
+function setView(tab){
+  document.querySelectorAll("[data-view]").forEach(v=>{
+    v.classList.toggle("hidden", v.getAttribute("data-view") !== tab);
+  });
+  document.querySelectorAll(".navItem").forEach(n=>{
+    n.classList.toggle("active", n.getAttribute("data-tab") === tab);
+  });
 }
 
-/* ==========================
-   Top buttons
-   ========================== */
-$("#btnReloadBase").onclick = syncFromStatusJson;
+/* =========================
+   Inner auth tabs (ONE SCREEN)
+   ========================= */
+function setAuthTab(which){
+  const isLogin = which === "login";
+  $("innerTabLogin").classList.toggle("active", isLogin);
+  $("innerTabRegister").classList.toggle("active", !isLogin);
+  $("paneLogin").classList.toggle("hidden", !isLogin);
+  $("paneRegister").classList.toggle("hidden", isLogin);
 
-$("#btnPing").onclick = async ()=>{
-  try{
-    const out = await cmd({ comando:"/ping" });
-    toast("ok","Pong", "ts=" + (out.ts || "—"));
-  }catch(e){ toast("err","Ping falhou", e.message); }
-};
-
-$("#btnWhoami").onclick = ()=>{
-  setActiveTab("profile");
-  setTimeout(()=> $("#doWhoami")?.click(), 80);
-};
-
-$("#btnLogout").onclick = ()=>{
-  setActiveTab("profile");
-  setTimeout(()=> $("#doLogout")?.click(), 80);
-};
-
-$("#btnLoadNotes").onclick = loadNotes;
-
-/* ==========================
-   Init
-   ========================== */
-function escapeHtml(s){
-  return String(s ?? "").replace(/[&<>"']/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+  // top quick buttons keep same feel
+  $("tabLoginBtn").classList.toggle("gold", isLogin);
+  $("tabLoginBtn").classList.toggle("ghost", !isLogin);
+  $("tabRegisterBtn").classList.toggle("gold", !isLogin);
+  $("tabRegisterBtn").classList.toggle("ghost", isLogin);
 }
 
-async function boot(){
-  // background vfx start
-  startVFX();
-
-  await syncFromStatusJson();
-  loadNotes();
-
-  if(sessionToken){
-    setSubtitle("Sessão encontrada. Tentando validar...");
-    try{
-      const out = await cmd({ comando:"/whoami" });
-      cachedConta = out.session || null;
-      setChip(cachedConta);
-      toast("ok","Sessão ok","Token válido.");
-      setActiveTab("profile");
-    }catch(e){
-      toast("err","Sessão inválida","Faça login novamente. " + e.message);
-      sessionToken = "";
-      localStorage.removeItem("obearco_token");
-      setChip(null);
-      setActiveTab("auth");
-    }
+/* =========================
+   Actions
+   ========================= */
+async function doPing(){
+  const res = await apiCmd({ comando:"/ping" });
+  if(res.ok) toast("pong ✅", true);
+  else toast(res.data.error || "ping falhou", false);
+}
+async function doWho(){
+  const res = await apiCmd({ comando:"/whoami" });
+  $("whoOut").textContent = JSON.stringify(res.data, null, 2);
+  toast(res.ok ? "whoami ok ✅" : "whoami falhou", res.ok);
+}
+async function doLogin(){
+  const login = $("login_login").value.trim();
+  const senha = $("login_senha").value.trim();
+  const res = await apiCmd({ comando:"/login", login, senha });
+  if(res.ok){
+    const tok = res.data.session_token || "";
+    setToken(tok);
+    $("tokenBox").value = tok;
+    toast("Login ok ✅ token salvo", true);
   }else{
-    setChip(null);
-    setActiveTab("auth");
+    toast(res.data.error || "login falhou", false);
   }
 }
-boot();
+async function doRegister(){
+  const username = $("reg_user").value.trim();
+  const email = $("reg_email").value.trim();
+  const senha = $("reg_senha").value.trim();
+  const res = await apiCmd({ comando:"/register", username, email, senha });
+  toast(res.ok ? "Conta criada ✅" : (res.data.error || "registro falhou"), res.ok);
+  if(res.ok){
+    setAuthTab("login");
+    $("login_login").value = username || email;
+    $("login_senha").value = senha;
+  }
+}
 
-/* ==========================
-   VFX (canvas)
-   ========================== */
+/* =========================
+   Copy
+   ========================= */
+async function copyToken(){
+  const tok = getToken();
+  if(!tok) return toast("Sem token ainda.", false);
+  try{
+    await navigator.clipboard.writeText(tok);
+    toast("Token copiado 📋", true);
+  }catch{
+    // fallback
+    $("tokenBox").focus();
+    $("tokenBox").select();
+    document.execCommand("copy");
+    toast("Token copiado 📋", true);
+  }
+}
+
+/* =========================
+   VFX Canvas (particles + embers)
+   ========================= */
 function startVFX(){
-  const c1 = document.getElementById("vfx");
-  const c2 = document.getElementById("vfx2");
-  const ctx1 = c1.getContext("2d");
-  const ctx2 = c2.getContext("2d");
-  let w=0,h=0, dpr=1;
+  const c = $("vfx");
+  const ctx = c.getContext("2d");
+  let W=0,H=0, DPR=Math.min(2, window.devicePixelRatio||1);
+  const particles = [];
+  const embers = [];
 
   function resize(){
-    dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
-    w = Math.floor(window.innerWidth);
-    h = Math.floor(window.innerHeight);
-    [c1,c2].forEach(c=>{
-      c.width = Math.floor(w*dpr);
-      c.height = Math.floor(h*dpr);
-      c.style.width = w+"px";
-      c.style.height = h+"px";
-    });
-    ctx1.setTransform(dpr,0,0,dpr,0,0);
-    ctx2.setTransform(dpr,0,0,dpr,0,0);
+    W = window.innerWidth;
+    H = window.innerHeight;
+    c.width = Math.floor(W*DPR);
+    c.height = Math.floor(H*DPR);
+    c.style.width = W+"px";
+    c.style.height = H+"px";
+    ctx.setTransform(DPR,0,0,DPR,0,0);
   }
   window.addEventListener("resize", resize);
   resize();
 
-  // Particles (embers)
-  const P = [];
-  const N = 140;
-  for(let i=0;i<N;i++){
-    P.push({
-      x: Math.random()*w,
-      y: Math.random()*h,
-      r: 0.8 + Math.random()*2.4,
-      vx: -0.15 + Math.random()*0.3,
-      vy: -0.35 + Math.random()*0.25,
-      a: 0.12 + Math.random()*0.25,
-      hue: Math.random()<0.55 ? "gold" : "aqua"
+  function rnd(a,b){ return a + Math.random()*(b-a); }
+
+  for(let i=0;i<70;i++){
+    particles.push({
+      x:rnd(0,W), y:rnd(0,H),
+      r:rnd(1,3.2),
+      vx:rnd(-.15,.15), vy:rnd(-.08,.10),
+      a:rnd(.08,.22),
+      hue: Math.random()<.5 ? "rgba(157,123,255," : "rgba(92,224,216,"
     });
   }
-
-  // Runes (glow lines)
-  const R = [];
-  const RN = 26;
-  for(let i=0;i<RN;i++){
-    R.push({
-      x: Math.random()*w,
-      y: Math.random()*h,
-      len: 60 + Math.random()*220,
-      ang: Math.random()*Math.PI*2,
-      sp: 0.002 + Math.random()*0.004,
-      ph: Math.random()*10
+  for(let i=0;i<30;i++){
+    embers.push({
+      x:rnd(0,W), y:rnd(H*0.25,H),
+      r:rnd(1,2.6),
+      vx:rnd(-.05,.05), vy:rnd(-.35,-.12),
+      a:rnd(.06,.16),
     });
   }
 
   let t=0;
   function tick(){
-    t += 0.016;
-    ctx1.clearRect(0,0,w,h);
-    ctx2.clearRect(0,0,w,h);
+    t+=1;
+    ctx.clearRect(0,0,W,H);
 
-    // layer 1: embers
-    for(const p of P){
-      p.x += p.vx;
-      p.y += p.vy;
-      p.y += Math.sin(t*0.8 + p.x*0.01)*0.08;
-      if(p.x< -20) p.x = w+20;
-      if(p.x> w+20) p.x = -20;
-      if(p.y< -40) p.y = h+40;
+    // soft vignette
+    const g = ctx.createRadialGradient(W*0.5,H*0.55, 80, W*0.5,H*0.55, Math.max(W,H)*0.75);
+    g.addColorStop(0, "rgba(0,0,0,0)");
+    g.addColorStop(1, "rgba(0,0,0,.55)");
+    ctx.fillStyle = g;
+    ctx.fillRect(0,0,W,H);
 
-      const glow = p.hue==="gold" ? "rgba(255,223,140,"+p.a+")" : "rgba(98,240,255,"+p.a+")";
-      ctx1.beginPath();
-      ctx1.fillStyle = glow;
-      ctx1.shadowBlur = 18;
-      ctx1.shadowColor = glow;
-      ctx1.arc(p.x, p.y, p.r, 0, Math.PI*2);
-      ctx1.fill();
+    // particles
+    for(const p of particles){
+      p.x += p.vx; p.y += p.vy;
+      if(p.x< -20) p.x=W+20;
+      if(p.x> W+20) p.x=-20;
+      if(p.y< -20) p.y=H+20;
+      if(p.y> H+20) p.y=-20;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      ctx.fillStyle = p.hue + p.a + ")";
+      ctx.fill();
     }
-    ctx1.shadowBlur = 0;
 
-    // layer 2: runes
-    ctx2.globalCompositeOperation = "lighter";
-    for(const r of R){
-      r.ang += r.sp;
-      const x2 = r.x + Math.cos(r.ang)*r.len;
-      const y2 = r.y + Math.sin(r.ang)*r.len;
-
-      const a = 0.06 + (Math.sin(t + r.ph)*0.04);
-      ctx2.lineWidth = 1;
-      ctx2.strokeStyle = "rgba(166,107,255,"+a+")";
-      ctx2.shadowBlur = 22;
-      ctx2.shadowColor = "rgba(166,107,255,"+(a+0.08)+")";
-
-      ctx2.beginPath();
-      ctx2.moveTo(r.x, r.y);
-      ctx2.lineTo(x2, y2);
-      ctx2.stroke();
-
-      // small glyph
-      ctx2.fillStyle = "rgba(255,223,140,"+(a*1.2)+")";
-      ctx2.shadowColor = "rgba(255,223,140,"+(a+0.08)+")";
-      ctx2.shadowBlur = 18;
-      ctx2.beginPath();
-      ctx2.arc(x2, y2, 1.3, 0, Math.PI*2);
-      ctx2.fill();
+    // embers (gold)
+    for(const e of embers){
+      e.x += e.vx + Math.sin((t+e.x)*0.003)*0.08;
+      e.y += e.vy;
+      if(e.y < -40){
+        e.y = H + rnd(20,120);
+        e.x = rnd(0,W);
+      }
+      ctx.beginPath();
+      ctx.arc(e.x, e.y, e.r, 0, Math.PI*2);
+      ctx.fillStyle = "rgba(214,180,106,"+e.a+")";
+      ctx.fill();
     }
-    ctx2.shadowBlur = 0;
-    ctx2.globalCompositeOperation = "source-over";
 
     requestAnimationFrame(tick);
   }
   tick();
 }
+
+/* =========================
+   Wire up
+   ========================= */
+document.addEventListener("click", (e)=>{
+  const item = e.target.closest(".navItem");
+  if(item){
+    setView(item.getAttribute("data-tab"));
+  }
+});
+
+$("btnSync").onclick = syncStatus;
+$("btnPatch").onclick = syncStatus;
+$("btnPing").onclick = doPing;
+$("btnWho").onclick = doWho;
+
+$("tabLoginBtn").onclick = ()=>setAuthTab("login");
+$("tabRegisterBtn").onclick = ()=>setAuthTab("register");
+$("innerTabLogin").onclick = ()=>setAuthTab("login");
+$("innerTabRegister").onclick = ()=>setAuthTab("register");
+
+$("doLogin").onclick = doLogin;
+$("doRegister").onclick = doRegister;
+$("clearToken").onclick = ()=>{ setToken(""); toast("Token limpo.", true); };
+
+$("btnCopyToken").onclick = copyToken;
+$("btnWho2").onclick = doWho;
+$("refreshTaverna").onclick = ()=>toast("Falta comando /listusers no servidor.", false);
+
+/* init */
+setBase(API_BASE);
+$("apiPrefix").textContent = API_PREFIX;
+setToken(getToken());
+startVFX();
+syncStatus();
 </script>
 </body>
 </html>
