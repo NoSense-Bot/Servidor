@@ -1,0 +1,4 @@
+*
+!.gitignore
+!.gitattributes
+!server_status.json
